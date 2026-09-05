@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # 1. Base de datos PostgreSQL Nativa (Tu modelo de tablas relacionales)
+  app-db:
+    image: postgres:15-alpine
+    container_name: uci_app_db
+    environment:
+      POSTGRES_DB: uci_telemetria
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - app_db_data:/var/lib/postgresql/data
+
+  # 2. Base de datos para HAPI FHIR
+  fhir-db:
+    image: postgres:15-alpine
+    container_name: hapi_fhir_db
+    environment:
+      POSTGRES_DB: hapifhir
+      POSTGRES_USER: fhiruser
+      POSTGRES_PASSWORD: fhirpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - fhir_db_data:/var/lib/postgresql/data
+
+  # 3. Servidor HAPI FHIR R4
+  hapi-fhir:
+    image: hapifhir/hapi-fhir-jpaserver-starter:latest
+    container_name: hapi_fhir_server
+    ports:
+      - "8080:8080"
+    environment:
+      hapi.fhir.fhir_version: R4
+      spring.datasource.url: jdbc:postgresql://fhir-db:5432/hapifhir
+      spring.datasource.username: fhiruser
+      spring.datasource.password: fhirpassword
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      - fhir-db
+
+volumes:
+  app_db_data:
+  fhir_db_data:
