@@ -1,0 +1,1 @@
+[Justificación de Roles y Control de Acceso (RBAC) - Middleware Telemetría UCI.pdf](https://github.com/user-attachments/files/31930061/Justificacion.de.Roles.y.Control.de.Acceso.RBAC.-.Middleware.Telemetria.UCI.pdf)
