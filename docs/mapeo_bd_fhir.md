@@ -1,0 +1,1 @@
+[Documento de Mapeo Base de Datos a HL7 FHIR R4 - Middleware Telemetría UCI.pdf](https://github.com/user-attachments/files/31930056/Documento.de.Mapeo.Base.de.Datos.a.HL7.FHIR.R4.-.Middleware.Telemetria.UCI.pdf)
