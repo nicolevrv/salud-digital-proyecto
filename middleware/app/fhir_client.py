@@ -1,8 +1,33 @@
+import os
 import requests
 
-HAPI_FHIR_URL = "http://localhost:8080/fhir"  # O la URL expuesta
+HAPI_FHIR_URL = os.getenv("HAPI_FHIR_URL", "http://hapi-fhir:8080/fhir")
+
+def sync_patient_to_fhir(patient_data: dict):
+    """Envía o actualiza un recurso Patient en HAPI FHIR"""
+    payload = {
+        "resourceType": "Patient",
+        "identifier": [{
+            "system": "http://hospital.org/ni",
+            "value": patient_data.get("documento_identidad")
+        }],
+        "name": [{"text": patient_data.get("nombre")}],
+        "active": not patient_data.get("is_deleted", False)
+    }
+    
+    headers = {"Content-Type": "application/fhir+json"}
+    
+    if patient_data.get("fhir_id"):
+        url = f"{HAPI_FHIR_URL}/Patient/{patient_data['fhir_id']}"
+        response = requests.put(url, json=payload, headers=headers)
+    else:
+        url = f"{HAPI_FHIR_URL}/Patient"
+        response = requests.post(url, json=payload, headers=headers)
+        
+    return response.json() if response.status_code in [200, 201] else None
 
 def enviar_observacion_a_fhir(paciente_id_fhir, parametro, loinc_code, valor, unidad, alerta):
+    """Envía un recurso Observation en estándar FHIR a HAPI FHIR"""
     payload = {
         "resourceType": "Observation",
         "status": "final",
@@ -39,5 +64,9 @@ def enviar_observacion_a_fhir(paciente_id_fhir, parametro, loinc_code, valor, un
     }
 
     headers = {"Content-Type": "application/fhir+json"}
-    response = requests.post(f"{HAPI_FHIR_URL}/Observation", json=payload, headers=headers)
-    return response.json()
+    try:
+        response = requests.post(f"{HAPI_FHIR_URL}/Observation", json=payload, headers=headers)
+        return response.json() if response.status_code in [200, 201] else None
+    except Exception as e:
+        print(f"Error conectando a HAPI FHIR: {e}")
+        return None
