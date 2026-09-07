@@ -60,24 +60,24 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- ================================================
--- DATOS SEMILLA (INSERTS INICIALES)
+-- DATOS SEMILLA (3 ROLES EXACTOS)
 -- ================================================
 
--- 1. Insertar Roles Requeridos
+-- 1. Insertar 3 Roles Requeridos
 INSERT INTO roles (id, nombre) VALUES 
-(1, 'Admin'),
-(2, 'Biomedico'),
+(1, 'Admin Biomedico'),
+(2, 'Medico'),
 (3, 'Servicio')
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Insertar Usuarios de Prueba
 INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
-(1, 'Admin Principal', 'admin@hospital.com', 'admin123', 1),
-(2, 'Ing. Biomédico UCI', 'biomedico@hospital.com', 'bio123', 2),
-(3, 'Servicio IoT Telemetría', 'servicio.iot@hospital.com', 'service123', 3)
+(1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'admin123', 1),
+(2, 'Dr. Camilo Torres', 'medico@hospital.com', 'med123', 2),
+(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3)
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Insertar Paciente / Equipo Inicial de Prueba
+-- 3. Insertar Paciente de Prueba
 INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, created_by) VALUES
 (1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 1)
 ON CONFLICT (id) DO NOTHING;
@@ -87,6 +87,6 @@ INSERT INTO encuentros (id, paciente_id, estado, created_by) VALUES
 (1, 1, 'in-progress', 2)
 ON CONFLICT (id) DO NOTHING;
 
--- 5. Insertar Observación Telemétrica de Control Predictivo
+-- 5. Insertar Observación Telemétrica
 INSERT INTO observaciones (encuentro_id, parametro, codigo_loinc, valor, unidad, alerta_predictiva, created_by) VALUES
-(1, 'Temperatura Turbina Ventilador', '8310-5', 41.8, 'Cel', 'Alerta: Temperatura por encima del umbral óptimo (Posible obstrucción de filtro)', 3);
+(1, 'Temperatura Turbina Ventilador', '8310-5', 41.8, 'Cel', 'Alerta: Temperatura por encima del umbral óptimo', 3);

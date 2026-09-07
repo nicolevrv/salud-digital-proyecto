@@ -4,12 +4,11 @@ from psycopg2.extras import RealDictCursor
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
 from typing import Optional
-from .fhir_client import sync_patient_to_fhir, enviar_observacion_a_fhir
 
 app = FastAPI(
     title="Middleware Telemetría UCI - Salud Digital",
-    description="API REST con control de acceso por roles, Soft Delete, Soft Edit y Sincronización FHIR",
-    version="1.0.0"
+    description="API REST con 3 roles (Admin Biomedico, Medico, Servicio), Soft Delete con restricciones de autoría y Restauración exclusiva del Admin Biomedico",
+    version="1.2.0"
 )
 
 DB_HOST = os.getenv("DB_HOST", "db")
@@ -50,7 +49,7 @@ def verify_user_role(x_user_id: int = Header(...), conn = Depends(get_db)):
 def root():
     return {"status": "API Middleware Funcionando Correctamente"}
 
-# Endpoint 1: Soft Edit Observación
+# Endpoint 1: Soft Edit Observación (Medico edita sus registros / Admin Biomedico edita todo)
 @app.put("/observaciones/{obs_id}/soft-edit")
 def soft_edit_observation(
     obs_id: int, 
@@ -58,9 +57,6 @@ def soft_edit_observation(
     user: dict = Depends(verify_user_role), 
     conn = Depends(get_db)
 ):
-    if user["rol_nombre"] not in ["Admin", "Biomedico"]:
-        raise HTTPException(status_code=403, detail="Rol sin permisos para editar registros")
-
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s AND is_deleted = FALSE", (obs_id,))
     obs = cursor.fetchone()
@@ -69,7 +65,15 @@ def soft_edit_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada o eliminada")
 
-    # Actualizar incremento de versión
+    # Regla: El Médico solo edita los registros que él mismo creó
+    if user["rol_nombre"] == "Medico" and obs["created_by"] != user["id"]:
+        cursor.close()
+        raise HTTPException(status_code=403, detail="Un médico solo puede editar sus propios registros clínicos")
+    elif user["rol_nombre"] not in ["Admin Biomedico", "Medico"]:
+        cursor.close()
+        raise HTTPException(status_code=403, detail="Rol sin permisos para editar registros")
+
+    # Incremento de versión
     new_version = obs["version"] + 1
     cursor.execute("""
         UPDATE observaciones 
@@ -87,46 +91,59 @@ def soft_edit_observation(
     cursor.close()
     return {"message": "Observación editada correctamente", "nueva_version": new_version}
 
-# Endpoint 2: Soft Delete Paciente
-@app.delete("/pacientes/{paciente_id}/soft-delete")
-def soft_delete_patient(
-    paciente_id: int, 
+# Endpoint 2: Soft Delete Observación (Medico borra sus errores de captura / Admin Biomedico borra todo)
+@app.delete("/observaciones/{obs_id}/soft-delete")
+def soft_delete_observation(
+    obs_id: int, 
     user: dict = Depends(verify_user_role), 
     conn = Depends(get_db)
 ):
-    if user["rol_nombre"] != "Admin":
-        raise HTTPException(status_code=403, detail="Solo Administradores pueden eliminar registros")
-
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("UPDATE pacientes SET is_deleted = TRUE WHERE id = %s", (paciente_id,))
+    cursor.execute("SELECT * FROM observaciones WHERE id = %s AND is_deleted = FALSE", (obs_id,))
+    obs = cursor.fetchone()
+
+    if not obs:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Observación no encontrada o ya eliminada")
+
+    # Regla: El Médico solo elimina registros creados por él
+    if user["rol_nombre"] == "Medico" and obs["created_by"] != user["id"]:
+        cursor.close()
+        raise HTTPException(status_code=403, detail="Un médico solo puede eliminar sus propios registros clínicos")
+    elif user["rol_nombre"] not in ["Admin Biomedico", "Medico"]:
+        cursor.close()
+        raise HTTPException(status_code=403, detail="Rol sin permisos para eliminar registros")
+
+    cursor.execute("UPDATE observaciones SET is_deleted = TRUE WHERE id = %s", (obs_id,))
     
     cursor.execute("""
         INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
-        VALUES (%s, 'SOFT_DELETE', 'pacientes', %s)
-    """, (user["id"], paciente_id))
+        VALUES (%s, 'SOFT_DELETE', 'observaciones', %s)
+    """, (user["id"], obs_id))
 
     conn.commit()
     cursor.close()
-    return {"message": f"Paciente ID {paciente_id} marcado como eliminado (Soft Delete)"}
+    return {"message": f"Observación ID {obs_id} marcada como eliminada (Soft Delete)"}
 
-# Endpoint 3: Restaurar (Undelete)
-@app.post("/pacientes/{paciente_id}/restore")
-def restore_patient(
-    paciente_id: int, 
+# Endpoint 3: Restauración / Undelete (Exclusivo del Admin Biomedico)
+@app.post("/observaciones/{obs_id}/restore")
+def restore_observation(
+    obs_id: int, 
     user: dict = Depends(verify_user_role), 
     conn = Depends(get_db)
 ):
-    if user["rol_nombre"] != "Admin":
-        raise HTTPException(status_code=403, detail="Solo Administradores pueden restaurar registros")
+    # La restauración es EXCLUSIVA del Admin Biomedico
+    if user["rol_nombre"] != "Admin Biomedico":
+        raise HTTPException(status_code=403, detail="Acceso denegado: La restauración de registros está reservada exclusivamente al Admin Biomedico")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("UPDATE pacientes SET is_deleted = FALSE WHERE id = %s", (paciente_id,))
+    cursor.execute("UPDATE observaciones SET is_deleted = FALSE WHERE id = %s", (obs_id,))
     
     cursor.execute("""
         INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
-        VALUES (%s, 'RESTORE', 'pacientes', %s)
-    """, (user["id"], paciente_id))
+        VALUES (%s, 'RESTORE', 'observaciones', %s)
+    """, (user["id"], obs_id))
 
     conn.commit()
     cursor.close()
-    return {"message": f"Paciente ID {paciente_id} restaurado exitosamente"}
+    return {"message": f"Observación ID {obs_id} restaurada exitosamente por el Admin Biomedico"}
