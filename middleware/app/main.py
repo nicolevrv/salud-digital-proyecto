@@ -218,17 +218,30 @@ def health_check():
 @app.post("/login", tags=["Autenticación"])
 def login(credentials: LoginRequest, conn = Depends(get_db)):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("""
-        SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre as rol_nombre 
-        FROM usuarios u 
-        JOIN roles r ON u.rol_id = r.id 
-        WHERE u.email = %s AND u.password_hash = %s AND u.is_deleted = FALSE
-    """, (credentials.email, credentials.password))
-    user = cursor.fetchone()
-    cursor.close()
+    try:
+        cursor.execute("""
+            SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre as rol_nombre 
+            FROM usuarios u 
+            JOIN roles r ON u.rol_id = r.id 
+            WHERE u.email = %s AND u.password_hash = %s AND u.is_deleted = FALSE
+        """, (credentials.email, credentials.password))
+        user = cursor.fetchone()
+        cursor.close()
+    except Exception as e:
+        cursor.close()
+        err_str = str(e).lower()
+        if "does not exist" in err_str or "no existe" in err_str:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La base de datos aún no contiene las tablas necesarias. Por favor, pulsa el botón 'Sembrar BD' en el menú superior para inicializarla."
+            )
+        raise HTTPException(status_code=500, detail=f"Error en base de datos: {str(e)}")
 
     if not user:
-        raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos. Verifique sus credenciales."
+        )
 
     return {
         "message": "Autenticación exitosa",

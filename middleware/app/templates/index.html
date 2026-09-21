@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <!-- Acciones Header: DB Status + Role Switcher + Inicializador -->
+        <!-- Acciones Header: DB Status + Perfil Autenticado + Sembrar BD -->
         <div class="flex items-center gap-3">
           
           <!-- Indicador Estado DB Neon/Render -->
@@ -88,15 +88,29 @@
             <span>Sembrar BD</span>
           </button>
 
-          <!-- Selector de Rol Activo -->
-          <div class="relative">
-            <div class="flex items-center bg-slate-800/90 rounded-xl p-1 border border-slate-700">
-              <span class="text-xs font-semibold text-slate-400 px-2 hidden lg:inline">Rol:</span>
-              <select id="role-selector" onchange="cambiarRol(this.value)" class="bg-slate-900 text-cyan-300 text-xs font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer">
-                <option value="admin">👨‍💼 Admin Biomédico</option>
-                <option value="medico">🩺 Dr. Camilo (Médico)</option>
-                <option value="servicio">🤖 Servicio IoT Telemetría</option>
-              </select>
+          <!-- SECCIÓN DE PERFIL AUTENTICADO -->
+          <div id="auth-profile-container" class="flex items-center gap-2">
+            <!-- Si no está autenticado -->
+            <button id="btn-open-login" onclick="abrirModal('modal-login')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+              <span>Autenticar Perfil</span>
+            </button>
+
+            <!-- Si está autenticado (se muestra dinámicamente) -->
+            <div id="user-badge-logged" class="hidden flex items-center bg-slate-800/90 rounded-xl p-1.5 border border-slate-700 gap-2">
+              <div id="user-avatar" class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/30">
+                U
+              </div>
+              <div class="hidden sm:block text-left pr-1">
+                <div id="user-name-display" class="text-xs font-bold text-white leading-tight">Usuario</div>
+                <div id="user-role-display" class="text-[10px] text-cyan-400 font-medium leading-none">Rol</div>
+              </div>
+              <button onclick="abrirModal('modal-login')" title="Cambiar usuario o perfil" class="p-1 rounded-md hover:bg-slate-700 text-slate-400 hover:text-cyan-300 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              </button>
+              <button onclick="cerrarSesion()" title="Cerrar sesión" class="p-1 rounded-md hover:bg-slate-700 text-slate-400 hover:text-rose-400 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              </button>
             </div>
           </div>
 
@@ -116,6 +130,30 @@
   <!-- MAIN CONTENT WRAPPER -->
   <!-- ========================================================================= -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- BANNER DE AUTORIZACIONES Y PERMISOS DEL PERFIL ACTIVO -->
+    <div id="permissions-banner" class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div id="perm-icon-box" class="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Perfil Autenticado:</span>
+              <span id="perm-user-role-pill" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-950 text-purple-300 border border-purple-800">Admin Biomédico</span>
+              <span id="perm-user-email" class="text-xs text-slate-400 font-mono">admin.biomedico@hospital.com</span>
+            </div>
+            <div id="perm-description-list" class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-300">
+              <!-- Renderizado según el rol activo -->
+            </div>
+          </div>
+        </div>
+        <button onclick="abrirModal('modal-login')" class="text-xs text-cyan-400 hover:text-cyan-300 underline font-medium whitespace-nowrap self-end md:self-center">
+          Cambiar credenciales &rarr;
+        </button>
+      </div>
+    </div>
 
     <!-- KPI CARDS SUMMARY -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -314,7 +352,9 @@
             <p class="text-xs text-slate-400">Equipos de soporte vital, clasificación de riesgo (Res. 3100) y metrología</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">Exclusivo Admin Biomédico para edición metrológica</span>
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-950 text-purple-300 border border-purple-800">
+              🛡️ Edición Metrológica Exclusiva del Admin Biomédico
+            </span>
           </div>
         </div>
 
@@ -423,7 +463,109 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODALES DE ACCIÓN -->
+  <!-- MODAL DE AUTENTICACIÓN DE PERFIL (LOGIN & AUTORIZACIONES) -->
+  <!-- ========================================================================= -->
+  <div id="modal-login" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Autenticación de Perfil</h3>
+            <p class="text-xs text-slate-400">Accede con tu cuenta institucional para habilitar permisos</p>
+          </div>
+        </div>
+        <button onclick="cerrarModal('modal-login')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Alerta de Error en Login -->
+      <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-medium flex items-start gap-2">
+        <svg class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="login-error-text">Credenciales incorrectas</span>
+      </div>
+
+      <!-- Formulario Manual de Autenticación -->
+      <form onsubmit="ejecutarLoginManual(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1.5">Correo Electrónico:</label>
+          <input type="email" id="login-email" required placeholder="ej: admin.biomedico@hospital.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1.5">Contraseña:</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        </div>
+        <button type="submit" id="btn-submit-login" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/20 transition flex items-center justify-center gap-2">
+          <span>Iniciar Sesión</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <!-- SEPARADOR -->
+      <div class="relative flex items-center justify-center">
+        <div class="border-t border-slate-800 w-full"></div>
+        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">O autentica con 1 clic por perfil</span>
+        <div class="border-t border-slate-800 w-full"></div>
+      </div>
+
+      <!-- ACCESO RÁPIDO SEGÚN LOS 3 ROLES DEL PROYECTO -->
+      <div class="space-y-2">
+        
+        <!-- Perfil 1: Admin Biomédico -->
+        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-600 text-left transition flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/30">
+              AB
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Administrador Biomédico</div>
+              <div class="text-[11px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
+              <div class="text-[10px] text-purple-400">🛡️ Metrología, Soft-Delete, RESTORE y Auditoría</div>
+            </div>
+          </div>
+          <span class="text-xs text-purple-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+        </button>
+
+        <!-- Perfil 2: Médico -->
+        <button onclick="autenticarRapido('medico@hospital.com', 'med123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-600 text-left transition flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
+              CT
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Dr. Camilo Torres (Médico)</div>
+              <div class="text-[11px] text-slate-400 font-mono">medico@hospital.com</div>
+              <div class="text-[10px] text-emerald-400">🩺 Pacientes, Encuentros y Edición propia (Restricción de autoría)</div>
+            </div>
+          </div>
+          <span class="text-xs text-emerald-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+        </button>
+
+        <!-- Perfil 3: Servicio IoT -->
+        <button onclick="autenticarRapido('servicio.iot@hospital.com', 'service123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-600 text-left transition flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/30">
+              ST
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white group-hover:text-cyan-300 transition">Servicio IoT Telemetría</div>
+              <div class="text-[11px] text-slate-400 font-mono">servicio.iot@hospital.com</div>
+              <div class="text-[10px] text-cyan-400">🤖 Inyección continua de telemetría y sensores UCI</div>
+            </div>
+          </div>
+          <span class="text-xs text-cyan-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALES DE OPERACIÓN CLÍNICA Y BIOMÉDICA -->
   <!-- ========================================================================= -->
 
   <!-- Modal 1: Nuevo Paciente -->
@@ -532,7 +674,7 @@
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
+          <span class="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </span>
           Gestión Técnica & Metrológica de Equipo
@@ -565,7 +707,7 @@
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
           <button type="button" onclick="cerrarModal('modal-edit-equipo')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Actualizar Metrología</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold">Actualizar Metrología</button>
         </div>
       </form>
     </div>
@@ -626,32 +768,11 @@
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
   <!-- ========================================================================= -->
-  <!-- JAVASCRIPT: LOGICA DEL DASHBOARD & CONSUMO API -->
+  <!-- JAVASCRIPT: AUTENTICACIÓN, ROLES & CONSUMO API -->
   <!-- ========================================================================= -->
   <script>
-    // Configuración de credenciales según los 3 roles del proyecto
-    const ROLES = {
-      admin: {
-        email: "admin.biomedico@hospital.com",
-        pass: "admin123",
-        nombre: "Ing. Biomédico Admin",
-        rol: "Admin Biomedico"
-      },
-      medico: {
-        email: "medico@hospital.com",
-        pass: "med123",
-        nombre: "Dr. Camilo Torres",
-        rol: "Medico"
-      },
-      servicio: {
-        email: "servicio.iot@hospital.com",
-        pass: "service123",
-        nombre: "Servicio Telemetria UCI",
-        rol: "Servicio"
-      }
-    };
-
-    let usuarioActual = ROLES.admin;
+    // Estado de sesión activa
+    let sesionActiva = null;
     let chartInstance = null;
     let cacheEncuentros = [];
     let cachePacientes = [];
@@ -659,10 +780,13 @@
 
     // Encabezados de autorización para la API FastAPI
     function getAuthHeaders() {
+      if (!sesionActiva) {
+        return { "Content-Type": "application/json" };
+      }
       return {
         "Content-Type": "application/json",
-        "X-User-Email": usuarioActual.email,
-        "X-User-Password": usuarioActual.pass
+        "X-User-Email": sesionActiva.email,
+        "X-User-Password": sesionActiva.password
       };
     }
 
@@ -693,15 +817,11 @@
       }, 4000);
     }
 
-    // Cambiar de Rol
-    function cambiarRol(rolKey) {
-      if (ROLES[rolKey]) {
-        usuarioActual = ROLES[rolKey];
-        showToast(`Rol activo cambiado a: ${usuarioActual.rol} (${usuarioActual.nombre})`, "info");
-      }
-    }
+    // Control de Modales
+    function abrirModal(id) { document.getElementById(id).classList.remove("hidden"); }
+    function cerrarModal(id) { document.getElementById(id).classList.add("hidden"); }
 
-    // Inicializar Tablas
+    // Cambiar Tabs
     function cambiarTab(tabName) {
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(el => {
@@ -716,12 +836,161 @@
       }
     }
 
-    // Control de Modales
-    function abrirModal(id) { document.getElementById(id).classList.remove("hidden"); }
-    function cerrarModal(id) { document.getElementById(id).classList.add("hidden"); }
+    // =========================================================================
+    // SISTEMA DE AUTENTICACIÓN Y ROLES
+    // =========================================================================
+
+    async function ejecutarLogin(email, password) {
+      const errorBox = document.getElementById("login-error-alert");
+      const errorTxt = document.getElementById("login-error-text");
+      errorBox.classList.add("hidden");
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, password: password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          sesionActiva = {
+            id: data.usuario.id,
+            nombre: data.usuario.nombre,
+            email: data.usuario.email,
+            rol: data.usuario.rol,
+            password: password
+          };
+
+          // Guardar en sessionStorage
+          sessionStorage.setItem("telemetria_session", JSON.stringify(sesionActiva));
+
+          actualizarInterfazPerfil();
+          cerrarModal("modal-login");
+          showToast(`Bienvenido/a ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
+
+          // Recargar datos con las autorizaciones del usuario
+          cargarTodoElDashboard();
+        } else {
+          errorTxt.innerText = data.detail || "Error de autenticación";
+          errorBox.classList.remove("hidden");
+        }
+      } catch (err) {
+        errorTxt.innerText = `Error de conexión: ${err.message}`;
+        errorBox.classList.remove("hidden");
+      }
+    }
+
+    function ejecutarLoginManual(e) {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim();
+      const pass = document.getElementById("login-password").value.trim();
+      ejecutarLogin(email, pass);
+    }
+
+    function autenticarRapido(email, pass) {
+      document.getElementById("login-email").value = email;
+      document.getElementById("login-password").value = pass;
+      ejecutarLogin(email, pass);
+    }
+
+    function cerrarSesion() {
+      sesionActiva = null;
+      sessionStorage.removeItem("telemetria_session");
+      document.getElementById("btn-open-login").classList.remove("hidden");
+      document.getElementById("user-badge-logged").classList.add("hidden");
+      abrirModal("modal-login");
+      actualizarBannerPermisos();
+      showToast("Sesión cerrada. Seleccione o ingrese un perfil para operar el sistema.", "info");
+      cargarTodoElDashboard();
+    }
+
+    function actualizarInterfazPerfil() {
+      const btnOpen = document.getElementById("btn-open-login");
+      const badgeLogged = document.getElementById("user-badge-logged");
+      const avatar = document.getElementById("user-avatar");
+      const nameDisp = document.getElementById("user-name-display");
+      const roleDisp = document.getElementById("user-role-display");
+
+      if (sesionActiva) {
+        btnOpen.classList.add("hidden");
+        badgeLogged.classList.remove("hidden");
+
+        nameDisp.innerText = sesionActiva.nombre;
+        roleDisp.innerText = sesionActiva.rol;
+
+        // Estilos e iniciales según rol
+        if (sesionActiva.rol === "Admin Biomedico") {
+          avatar.className = "w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/40";
+          avatar.innerText = "AB";
+          roleDisp.className = "text-[10px] text-purple-400 font-medium leading-none";
+        } else if (sesionActiva.rol === "Medico") {
+          avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
+          avatar.innerText = "CT";
+          roleDisp.className = "text-[10px] text-emerald-400 font-medium leading-none";
+        } else {
+          avatar.className = "w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/40";
+          avatar.innerText = "ST";
+          roleDisp.className = "text-[10px] text-cyan-400 font-medium leading-none";
+        }
+
+        actualizarBannerPermisos();
+      } else {
+        btnOpen.classList.remove("hidden");
+        badgeLogged.classList.add("hidden");
+        actualizarBannerPermisos();
+      }
+    }
+
+    function actualizarBannerPermisos() {
+      const pill = document.getElementById("perm-user-role-pill");
+      const email = document.getElementById("perm-user-email");
+      const descList = document.getElementById("perm-description-list");
+      const iconBox = document.getElementById("perm-icon-box");
+
+      if (!sesionActiva) {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700";
+        pill.innerText = "Sin Autenticar";
+        email.innerText = "Modo solo lectura";
+        iconBox.className = "p-2.5 rounded-xl bg-slate-800 text-slate-400 border border-slate-700";
+        descList.innerHTML = `<span class="text-amber-400">⚠️ Inicia sesión con correo y contraseña para operar registros y equipos.</span>`;
+        return;
+      }
+
+      email.innerText = sesionActiva.email;
+
+      if (sesionActiva.rol === "Admin Biomedico") {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-950 text-purple-300 border border-purple-800";
+        pill.innerText = "Admin Biomédico";
+        iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
+        descList.innerHTML = `
+          <span class="inline-flex items-center gap-1 text-purple-300">✅ <strong>Metrología:</strong> Calibración, estado y batería de equipos</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300">✅ <strong>RESTORE:</strong> Restauración exclusiva de registros borrados</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">✅ <strong>Auditoría:</strong> Trazabilidad total del sistema</span>
+        `;
+      } else if (sesionActiva.rol === "Medico") {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
+        pill.innerText = "Médico Especialista";
+        iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        descList.innerHTML = `
+          <span class="inline-flex items-center gap-1 text-emerald-300">✅ <strong>Clínico:</strong> Admisión de pacientes y apertura de encuentros</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría Estricta:</strong> Solo edita/elimina sus propios registros</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Restricción:</strong> Sin permiso de restauración ni metrología</span>
+        `;
+      } else {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800";
+        pill.innerText = "Servicio IoT";
+        iconBox.className = "p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
+        descList.innerHTML = `
+          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión continua de señales biomédicas IoT</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Restricción:</strong> Sin permiso de admisión ni edición clínica</span>
+        `;
+      }
+    }
 
     // ==========================================
-    // CARGA DE DATOS & API CALLS
+    // CARGA DE DATOS & CONSUMO DE ENDPOINTS
     // ==========================================
 
     async function checkHealthStatus() {
@@ -818,7 +1087,7 @@
             <td class="py-3 px-4 text-right">
               ${!tieneEncuentro 
                 ? `<button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-medium transition">Iniciar Monitoreo</button>`
-                : `<span class="text-xs text-teal-400">En Monitoreo</span>`
+                : `<span class="text-xs text-teal-400 font-medium">En Monitoreo</span>`
               }
             </td>
           `;
@@ -852,6 +1121,8 @@
           if (bat < 50) batColor = "bg-amber-400";
           if (bat < 20) batColor = "bg-rose-400";
 
+          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
+
           const tr = document.createElement("tr");
           tr.className = "hover:bg-slate-800/40 transition";
           tr.innerHTML = `
@@ -874,9 +1145,15 @@
               <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badgeEstado}">${eq.estado_operativo}</span>
             </td>
             <td class="py-3 px-4 text-right">
-              <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 rounded-lg text-[11px] transition">
-                Editar Estado
-              </button>
+              ${esAdmin ? `
+                <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] transition font-semibold">
+                  ⚙️ Metrología
+                </button>
+              ` : `
+                <button onclick="intentarEdicionEquipoSinPermiso()" class="px-2 py-1 bg-slate-800 text-slate-500 border border-slate-700 rounded-lg text-[10px] cursor-not-allowed" title="Exclusivo Admin Biomédico">
+                  🔒 Solo Admin
+                </button>
+              `}
             </td>
           `;
           tbody.appendChild(tr);
@@ -885,6 +1162,10 @@
       } catch (err) {
         console.error("Error cargando equipos:", err);
       }
+    }
+
+    function intentarEdicionEquipoSinPermiso() {
+      showToast("Acceso denegado: La gestión metrológica de equipos es exclusiva del Admin Biomédico.", "warning");
     }
 
     async function cargarObservaciones() {
@@ -917,6 +1198,9 @@
             badgeEstado = `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`;
           }
 
+          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
+          const esAutor = sesionActiva && sesionActiva.id === o.created_by;
+
           tr.innerHTML = `
             <td class="py-2.5 px-3 font-mono text-slate-400">#${o.id}</td>
             <td class="py-2.5 px-3 font-semibold text-white">
@@ -939,16 +1223,22 @@
             <td class="py-2.5 px-3">${badgeEstado}</td>
             <td class="py-2.5 px-3 text-right whitespace-nowrap">
               ${!o.is_deleted ? `
-                <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1" title="Soft-Edit">
+                <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}', ${o.created_by})" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1" title="Soft-Edit">
                   ✏️ Editar
                 </button>
-                <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]" title="Soft-Delete">
+                <button onclick="ejecutarSoftDeleteObs(${o.id}, ${o.created_by})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]" title="Soft-Delete">
                   🗑️ Borrar
                 </button>
               ` : `
-                <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold" title="Restaurar (Exclusivo Admin Biomédico)">
-                  🔄 Restaurar
-                </button>
+                ${esAdmin ? `
+                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold" title="Restaurar (Exclusivo Admin Biomédico)">
+                    🔄 Restaurar
+                  </button>
+                ` : `
+                  <button onclick="intentarRestoreSinPermiso()" class="px-2 py-1 bg-slate-800 text-slate-500 border border-slate-700 rounded text-[10px] cursor-not-allowed" title="Solo el Admin Biomédico puede restaurar">
+                    🔒 Solo Admin
+                  </button>
+                `}
               `}
             </td>
           `;
@@ -958,6 +1248,10 @@
       } catch (err) {
         console.error("Error cargando observaciones:", err);
       }
+    }
+
+    function intentarRestoreSinPermiso() {
+      showToast("Acceso denegado: La restauración de observaciones clínicas eliminadas está reservada exclusivamente al Admin Biomédico.", "warning");
     }
 
     async function cargarAuditoria() {
@@ -1076,7 +1370,6 @@
 
     function inicializarGrafico() {
       const ctx = document.getElementById("telemetriaChart").getContext("2d");
-      
       const labels = ["-30s", "-25s", "-20s", "-15s", "-10s", "-5s", "Ahora"];
       
       chartInstance = new Chart(ctx, {
@@ -1172,10 +1465,9 @@
     }
 
     // ==========================================
-    // OPERACIONES CRUD CON CONTROL DE ROLES
+    // OPERACIONES CRUD CON CONTROL DE AUTORIZACIONES
     // ==========================================
 
-    // 1. Simulación Rápida IoT
     async function simularTelemetriaRapida() {
       try {
         const res = await fetch("/simulate-telemetry", {
@@ -1208,7 +1500,7 @@
         const data = await res.json();
         if (res.ok) {
           const obs = data.observacion;
-          showToast(`Lectura generada para encuentro #${encuentroId}: ${obs.valor} ${obs.unidad}`, obs.alerta_predictiva ? "warning" : "success");
+          showToast(`Lectura para encuentro #${encuentroId}: ${obs.valor} ${obs.unidad}`, obs.alerta_predictiva ? "warning" : "success");
           actualizarGraficoConDato(obs.parametro, obs.valor);
           cargarObservaciones();
           cargarEstadisticas();
@@ -1220,8 +1512,17 @@
       }
     }
 
-    // 2. Soft-Edit de Observación
-    function abrirModalEdicionObs(id, parametro, valorActual, alertaActual) {
+    // Soft-Edit
+    function abrirModalEdicionObs(id, parametro, valorActual, alertaActual, createdBy) {
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil primero", "warning");
+        return;
+      }
+      if (sesionActiva.rol === "Medico" && createdBy !== sesionActiva.id) {
+        showToast("Restricción de autoría: Como médico solo puedes editar tus propios registros.", "warning");
+        return;
+      }
       document.getElementById("edit-obs-id").value = id;
       document.getElementById("edit-obs-parametro-txt").innerText = parametro;
       document.getElementById("edit-obs-valor").value = valorActual;
@@ -1255,9 +1556,19 @@
       }
     }
 
-    // 3. Soft-Delete de Observación
-    async function ejecutarSoftDeleteObs(id) {
-      if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}? El registro permanecerá en auditoría.`)) return;
+    // Soft-Delete
+    async function ejecutarSoftDeleteObs(id, createdBy) {
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil primero", "warning");
+        return;
+      }
+      if (sesionActiva.rol === "Medico" && createdBy !== sesionActiva.id) {
+        showToast("Restricción de autoría: Como médico solo puedes eliminar tus propios registros.", "warning");
+        return;
+      }
+
+      if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}? El registro permanecerá en la pista de auditoría.`)) return;
 
       try {
         const res = await fetch(`/observaciones/${id}/soft-delete`, {
@@ -1271,15 +1582,21 @@
           cargarAuditoria();
           cargarEstadisticas();
         } else {
-          showToast(`Error de permisos: ${data.detail}`, "error");
+          showToast(`Error de autorización: ${data.detail}`, "error");
         }
       } catch (err) {
         showToast(`Error al eliminar: ${err.message}`, "error");
       }
     }
 
-    // 4. Restauración de Observación (Exclusivo Admin Biomédico)
+    // Restore (Exclusivo Admin Biomédico)
     async function ejecutarRestoreObs(id) {
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil como Admin Biomédico", "warning");
+        return;
+      }
+
       try {
         const res = await fetch(`/observaciones/${id}/restore`, {
           method: "POST",
@@ -1299,8 +1616,19 @@
       }
     }
 
-    // 5. Crear Nuevo Paciente
-    function abrirModalNuevoPaciente() { abrirModal("modal-nuevo-paciente"); }
+    // Admisión de Paciente
+    function abrirModalNuevoPaciente() {
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil primero", "warning");
+        return;
+      }
+      if (sesionActiva.rol === "Servicio") {
+        showToast("Acceso denegado: El Servicio IoT no tiene permisos para registrar pacientes.", "warning");
+        return;
+      }
+      abrirModal("modal-nuevo-paciente");
+    }
     
     async function guardarNuevoPaciente(e) {
       e.preventDefault();
@@ -1333,9 +1661,18 @@
       }
     }
 
-    // 6. Iniciar Encuentro Clínico
+    // Encuentro Clínico
     async function abrirModalNuevoEncuentro() {
-      // Cargar selectores de paciente y equipos
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil primero", "warning");
+        return;
+      }
+      if (sesionActiva.rol === "Servicio") {
+        showToast("Acceso denegado: El Servicio IoT no tiene permisos para iniciar encuentros.", "warning");
+        return;
+      }
+
       const selectPac = document.getElementById("enc-paciente-id");
       const selectEq = document.getElementById("enc-equipo-id");
 
@@ -1379,8 +1716,12 @@
       }
     }
 
-    // 7. Modificar Equipo UCI (Metrología Biomédica)
+    // Modificar Equipo UCI (Metrología Biomédica)
     function abrirModalEdicionEquipo(id, nombre, ubicacion, estado, bateria) {
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+        showToast("Exclusivo del Admin Biomédico: Gestión técnica y metrológica de equipos.", "warning");
+        return;
+      }
       document.getElementById("edit-equipo-id").value = id;
       document.getElementById("edit-equipo-nombre-txt").innerText = nombre;
       document.getElementById("edit-equipo-ubicacion").value = ubicacion;
@@ -1419,8 +1760,14 @@
       }
     }
 
-    // 8. Registrar Nueva Observación Manual
+    // Registrar Nueva Observación Manual
     async function abrirModalNuevaObservacion() {
+      if (!sesionActiva) {
+        abrirModal("modal-login");
+        showToast("Por favor autentica tu perfil primero", "warning");
+        return;
+      }
+
       const selectEnc = document.getElementById("nueva-obs-encuentro-id");
       const activos = cacheEncuentros.filter(e => e.estado === "in-progress");
       
@@ -1476,7 +1823,7 @@
     }
 
     // ==========================================
-    // CICLO DE VIDA Y REFRESH AUTOMÁTICO
+    // INICIALIZACIÓN
     // ==========================================
     async function cargarTodoElDashboard() {
       await Promise.all([
@@ -1492,9 +1839,26 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       inicializarGrafico();
+      
+      // Recuperar sesión persistente si existe
+      const savedSession = sessionStorage.getItem("telemetria_session");
+      if (savedSession) {
+        try {
+          sesionActiva = JSON.parse(savedSession);
+          actualizarInterfazPerfil();
+        } catch (e) {
+          sesionActiva = null;
+        }
+      }
+
+      if (!sesionActiva) {
+        // Abrir modal de login si aún no ha iniciado sesión
+        setTimeout(() => abrirModal("modal-login"), 500);
+      }
+
       cargarTodoElDashboard();
 
-      // Sondeo periódico cada 8 segundos para telemetría en vivo
+      // Sondeo periódico para telemetría
       setInterval(() => {
         checkHealthStatus();
         cargarEstadisticas();
