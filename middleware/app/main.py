@@ -825,14 +825,48 @@ def simulate_telemetry_packet(
     }
 
 @app.post("/init-db", tags=["Administración"])
-def initialize_database():
+def initialize_database(reset: bool = False):
     """
     Inicializa el esquema y los datos semilla en Neon PostgreSQL o PostgreSQL local.
-    Permite inicializar la base de datos de Render con un solo clic.
+    Soporta migración automática de columnas antiguas o reconstrucción limpia con ?reset=true.
     """
     try:
         conn = get_connection()
         cursor = conn.cursor()
+
+        # Si se solicita reinicio limpio, eliminar tablas en cascada
+        if reset:
+            cursor.execute("""
+                DROP TABLE IF EXISTS audit_logs CASCADE;
+                DROP TABLE IF EXISTS observaciones CASCADE;
+                DROP TABLE IF EXISTS encuentros CASCADE;
+                DROP TABLE IF EXISTS pacientes CASCADE;
+                DROP TABLE IF EXISTS equipos_uci CASCADE;
+                DROP TABLE IF EXISTS hoja_vida_equipos CASCADE;
+                DROP TABLE IF EXISTS catalogo_equipos CASCADE;
+                DROP TABLE IF EXISTS usuarios CASCADE;
+                DROP TABLE IF EXISTS roles CASCADE;
+            """)
+            conn.commit()
+        else:
+            # Migración preventiva inmediata por si la tabla 'encuentros' existía sin equipo_uci_id
+            cursor.execute("""
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'encuentros') THEN
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'encuentros' AND column_name = 'equipo_uci_id') THEN
+                            ALTER TABLE encuentros ADD COLUMN equipo_uci_id INT;
+                        END IF;
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'encuentros' AND column_name = 'fecha_fin') THEN
+                            ALTER TABLE encuentros ADD COLUMN fecha_fin TIMESTAMP;
+                        END IF;
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'encuentros' AND column_name = 'is_deleted') THEN
+                            ALTER TABLE encuentros ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+                        END IF;
+                    END IF;
+                END $$;
+            """)
+            conn.commit()
 
         # Buscar el archivo 01_schema.sql
         potential_paths = [
@@ -861,7 +895,7 @@ def initialize_database():
 
         return {
             "status": "success",
-            "message": "Esquema y datos semilla creados/actualizados exitosamente en PostgreSQL",
+            "message": "Esquema y datos semilla creados/actualizados exitosamente en PostgreSQL" + (" (Reinicio limpio)" if reset else ""),
             "schema_path": used_path
         }
     except Exception as e:

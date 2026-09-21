@@ -80,6 +80,12 @@ CREATE TABLE IF NOT EXISTS encuentros (
     created_by INT REFERENCES usuarios(id)
 );
 
+-- Migraciones automáticas por si las tablas ya existían en esquemas antiguos de Neon
+ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS equipo_uci_id INT REFERENCES equipos_uci(id);
+ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS fecha_fin TIMESTAMP;
+ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
+ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS created_by INT REFERENCES usuarios(id);
+
 -- 8. Tabla de Observaciones Telemétricas (Control Predictivo)
 CREATE TABLE IF NOT EXISTS observaciones (
     id SERIAL PRIMARY KEY,
@@ -110,19 +116,24 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- DATOS SEMILLA Y POBLAMIENTO INICIAL
 -- =========================================================================
 
--- 1. Insertar 3 Roles Requeridos
+-- 1. Insertar 3 Roles Requeridos (Actualiza si existían con nombres viejos)
 INSERT INTO roles (id, nombre) VALUES 
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
 (3, 'Servicio')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
--- 2. Insertar Usuarios de Prueba
+-- 2. Insertar Usuarios de Prueba (Garantiza credenciales exactas del proyecto)
 INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
 (1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'admin123', 1),
 (2, 'Dr. Camilo Torres', 'medico@hospital.com', 'med123', 2),
 (3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET 
+    nombre = EXCLUDED.nombre,
+    email = EXCLUDED.email,
+    password_hash = EXCLUDED.password_hash,
+    rol_id = EXCLUDED.rol_id,
+    is_deleted = FALSE;
 
 -- 3. Insertar Catálogo General de Equipos Médicos Hospitalarios
 INSERT INTO catalogo_equipos (id, nombre, tipo_servicio, clasificacion_riesgo, tecnologia_predominante) VALUES
@@ -167,19 +178,42 @@ INSERT INTO equipos_uci (id, hoja_vida_id, ubicacion_uci, estado_operativo, bate
 (6, 6, 'Cama 03 - Box C', 'En Uso', 95, 1),
 (7, 7, 'Módulo Diálisis UCI-1', 'Mantenimiento', 40, 1),
 (8, 8, 'Laboratorio Satélite UCI', 'Disponible', 100, 1)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+    hoja_vida_id = EXCLUDED.hoja_vida_id,
+    ubicacion_uci = EXCLUDED.ubicacion_uci,
+    estado_operativo = EXCLUDED.estado_operativo,
+    bateria_backup_porcentaje = EXCLUDED.bateria_backup_porcentaje;
 
 -- 6. Insertar Paciente de Prueba
 INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, created_by) VALUES
 (1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 1)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+    documento_identidad = EXCLUDED.documento_identidad,
+    nombre = EXCLUDED.nombre,
+    cama_uci = EXCLUDED.cama_uci,
+    is_deleted = FALSE;
 
 -- 7. Insertar Encuentro Clínico
 INSERT INTO encuentros (id, paciente_id, equipo_uci_id, estado, created_by) VALUES
 (1, 1, 1, 'in-progress', 2)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+    paciente_id = EXCLUDED.paciente_id,
+    equipo_uci_id = EXCLUDED.equipo_uci_id,
+    estado = EXCLUDED.estado,
+    created_by = EXCLUDED.created_by,
+    is_deleted = FALSE;
 
 -- 8. Insertar Observación Telemétrica
-INSERT INTO observaciones (encuentro_id, parametro, codigo_loinc, valor, unidad, alerta_predictiva, created_by) VALUES
-(1, 'Temperatura Turbina Ventilador', '8310-5', 41.8, 'Cel', 'Alerta: Temperatura por encima del umbral óptimo', 3)
+INSERT INTO observaciones (id, encuentro_id, parametro, codigo_loinc, valor, unidad, alerta_predictiva, created_by) VALUES
+(1, 1, 'Temperatura Turbina Ventilador', '8310-5', 41.8, 'Cel', 'Alerta: Temperatura por encima del umbral óptimo', 3)
 ON CONFLICT (id) DO NOTHING;
+
+-- 9. Sincronizar secuencias de auto-incremento para evitar colisiones en futuros inserts
+SELECT setval('roles_id_seq', COALESCE((SELECT MAX(id) FROM roles), 1));
+SELECT setval('usuarios_id_seq', COALESCE((SELECT MAX(id) FROM usuarios), 1));
+SELECT setval('catalogo_equipos_id_seq', COALESCE((SELECT MAX(id) FROM catalogo_equipos), 1));
+SELECT setval('hoja_vida_equipos_id_seq', COALESCE((SELECT MAX(id) FROM hoja_vida_equipos), 1));
+SELECT setval('equipos_uci_id_seq', COALESCE((SELECT MAX(id) FROM equipos_uci), 1));
+SELECT setval('pacientes_id_seq', COALESCE((SELECT MAX(id) FROM pacientes), 1));
+SELECT setval('encuentros_id_seq', COALESCE((SELECT MAX(id) FROM encuentros), 1));
+SELECT setval('observaciones_id_seq', COALESCE((SELECT MAX(id) FROM observaciones), 1));

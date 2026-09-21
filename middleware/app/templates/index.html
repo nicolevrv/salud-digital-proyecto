@@ -80,13 +80,18 @@
             <span id="db-status-text" class="text-slate-300">Conectando...</span>
           </div>
 
-          <!-- Boton Inicializar Base de Datos -->
-          <button onclick="inicializarBaseDatos()" title="Crea tablas y datos semilla en Neon PostgreSQL" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            <span>Sembrar BD</span>
-          </button>
+          <!-- Botón Inicializar Base de Datos & Migración -->
+          <div class="hidden sm:flex items-center gap-1.5">
+            <button onclick="inicializarBaseDatos(false)" title="Crea tablas, migra columnas faltantes y siembra datos en Neon" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span>Sembrar BD</span>
+            </button>
+            <button onclick="confirmarReinicioLimpio()" title="Reconstruir base de datos desde cero si hay conflictos de esquema" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition">
+              ⚡ Limpiar
+            </button>
+          </div>
 
           <!-- SECCIÓN DE PERFIL AUTENTICADO -->
           <div id="auth-profile-container" class="flex items-center gap-2">
@@ -1012,20 +1017,28 @@
       }
     }
 
-    async function inicializarBaseDatos() {
-      showToast("Inicializando esquema y datos semilla en Neon PostgreSQL...", "info");
+    async function inicializarBaseDatos(reset = false) {
+      showToast(reset ? "Reconstruyendo base de datos limpia en Neon..." : "Migrando columnas e inicializando datos en Neon...", "info");
       try {
-        const res = await fetch("/init-db", { method: "POST" });
+        const url = reset ? "/init-db?reset=true" : "/init-db";
+        const res = await fetch(url, { method: "POST" });
         const data = await res.json();
         if (res.ok) {
-          showToast("¡Base de datos sembrada e inicializada con éxito!", "success");
+          showToast(data.message || "¡Base de datos sembrada con éxito!", "success");
           cargarTodoElDashboard();
           checkHealthStatus();
         } else {
           showToast(`Error al inicializar: ${data.detail}`, "error");
+          console.error("Detalle del error:", data);
         }
       } catch (err) {
         showToast(`Error de red al inicializar: ${err.message}`, "error");
+      }
+    }
+
+    function confirmarReinicioLimpio() {
+      if (confirm("¿Deseas reconstruir la base de datos completamente limpia en Neon? Esto borrará las tablas desactualizadas y creará todo el esquema y datos semilla actualizados.")) {
+        inicializarBaseDatos(true);
       }
     }
 
