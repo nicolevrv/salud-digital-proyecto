@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Dependencias del sistema para compilación y soporte de PostgreSQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -15,4 +16,4 @@ COPY . .
 ENV PORT=10000
 EXPOSE 10000
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+CMD ["sh", "-c", "uvicorn middleware.app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
