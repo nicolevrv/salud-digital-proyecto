@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telemetría UCI - Sistema de Salud Digital</title>
+  <title>PECHY'S IOT - Salud Digital</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
@@ -57,38 +57,38 @@
         
         <!-- Logo & Titulo -->
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-teal-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 heart-pulse">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-teal-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 heart-pulse">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-bold text-lg tracking-tight text-white">Telemetría UCI</span>
+              <span class="font-bold text-lg tracking-tight text-white">PECHY'S IOT</span>
               <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">Salud Digital</span>
             </div>
-            <p class="text-xs text-slate-400 hidden sm:block">Plataforma Biomédica y Control Clínico en Tiempo Real</p>
+            <p class="text-xs text-slate-400 hidden sm:block">Hojas de Vida Biomédicas, Inventario UCI y Telemetría LOINC</p>
           </div>
         </div>
 
         <!-- Acciones Header: DB Status + Perfil Autenticado + Sembrar BD -->
         <div class="flex items-center gap-3">
           
-          <!-- Indicador Estado DB Neon/Render -->
+          <!-- Indicador Estado DB -->
           <div id="db-status-pill" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 border border-slate-700">
             <span id="db-status-dot" class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping"></span>
             <span id="db-status-text" class="text-slate-300">Conectando...</span>
           </div>
 
-          <!-- Botón Inicializar Base de Datos & Migración -->
-          <div class="hidden sm:flex items-center gap-1.5">
-            <button onclick="inicializarBaseDatos(false)" title="Crea tablas, migra columnas faltantes y siembra datos en Neon" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          <!-- Botón Inicializar Base de Datos & Migración (Admin Biomédico) -->
+          <div id="admin-seed-tools" class="hidden sm:flex items-center gap-1.5">
+            <button onclick="inicializarBaseDatos(false)" title="Actualiza esquema o siembra datos (Requiere Admin Biomédico)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
               <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
               <span>Sembrar BD</span>
             </button>
-            <button onclick="confirmarReinicioLimpio()" title="Reconstruir base de datos desde cero si hay conflictos de esquema" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition">
+            <button onclick="confirmarReinicioLimpio()" title="Reconstruir base de datos limpia desde cero" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition">
               ⚡ Limpiar
             </button>
           </div>
@@ -101,7 +101,7 @@
               <span>Autenticar Perfil</span>
             </button>
 
-            <!-- Si está autenticado (se muestra dinámicamente) -->
+            <!-- Si está autenticado -->
             <div id="user-badge-logged" class="hidden flex items-center bg-slate-800/90 rounded-xl p-1.5 border border-slate-700 gap-2">
               <div id="user-avatar" class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/30">
                 U
@@ -120,7 +120,7 @@
           </div>
 
           <!-- Documentación Swagger -->
-          <a href="/docs" target="_blank" class="p-2 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800 transition" title="Ver Documentación Swagger">
+          <a href="/docs" target="_blank" class="p-2 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800 transition" title="Ver Documentación Swagger /docs">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
             </svg>
@@ -150,12 +150,12 @@
               <span id="perm-user-email" class="text-xs text-slate-400 font-mono">admin.biomedico@hospital.com</span>
             </div>
             <div id="perm-description-list" class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-300">
-              <!-- Renderizado según el rol activo -->
+              <!-- Renderizado dinámicamente -->
             </div>
           </div>
         </div>
         <button onclick="abrirModal('modal-login')" class="text-xs text-cyan-400 hover:text-cyan-300 underline font-medium whitespace-nowrap self-end md:self-center">
-          Cambiar credenciales &rarr;
+          Cambiar de perfil &rarr;
         </button>
       </div>
     </div>
@@ -252,11 +252,11 @@
         </button>
       </div>
 
-      <!-- Botones de Acción Global: Simular IoT + Refrescar -->
+      <!-- Botones de Acción Global -->
       <div class="flex items-center gap-2">
-        <button onclick="simularTelemetriaRapida()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20 transition">
-          <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          <span>+ Simular Telemetría IoT</span>
+        <button id="btn-simular-iot-global" onclick="intentarSimulacionTelemetria()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span id="txt-simular-iot">+ Simular Telemetría IoT</span>
         </button>
 
         <button onclick="cargarTodoElDashboard()" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition" title="Refrescar datos">
@@ -278,10 +278,10 @@
               <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
               Ondas y Tendencias de Telemetría UCI
             </h3>
-            <p class="text-xs text-slate-400">Presión vía aérea, Saturación SpO2 y Frecuencia Cardíaca</p>
+            <p class="text-xs text-slate-400">Presión vía aérea (LOINC 19992-7), SpO2 (59408-5) y Frecuencia Cardíaca (8867-4)</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">Frecuencia de muestreo:</span>
+            <span class="text-xs text-slate-400">Flujo telemétrico:</span>
             <span class="px-2 py-1 text-xs font-mono font-medium rounded-md bg-slate-800 text-cyan-300 border border-slate-700">IoT Stream 1Hz</span>
           </div>
         </div>
@@ -294,11 +294,11 @@
       <div>
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Estado de Camas y Monitores UCI</h3>
-          <span class="text-xs text-slate-400">Total monitoreados: <strong id="camas-activas-count" class="text-cyan-400">0</strong></span>
+          <span class="text-xs text-slate-400">En monitoreo activo: <strong id="camas-activas-count" class="text-cyan-400">0</strong></span>
         </div>
 
         <div id="grid-camas-uci" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Renderizado dinámicamente con JS -->
+          <!-- Renderizado dinámicamente -->
         </div>
       </div>
 
@@ -314,7 +314,7 @@
             <h3 class="text-base font-bold text-white">Directorio de Pacientes y Encuentros Clínicos</h3>
             <p class="text-xs text-slate-400">Asignación de camas, médicos tratantes e inicio de encuentros</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div id="pacientes-action-buttons" class="flex items-center gap-2">
             <button onclick="abrirModalNuevoPaciente()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
               <span>+ Nuevo Paciente</span>
@@ -354,11 +354,15 @@
         <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
             <h3 class="text-base font-bold text-white">Parque Tecnológico Biomédico & Hojas de Vida</h3>
-            <p class="text-xs text-slate-400">Equipos de soporte vital, clasificación de riesgo (Res. 3100) y metrología</p>
+            <p class="text-xs text-slate-400">Equipos de soporte vital, clasificación de riesgo INVIMA (I, IIA, IIB, III) y metrología</p>
           </div>
           <div class="flex items-center gap-2">
+            <button id="btn-nuevo-equipo-admin" onclick="abrirModalNuevoEquipo()" class="hidden px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-purple-600/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>+ Registrar Equipo / Hoja de Vida</span>
+            </button>
             <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-950 text-purple-300 border border-purple-800">
-              🛡️ Edición Metrológica Exclusiva del Admin Biomédico
+              🛡️ Gestión Metrológica Biomédica
             </span>
           </div>
         </div>
@@ -393,14 +397,14 @@
         <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
             <h3 class="text-base font-bold text-white">Registros Telemétricos & Control Clínico</h3>
-            <p class="text-xs text-slate-400">Demostración de Soft Edit (versionamiento), Soft Delete y Restauración Biomédica</p>
+            <p class="text-xs text-slate-400">Soft Edit (versionamiento), Soft Delete por autor y Restauración clínica reservada al médico autor</p>
           </div>
           <div class="flex items-center gap-3">
             <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
               <input type="checkbox" id="check-incluir-eliminados" onchange="cargarObservaciones()" class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0">
               <span>Incluir eliminados (Soft-Deleted)</span>
             </label>
-            <button onclick="abrirModalNuevaObservacion()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+            <button id="btn-nueva-obs-header" onclick="abrirModalNuevaObservacion()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               <span>+ Nueva Medición</span>
             </button>
@@ -438,7 +442,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
             <h3 class="text-base font-bold text-white">Registro Inmutable de Auditoría Biomédica</h3>
-            <p class="text-xs text-slate-400">Historial completo de eventos SOFT_EDIT, SOFT_DELETE y RESTORE</p>
+            <p class="text-xs text-slate-400">Historial completo de eventos SOFT_EDIT, SOFT_DELETE, RESTORE y CREATE_EQUIPO</p>
           </div>
           <span class="px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-slate-800 text-purple-300 border border-purple-900/40">
             Cumplimiento Res. 3100 / HL7 Audit
@@ -468,7 +472,7 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL DE AUTENTICACIÓN DE PERFIL (LOGIN & AUTORIZACIONES) -->
+  <!-- MODAL DE AUTENTICACIÓN (LOGIN, INTENTOS FALLIDOS & 4 PERFILES) -->
   <!-- ========================================================================= -->
   <div id="modal-login" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
@@ -480,14 +484,14 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
           <div>
-            <h3 class="font-bold text-white text-base">Autenticación de Perfil</h3>
-            <p class="text-xs text-slate-400">Accede con tu cuenta institucional para habilitar permisos</p>
+            <h3 class="font-bold text-white text-base">PECHY'S IOT - Autenticación</h3>
+            <p class="text-xs text-slate-400">Bloqueo de 15 minutos tras 3 intentos fallidos</p>
           </div>
         </div>
         <button onclick="cerrarModal('modal-login')" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
 
-      <!-- Alerta de Error en Login -->
+      <!-- Alerta de Error / Bloqueo en Login -->
       <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-medium flex items-start gap-2">
         <svg class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span id="login-error-text">Credenciales incorrectas</span>
@@ -497,7 +501,7 @@
       <form onsubmit="ejecutarLoginManual(event)" class="space-y-4 text-xs">
         <div>
           <label class="block text-slate-300 font-semibold mb-1.5">Correo Electrónico:</label>
-          <input type="email" id="login-email" required placeholder="ej: admin.biomedico@hospital.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+          <input type="email" id="login-email" required placeholder="ej: medico@hospital.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
         </div>
         <div>
           <label class="block text-slate-300 font-semibold mb-1.5">Contraseña:</label>
@@ -512,56 +516,59 @@
       <!-- SEPARADOR -->
       <div class="relative flex items-center justify-center">
         <div class="border-t border-slate-800 w-full"></div>
-        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">O autentica con 1 clic por perfil</span>
+        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Credenciales Demo Oficiales</span>
         <div class="border-t border-slate-800 w-full"></div>
       </div>
 
-      <!-- ACCESO RÁPIDO SEGÚN LOS 3 ROLES DEL PROYECTO -->
-      <div class="space-y-2">
+      <!-- 4 PERFILES DEMO -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         
-        <!-- Perfil 1: Admin Biomédico -->
-        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-600 text-left transition flex items-center justify-between group">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/30">
-              AB
-            </div>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-purple-300 transition">Administrador Biomédico</div>
-              <div class="text-[11px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
-              <div class="text-[10px] text-purple-400">🛡️ Metrología, Soft-Delete, RESTORE y Auditoría</div>
-            </div>
+        <!-- Perfil 1: Paciente -->
+        <button onclick="autenticarRapido('paciente@hospital.com', 'paciente123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-blue-900/40 hover:border-blue-500 text-left transition flex items-start gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-blue-500/30">
+            PA
           </div>
-          <span class="text-xs text-purple-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-blue-300">Paciente</div>
+            <div class="text-[10px] text-slate-400 font-mono">paciente@hospital.com</div>
+            <div class="text-[9px] text-blue-400 mt-0.5 leading-tight">Consulta únicamente su propio registro y equipos</div>
+          </div>
         </button>
 
         <!-- Perfil 2: Médico -->
-        <button onclick="autenticarRapido('medico@hospital.com', 'med123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-600 text-left transition flex items-center justify-between group">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
-              CT
-            </div>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Dr. Camilo Torres (Médico)</div>
-              <div class="text-[11px] text-slate-400 font-mono">medico@hospital.com</div>
-              <div class="text-[10px] text-emerald-400">🩺 Pacientes, Encuentros y Edición propia (Restricción de autoría)</div>
-            </div>
+        <button onclick="autenticarRapido('medico@hospital.com', 'med123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-emerald-500/30">
+            CT
           </div>
-          <span class="text-xs text-emerald-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-emerald-300">Médico</div>
+            <div class="text-[10px] text-slate-400 font-mono">medico@hospital.com</div>
+            <div class="text-[9px] text-emerald-400 mt-0.5 leading-tight">Crea registros; restaura y modifica solo los suyos</div>
+          </div>
         </button>
 
-        <!-- Perfil 3: Servicio IoT -->
-        <button onclick="autenticarRapido('servicio.iot@hospital.com', 'service123')" type="button" class="w-full p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-600 text-left transition flex items-center justify-between group">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/30">
-              ST
-            </div>
-            <div>
-              <div class="text-xs font-bold text-white group-hover:text-cyan-300 transition">Servicio IoT Telemetría</div>
-              <div class="text-[11px] text-slate-400 font-mono">servicio.iot@hospital.com</div>
-              <div class="text-[10px] text-cyan-400">🤖 Inyección continua de telemetría y sensores UCI</div>
-            </div>
+        <!-- Perfil 3: Admin Biomédico -->
+        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/30">
+            AB
           </div>
-          <span class="text-xs text-cyan-400 font-semibold group-hover:translate-x-1 transition">&rarr;</span>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-purple-300">Admin Biomédico</div>
+            <div class="text-[10px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
+            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight">Hojas de vida, catálogo y auditoría (Sin datos clínicos)</div>
+          </div>
+        </button>
+
+        <!-- Perfil 4: Servicio IoT -->
+        <button onclick="autenticarRapido('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/30">
+            ST
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-cyan-300">Servicio IoT</div>
+            <div class="text-[10px] text-slate-400 font-mono">servicio.iot@hospital.com</div>
+            <div class="text-[9px] text-cyan-400 mt-0.5 leading-tight">Registra telemetría; emite paquetes de simulación</div>
+          </div>
         </button>
 
       </div>
@@ -570,85 +577,137 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODALES DE OPERACIÓN CLÍNICA Y BIOMÉDICA -->
+  <!-- MODAL: REGISTRAR EQUIPO UCI & HOJA DE VIDA (ADMIN BIOMÉDICO) -->
   <!-- ========================================================================= -->
+  <div id="modal-nuevo-equipo" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </span>
+          Registrar Nuevo Equipo Biomédico & Hoja de Vida
+        </h4>
+        <button onclick="cerrarModal('modal-nuevo-equipo')" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <form onsubmit="guardarNuevoEquipoUCI(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Tipo de Tecnología (Catálogo):</label>
+          <select id="eq-catalogo-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-purple-500">
+            <!-- Dinámico desde /catalogo-equipos -->
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Código Inventario:</label>
+            <input type="text" id="eq-codigo" required placeholder="ej: HV-UCI-009" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Número de Serie:</label>
+            <input type="text" id="eq-serie" required placeholder="ej: HM-102934" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Marca:</label>
+            <input type="text" id="eq-marca" required placeholder="ej: Hamilton Medical" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Modelo:</label>
+            <input type="text" id="eq-modelo" required placeholder="ej: C3" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Registro INVIMA:</label>
+            <input type="text" id="eq-invima" required placeholder="ej: INVIMA 2023EBC-00041" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Ubicación UCI:</label>
+            <input type="text" id="eq-ubicacion" required placeholder="ej: Cama 05 - Box E" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Estado Operativo:</label>
+            <select id="eq-estado" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              <option value="Disponible">Disponible</option>
+              <option value="En Uso">En Uso</option>
+              <option value="Mantenimiento">Mantenimiento</option>
+              <option value="Descalibrado">Descalibrado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Batería Backup (%):</label>
+            <input type="number" min="0" max="100" id="eq-bateria" value="100" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="cerrarModal('modal-nuevo-equipo')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold">Registrar Hoja de Vida</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <!-- Modal 1: Nuevo Paciente -->
+  <!-- Otros Modales: Paciente, Encuentro, Observación, Edición -->
+  <!-- Modal Paciente -->
   <div id="modal-nuevo-paciente" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-          </span>
-          Admitir Nuevo Paciente a UCI
-        </h4>
+        <h4 class="font-bold text-white text-sm">Admitir Nuevo Paciente a UCI</h4>
         <button onclick="cerrarModal('modal-nuevo-paciente')" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <form onsubmit="guardarNuevoPaciente(event)" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">Documento de Identidad:</label>
-          <input type="text" id="pac-doc" required placeholder="ej: 1009876543" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <input type="text" id="pac-doc" required placeholder="ej: 1009876543" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Nombre Completo:</label>
-          <input type="text" id="pac-nombre" required placeholder="ej: María Rodríguez" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <input type="text" id="pac-nombre" required placeholder="ej: María Rodríguez" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Cama UCI Asignada:</label>
-          <input type="text" id="pac-cama" required placeholder="ej: Cama 04 - Box D" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <input type="text" id="pac-cama" required placeholder="ej: Cama 04 - Box D" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-nuevo-paciente')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
+          <button type="button" onclick="cerrarModal('modal-nuevo-paciente')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Guardar Paciente</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 2: Iniciar Encuentro Clínico -->
+  <!-- Modal Encuentro -->
   <div id="modal-nuevo-encuentro" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-teal-500/20 text-teal-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </span>
-          Iniciar Encuentro Clínico / Monitoreo
-        </h4>
+        <h4 class="font-bold text-white text-sm">Iniciar Encuentro Clínico / Monitoreo</h4>
         <button onclick="cerrarModal('modal-nuevo-encuentro')" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <form onsubmit="guardarNuevoEncuentro(event)" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">Seleccionar Paciente:</label>
-          <select id="enc-paciente-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-            <!-- Cargado dinámicamente -->
-          </select>
+          <select id="enc-paciente-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white"></select>
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Asignar Equipo UCI / Sensor:</label>
-          <select id="enc-equipo-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-            <!-- Cargado dinámicamente -->
-          </select>
+          <select id="enc-equipo-id" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white"></select>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-nuevo-encuentro')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
+          <button type="button" onclick="cerrarModal('modal-nuevo-encuentro')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold">Iniciar Monitoreo</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 3: Soft Edit Observación -->
+  <!-- Modal Soft Edit Obs -->
   <div id="modal-edit-obs" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-          </span>
-          Editar Observación (Soft Edit Clínico)
-        </h4>
+        <h4 class="font-bold text-white text-sm">Editar Observación (Soft Edit Clínico)</h4>
         <button onclick="cerrarModal('modal-edit-obs')" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <form onsubmit="guardarEdicionObservacion(event)" class="space-y-3 text-xs">
@@ -659,98 +718,45 @@
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Nuevo Valor:</label>
-          <input type="number" step="0.1" id="edit-obs-valor" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <input type="number" step="0.1" id="edit-obs-valor" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Alerta Predictiva / Nota Clínica:</label>
-          <textarea id="edit-obs-alerta" rows="3" placeholder="ej: Alerta: Parámetro ajustado por gasometría reciente" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500"></textarea>
+          <label class="block text-slate-300 font-medium mb-1">Alerta Predictiva:</label>
+          <textarea id="edit-obs-alerta" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white"></textarea>
         </div>
-        <p class="text-[11px] text-slate-500">Nota: Esta acción incrementará el número de versión y creará un registro de auditoría SOFT_EDIT.</p>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-edit-obs')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
+          <button type="button" onclick="cerrarModal('modal-edit-obs')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold">Guardar Edición</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 4: Modificar Estado de Equipo Biomédico (Admin Biomédico) -->
-  <div id="modal-edit-equipo" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </span>
-          Gestión Técnica & Metrológica de Equipo
-        </h4>
-        <button onclick="cerrarModal('modal-edit-equipo')" class="text-slate-400 hover:text-white">&times;</button>
-      </div>
-      <form onsubmit="guardarEdicionEquipo(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="edit-equipo-id">
-        <div>
-          <label class="block text-slate-300 font-medium mb-1">Equipo / Placa:</label>
-          <span id="edit-equipo-nombre-txt" class="block font-semibold text-cyan-300 py-1">--</span>
-        </div>
-        <div>
-          <label class="block text-slate-300 font-medium mb-1">Ubicación Física UCI:</label>
-          <input type="text" id="edit-equipo-ubicacion" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-        </div>
-        <div>
-          <label class="block text-slate-300 font-medium mb-1">Estado Operativo:</label>
-          <select id="edit-equipo-estado" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-            <option value="Disponible">Disponible</option>
-            <option value="En Uso">En Uso</option>
-            <option value="Mantenimiento">Mantenimiento Preventivo/Correctivo</option>
-            <option value="Descalibrado">Descalibrado</option>
-            <option value="Fuera de Servicio">Fuera de Servicio</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-slate-300 font-medium mb-1">Batería de Backup (%):</label>
-          <input type="number" min="0" max="100" id="edit-equipo-bateria" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-        </div>
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-edit-equipo')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold">Actualizar Metrología</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 5: Nueva Observación Manual -->
+  <!-- Modal Nueva Obs Manual -->
   <div id="modal-nueva-obs" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          </span>
-          Registrar Nueva Observación Telemétrica
-        </h4>
+        <h4 class="font-bold text-white text-sm">Registrar Nueva Observación</h4>
         <button onclick="cerrarModal('modal-nueva-obs')" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <form onsubmit="guardarNuevaObservacion(event)" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">Encuentro Activo:</label>
-          <select id="nueva-obs-encuentro-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
-            <!-- Dinámico -->
-          </select>
+          <select id="nueva-obs-encuentro-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white"></select>
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Parámetro Clínico (LOINC):</label>
-          <select id="nueva-obs-parametro" onchange="actualizarUnidadLoinc(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <select id="nueva-obs-parametro" onchange="actualizarUnidadLoinc(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
             <option value="Saturación de Oxígeno (SpO2)|59408-5|%">SpO2 - Saturación de Oxígeno (59408-5)</option>
             <option value="Frecuencia Cardíaca|8867-4|lpm">Frecuencia Cardíaca (8867-4)</option>
-            <option value="Presión Vía Aérea (Pik)|19992-7|cmH2O">Presión Vía Aérea Pico (19992-7)</option>
+            <option value="Presión Vía Aérea Pico (Pik)|19992-7|cmH2O">Presión Vía Aérea Pico (19992-7)</option>
             <option value="Temperatura Turbina Ventilador|8310-5|Cel">Temperatura Turbina Ventilador (8310-5)</option>
-            <option value="Volumen Minuto Espirado|76222-9|L/min">Volumen Minuto Espirado (76222-9)</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-slate-300 font-medium mb-1">Valor Medido:</label>
-            <input type="number" step="0.1" id="nueva-obs-valor" required placeholder="98" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+            <input type="number" step="0.1" id="nueva-obs-valor" required placeholder="98" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
           </div>
           <div>
             <label class="block text-slate-300 font-medium mb-1">Unidad:</label>
@@ -758,11 +764,11 @@
           </div>
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Alerta Predictiva (opcional):</label>
-          <input type="text" id="nueva-obs-alerta" placeholder="ej: Alerta: Desaturación en curso" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-cyan-500">
+          <label class="block text-slate-300 font-medium mb-1">Alerta Predictiva:</label>
+          <input type="text" id="nueva-obs-alerta" placeholder="ej: Alerta: Desaturación en curso" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-nueva-obs')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Cancelar</button>
+          <button type="button" onclick="cerrarModal('modal-nueva-obs')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Registrar Medición</button>
         </div>
       </form>
@@ -773,17 +779,15 @@
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
   <!-- ========================================================================= -->
-  <!-- JAVASCRIPT: AUTENTICACIÓN, ROLES & CONSUMO API -->
+  <!-- JAVASCRIPT: LOGICA DEL DASHBOARD & CONSUMO DE ENDPOINTS -->
   <!-- ========================================================================= -->
   <script>
-    // Estado de sesión activa
     let sesionActiva = null;
     let chartInstance = null;
     let cacheEncuentros = [];
     let cachePacientes = [];
     let cacheEquipos = [];
 
-    // Encabezados de autorización para la API FastAPI
     function getAuthHeaders() {
       if (!sesionActiva) {
         return { "Content-Type": "application/json" };
@@ -795,7 +799,6 @@
       };
     }
 
-    // Notificaciones Toast
     function showToast(mensaje, tipo = "info") {
       const container = document.getElementById("toast-container");
       const toast = document.createElement("div");
@@ -809,9 +812,7 @@
 
       toast.className = `p-3 rounded-xl border shadow-xl text-xs font-medium backdrop-blur-md transition-all duration-300 pointer-events-auto flex items-center justify-between gap-3 ${colores[tipo] || colores.info}`;
       toast.innerHTML = `
-        <div class="flex items-center gap-2">
-          <span>${mensaje}</span>
-        </div>
+        <div class="flex items-center gap-2"><span>${mensaje}</span></div>
         <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">&times;</button>
       `;
 
@@ -819,14 +820,12 @@
       setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
-      }, 4000);
+      }, 4500);
     }
 
-    // Control de Modales
     function abrirModal(id) { document.getElementById(id).classList.remove("hidden"); }
     function cerrarModal(id) { document.getElementById(id).classList.add("hidden"); }
 
-    // Cambiar Tabs
     function cambiarTab(tabName) {
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(el => {
@@ -841,9 +840,9 @@
       }
     }
 
-    // =========================================================================
-    // SISTEMA DE AUTENTICACIÓN Y ROLES
-    // =========================================================================
+    // ==========================================
+    // AUTENTICACIÓN
+    // ==========================================
 
     async function ejecutarLogin(email, password) {
       const errorBox = document.getElementById("login-error-alert");
@@ -868,17 +867,14 @@
             password: password
           };
 
-          // Guardar en sessionStorage
-          sessionStorage.setItem("telemetria_session", JSON.stringify(sesionActiva));
+          sessionStorage.setItem("pechys_session", JSON.stringify(sesionActiva));
 
           actualizarInterfazPerfil();
           cerrarModal("modal-login");
-          showToast(`Bienvenido/a ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
-
-          // Recargar datos con las autorizaciones del usuario
+          showToast(`Sesión iniciada: ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
           cargarTodoElDashboard();
         } else {
-          errorTxt.innerText = data.detail || "Error de autenticación";
+          errorTxt.innerText = data.detail || "Error de credenciales";
           errorBox.classList.remove("hidden");
         }
       } catch (err) {
@@ -902,12 +898,12 @@
 
     function cerrarSesion() {
       sesionActiva = null;
-      sessionStorage.removeItem("telemetria_session");
+      sessionStorage.removeItem("pechys_session");
       document.getElementById("btn-open-login").classList.remove("hidden");
       document.getElementById("user-badge-logged").classList.add("hidden");
       abrirModal("modal-login");
       actualizarBannerPermisos();
-      showToast("Sesión cerrada. Seleccione o ingrese un perfil para operar el sistema.", "info");
+      showToast("Sesión finalizada.", "info");
       cargarTodoElDashboard();
     }
 
@@ -917,6 +913,7 @@
       const avatar = document.getElementById("user-avatar");
       const nameDisp = document.getElementById("user-name-display");
       const roleDisp = document.getElementById("user-role-display");
+      const btnNuevoEq = document.getElementById("btn-nuevo-equipo-admin");
 
       if (sesionActiva) {
         btnOpen.classList.add("hidden");
@@ -925,25 +922,29 @@
         nameDisp.innerText = sesionActiva.nombre;
         roleDisp.innerText = sesionActiva.rol;
 
-        // Estilos e iniciales según rol
         if (sesionActiva.rol === "Admin Biomedico") {
           avatar.className = "w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/40";
           avatar.innerText = "AB";
-          roleDisp.className = "text-[10px] text-purple-400 font-medium leading-none";
+          btnNuevoEq.classList.remove("hidden");
         } else if (sesionActiva.rol === "Medico") {
           avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
           avatar.innerText = "CT";
-          roleDisp.className = "text-[10px] text-emerald-400 font-medium leading-none";
+          btnNuevoEq.classList.add("hidden");
+        } else if (sesionActiva.rol === "Paciente") {
+          avatar.className = "w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-xs border border-blue-500/40";
+          avatar.innerText = "PA";
+          btnNuevoEq.classList.add("hidden");
         } else {
           avatar.className = "w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/40";
           avatar.innerText = "ST";
-          roleDisp.className = "text-[10px] text-cyan-400 font-medium leading-none";
+          btnNuevoEq.classList.add("hidden");
         }
 
         actualizarBannerPermisos();
       } else {
         btnOpen.classList.remove("hidden");
         badgeLogged.classList.add("hidden");
+        btnNuevoEq.classList.add("hidden");
         actualizarBannerPermisos();
       }
     }
@@ -957,45 +958,51 @@
       if (!sesionActiva) {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700";
         pill.innerText = "Sin Autenticar";
-        email.innerText = "Modo solo lectura";
-        iconBox.className = "p-2.5 rounded-xl bg-slate-800 text-slate-400 border border-slate-700";
-        descList.innerHTML = `<span class="text-amber-400">⚠️ Inicia sesión con correo y contraseña para operar registros y equipos.</span>`;
+        email.innerText = "Inicie sesión con un perfil";
+        descList.innerHTML = `<span class="text-amber-400">⚠️ Inicia sesión para habilitar las autorizaciones de tu rol clínico o biomédico.</span>`;
         return;
       }
 
       email.innerText = sesionActiva.email;
 
-      if (sesionActiva.rol === "Admin Biomedico") {
+      if (sesionActiva.rol === "Paciente") {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-950 text-blue-300 border border-blue-800";
+        pill.innerText = "Paciente";
+        iconBox.className = "p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20";
+        descList.innerHTML = `
+          <span class="inline-flex items-center gap-1 text-blue-300">👤 <strong>Vista Personal:</strong> Consulta únicamente su propio registro clínico, telemetría y equipos asignados.</span>
+        `;
+      } else if (sesionActiva.rol === "Medico") {
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
+        pill.innerText = "Médico";
+        iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        descList.innerHTML = `
+          <span class="inline-flex items-center gap-1 text-emerald-300">🩺 <strong>Clínico:</strong> Consulta y crea pacientes y encuentros.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría:</strong> Solo modifica los registros que creó.</span>
+          <span class="inline-flex items-center gap-1 text-teal-300">🔄 <strong>Restauración:</strong> Reservada al médico autor.</span>
+        `;
+      } else if (sesionActiva.rol === "Admin Biomedico") {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-950 text-purple-300 border border-purple-800";
         pill.innerText = "Admin Biomédico";
         iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-purple-300">✅ <strong>Metrología:</strong> Calibración, estado y batería de equipos</span>
-          <span class="inline-flex items-center gap-1 text-emerald-300">✅ <strong>RESTORE:</strong> Restauración exclusiva de registros borrados</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">✅ <strong>Auditoría:</strong> Trazabilidad total del sistema</span>
-        `;
-      } else if (sesionActiva.rol === "Medico") {
-        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
-        pill.innerText = "Médico Especialista";
-        iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-        descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-emerald-300">✅ <strong>Clínico:</strong> Admisión de pacientes y apertura de encuentros</span>
-          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría Estricta:</strong> Solo edita/elimina sus propios registros</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Restricción:</strong> Sin permiso de restauración ni metrología</span>
+          <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología:</strong> Crea y administra hojas de vida y equipos UCI.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Confidencialidad:</strong> No accede a datos clínicos de pacientes.</span>
         `;
       } else {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800";
         pill.innerText = "Servicio IoT";
         iconBox.className = "p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión continua de señales biomédicas IoT</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Restricción:</strong> Sin permiso de admisión ni edición clínica</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión de señales IoT.</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300">⚡ <strong>Simulación:</strong> Disponible únicamente para esta cuenta.</span>
         `;
       }
     }
 
     // ==========================================
-    // CARGA DE DATOS & CONSUMO DE ENDPOINTS
+    // CONSUMO DE ENDPOINTS & VISTAS
     // ==========================================
 
     async function checkHealthStatus() {
@@ -1010,7 +1017,7 @@
           text.innerHTML = `<span class="text-emerald-400">${data.database.provider}</span>: Conectado (${data.database.tables_found} tablas)`;
         } else {
           dot.className = "h-2.5 w-2.5 rounded-full bg-rose-400";
-          text.innerHTML = `<span class="text-rose-400">DB Desconectada</span>: Clic en "Sembrar BD"`;
+          text.innerHTML = `<span class="text-rose-400">DB Desconectada</span>`;
         }
       } catch (err) {
         console.error("Error en health check:", err);
@@ -1018,26 +1025,30 @@
     }
 
     async function inicializarBaseDatos(reset = false) {
-      showToast(reset ? "Reconstruyendo base de datos limpia en Neon..." : "Migrando columnas e inicializando datos en Neon...", "info");
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+        showToast("Acceso denegado: El endpoint /init-db requiere autenticación del Administrador Biomédico.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      showToast(reset ? "Reconstruyendo esquema limpio en PostgreSQL..." : "Actualizando esquema y datos semilla...", "info");
       try {
         const url = reset ? "/init-db?reset=true" : "/init-db";
-        const res = await fetch(url, { method: "POST" });
+        const res = await fetch(url, { method: "POST", headers: getAuthHeaders() });
         const data = await res.json();
         if (res.ok) {
-          showToast(data.message || "¡Base de datos sembrada con éxito!", "success");
+          showToast(data.message || "¡Base de datos inicializada!", "success");
           cargarTodoElDashboard();
           checkHealthStatus();
         } else {
-          showToast(`Error al inicializar: ${data.detail}`, "error");
-          console.error("Detalle del error:", data);
+          showToast(`Error: ${data.detail}`, "error");
         }
       } catch (err) {
-        showToast(`Error de red al inicializar: ${err.message}`, "error");
+        showToast(`Error de red: ${err.message}`, "error");
       }
     }
 
     function confirmarReinicioLimpio() {
-      if (confirm("¿Deseas reconstruir la base de datos completamente limpia en Neon? Esto borrará las tablas desactualizadas y creará todo el esquema y datos semilla actualizados.")) {
+      if (confirm("¿Deseas reconstruir la base de datos completamente limpia?")) {
         inicializarBaseDatos(true);
       }
     }
@@ -1047,34 +1058,37 @@
         const res = await fetch("/dashboard-stats");
         if (!res.ok) return;
         const data = await res.json();
-        
         document.getElementById("kpi-pacientes").innerText = data.pacientes || 0;
         document.getElementById("kpi-camas-detalle").innerText = `${data.camas_en_uso || 0} en monitoreo`;
-        
         const eqUso = data.equipos ? data.equipos.en_uso : 0;
         const eqDisp = data.equipos ? data.equipos.disponibles : 0;
         document.getElementById("kpi-equipos-uso").innerText = `${eqUso} en uso`;
         document.getElementById("kpi-equipos-disp").innerText = `${eqDisp} disponibles`;
-
         document.getElementById("kpi-alertas").innerText = data.alertas_predictivas || 0;
         document.getElementById("kpi-auditorias").innerText = data.auditorias_totales || 0;
       } catch (e) {
-        console.error("Error cargando stats:", e);
+        console.error("Error stats:", e);
       }
     }
 
     async function cargarPacientes() {
+      if (!sesionActiva) return;
       try {
-        const res = await fetch("/pacientes");
-        if (!res.ok) return;
-        const data = await res.json();
-        cachePacientes = data.pacientes || [];
-
+        const res = await fetch("/pacientes", { headers: getAuthHeaders() });
         const tbody = document.getElementById("tabla-pacientes-body");
         tbody.innerHTML = "";
 
+        if (!res.ok) {
+          const errData = await res.json();
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">${errData.detail || 'Acceso restringido'}</td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+        cachePacientes = data.pacientes || [];
+
         if (cachePacientes.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay pacientes registrados aún</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay registros de pacientes disponibles para este perfil</td></tr>`;
           return;
         }
 
@@ -1085,42 +1099,40 @@
           tr.innerHTML = `
             <td class="py-3 px-4 font-mono text-cyan-300">${p.documento_identidad}</td>
             <td class="py-3 px-4 font-semibold text-white">${p.nombre}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">${p.cama_uci}</span>
-            </td>
-            <td class="py-3 px-4">
-              ${tieneEncuentro 
-                ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-teal-950 text-teal-300 border border-teal-800"><span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span> ID #${p.encuentro_activo_id} (Activo)</span>`
-                : `<span class="text-slate-500 text-[11px]">Sin encuentro activo</span>`
-              }
-            </td>
-            <td class="py-3 px-4">
-              ${p.equipo_nombre ? `<span class="text-slate-200">${p.equipo_nombre} (${p.equipo_ubicacion})</span>` : `<span class="text-slate-500">Ninguno</span>`}
-            </td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">${p.cama_uci}</span></td>
+            <td class="py-3 px-4">${tieneEncuentro ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-teal-950 text-teal-300 border border-teal-800"><span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span> ID #${p.encuentro_activo_id} (Activo)</span>` : `<span class="text-slate-500 text-[11px]">Sin encuentro activo</span>`}</td>
+            <td class="py-3 px-4">${p.equipo_nombre ? `<span class="text-slate-200">${p.equipo_nombre} (${p.equipo_ubicacion})</span>` : `<span class="text-slate-500">Ninguno</span>`}</td>
             <td class="py-3 px-4 text-right">
-              ${!tieneEncuentro 
-                ? `<button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-medium transition">Iniciar Monitoreo</button>`
-                : `<span class="text-xs text-teal-400 font-medium">En Monitoreo</span>`
-              }
+              ${sesionActiva.rol === 'Medico' && !tieneEncuentro ? `<button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-medium transition">Iniciar Monitoreo</button>` : `<span class="text-xs text-slate-400">Consulta</span>`}
             </td>
           `;
           tbody.appendChild(tr);
         });
 
       } catch (err) {
-        console.error("Error cargando pacientes:", err);
+        console.error("Error pacientes:", err);
       }
     }
 
     async function cargarEquiposUCI() {
+      if (!sesionActiva) return;
       try {
-        const res = await fetch("/equipos-uci");
-        if (!res.ok) return;
+        const res = await fetch("/equipos-uci", { headers: getAuthHeaders() });
+        const tbody = document.getElementById("tabla-equipos-body");
+        tbody.innerHTML = "";
+
+        if (!res.ok) {
+          tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">Acceso restringido</td></tr>`;
+          return;
+        }
+
         const data = await res.json();
         cacheEquipos = data.equipos_uci || [];
 
-        const tbody = document.getElementById("tabla-equipos-body");
-        tbody.innerHTML = "";
+        if (cacheEquipos.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No hay equipos registrados para este perfil</td></tr>`;
+          return;
+        }
 
         cacheEquipos.forEach(eq => {
           let badgeEstado = "bg-slate-800 text-slate-300 border-slate-700";
@@ -1128,12 +1140,8 @@
           if (eq.estado_operativo === "Disponible") badgeEstado = "bg-emerald-950 text-emerald-300 border-emerald-800";
           if (eq.estado_operativo === "Mantenimiento" || eq.estado_operativo === "Descalibrado") badgeEstado = "bg-rose-950 text-rose-300 border-rose-800";
 
-          // Barra de batería
           const bat = eq.bateria_backup_porcentaje || 0;
-          let batColor = "bg-emerald-400";
-          if (bat < 50) batColor = "bg-amber-400";
-          if (bat < 20) batColor = "bg-rose-400";
-
+          let batColor = bat < 30 ? "bg-rose-400" : (bat < 60 ? "bg-amber-400" : "bg-emerald-400");
           const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
 
           const tr = document.createElement("tr");
@@ -1142,58 +1150,52 @@
             <td class="py-3 px-4 font-mono text-cyan-300 font-semibold">${eq.codigo_inventario}</td>
             <td class="py-3 px-4 font-medium text-white">${eq.tipo_equipo}</td>
             <td class="py-3 px-4 text-slate-300">${eq.marca} ${eq.modelo}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">Riesgo ${eq.clasificacion_riesgo || 'IIB'}</span>
-            </td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">Riesgo ${eq.clasificacion_riesgo || 'IIB'}</span></td>
             <td class="py-3 px-4 text-slate-300">${eq.ubicacion_uci}</td>
             <td class="py-3 px-4">
               <div class="flex items-center gap-2">
                 <div class="w-16 bg-slate-800 rounded-full h-2 border border-slate-700 overflow-hidden">
                   <div class="${batColor} h-2 rounded-full" style="width: ${bat}%"></div>
                 </div>
-                <span class="font-mono text-xs ${bat < 30 ? 'text-rose-400 font-bold' : 'text-slate-300'}">${bat}%</span>
+                <span class="font-mono text-xs text-slate-300">${bat}%</span>
               </div>
             </td>
-            <td class="py-3 px-4">
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badgeEstado}">${eq.estado_operativo}</span>
-            </td>
+            <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badgeEstado}">${eq.estado_operativo}</span></td>
             <td class="py-3 px-4 text-right">
               ${esAdmin ? `
                 <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] transition font-semibold">
                   ⚙️ Metrología
                 </button>
-              ` : `
-                <button onclick="intentarEdicionEquipoSinPermiso()" class="px-2 py-1 bg-slate-800 text-slate-500 border border-slate-700 rounded-lg text-[10px] cursor-not-allowed" title="Exclusivo Admin Biomédico">
-                  🔒 Solo Admin
-                </button>
-              `}
+              ` : `<span class="text-xs text-slate-500">Solo Lectura</span>`}
             </td>
           `;
           tbody.appendChild(tr);
         });
 
       } catch (err) {
-        console.error("Error cargando equipos:", err);
+        console.error("Error equipos:", err);
       }
     }
 
-    function intentarEdicionEquipoSinPermiso() {
-      showToast("Acceso denegado: La gestión metrológica de equipos es exclusiva del Admin Biomédico.", "warning");
-    }
-
     async function cargarObservaciones() {
+      if (!sesionActiva) return;
       try {
         const includeDeleted = document.getElementById("check-incluir-eliminados").checked;
-        const res = await fetch(`/observaciones?include_deleted=${includeDeleted}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const obsList = data.observaciones || [];
-
+        const res = await fetch(`/observaciones?include_deleted=${includeDeleted}`, { headers: getAuthHeaders() });
         const tbody = document.getElementById("tabla-observaciones-body");
         tbody.innerHTML = "";
 
+        if (!res.ok) {
+          const errData = await res.json();
+          tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-500">${errData.detail || 'Acceso no autorizado para este perfil.'}</td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+        const obsList = data.observaciones || [];
+
         if (obsList.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-500">No hay observaciones telemétricas registradas</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-500">No hay observaciones registradas para este perfil</td></tr>`;
           return;
         }
 
@@ -1201,57 +1203,35 @@
           const tr = document.createElement("tr");
           tr.className = `hover:bg-slate-800/40 transition ${o.is_deleted ? 'opacity-50 bg-rose-950/10' : ''}`;
           
-          let badgeAlerta = `<span class="text-slate-500">Normal</span>`;
-          if (o.alerta_predictiva) {
-            badgeAlerta = `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[11px] font-medium" title="${o.alerta_predictiva}">⚠️ ${o.alerta_predictiva.substring(0, 32)}...</span>`;
-          }
+          let badgeAlerta = o.alerta_predictiva 
+            ? `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[11px] font-medium" title="${o.alerta_predictiva}">⚠️ ${o.alerta_predictiva.substring(0, 30)}...</span>`
+            : `<span class="text-slate-500">Normal</span>`;
 
-          let badgeEstado = `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
-          if (o.is_deleted) {
-            badgeEstado = `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`;
-          }
+          let badgeEstado = o.is_deleted 
+            ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`
+            : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
 
-          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
-          const esAutor = sesionActiva && sesionActiva.id === o.created_by;
+          const esMedicoAutor = sesionActiva && sesionActiva.rol === "Medico" && sesionActiva.id === o.created_by;
 
           tr.innerHTML = `
             <td class="py-2.5 px-3 font-mono text-slate-400">#${o.id}</td>
-            <td class="py-2.5 px-3 font-semibold text-white">
-              ${o.paciente_nombre || 'Encuentro #' + o.encuentro_id}
-              <span class="block text-[11px] text-slate-400">${o.cama_uci || ''}</span>
-            </td>
-            <td class="py-2.5 px-3">
-              <span class="text-cyan-300 font-medium">${o.parametro}</span>
-              <span class="block font-mono text-[10px] text-slate-500">LOINC: ${o.codigo_loinc}</span>
-            </td>
-            <td class="py-2.5 px-3 font-mono font-bold text-white text-sm">
-              ${o.valor} <span class="text-xs font-normal text-slate-400">${o.unidad}</span>
-            </td>
+            <td class="py-2.5 px-3 font-semibold text-white">${o.paciente_nombre || 'Encuentro #' + o.encuentro_id} <span class="block text-[11px] text-slate-400">${o.cama_uci || ''}</span></td>
+            <td class="py-2.5 px-3"><span class="text-cyan-300 font-medium">${o.parametro}</span><span class="block font-mono text-[10px] text-slate-500">LOINC: ${o.codigo_loinc}</span></td>
+            <td class="py-2.5 px-3 font-mono font-bold text-white text-sm">${o.valor} <span class="text-xs font-normal text-slate-400">${o.unidad}</span></td>
             <td class="py-2.5 px-3">${badgeAlerta}</td>
             <td class="py-2.5 px-3 font-mono text-purple-400 font-semibold">v${o.version}</td>
-            <td class="py-2.5 px-3 text-slate-300">
-              ${o.autor_nombre || 'Desconocido'}
-              <span class="block text-[10px] text-slate-500">${o.autor_rol || ''}</span>
-            </td>
+            <td class="py-2.5 px-3 text-slate-300">${o.autor_nombre || 'Sistema'}<span class="block text-[10px] text-slate-500">${o.autor_rol || ''}</span></td>
             <td class="py-2.5 px-3">${badgeEstado}</td>
             <td class="py-2.5 px-3 text-right whitespace-nowrap">
               ${!o.is_deleted ? `
-                <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}', ${o.created_by})" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1" title="Soft-Edit">
-                  ✏️ Editar
-                </button>
-                <button onclick="ejecutarSoftDeleteObs(${o.id}, ${o.created_by})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]" title="Soft-Delete">
-                  🗑️ Borrar
-                </button>
+                ${esMedicoAutor ? `
+                  <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1">✏️ Editar</button>
+                  <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]">🗑️ Borrar</button>
+                ` : `<span class="text-[11px] text-slate-500">Protegido por autor</span>`}
               ` : `
-                ${esAdmin ? `
-                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold" title="Restaurar (Exclusivo Admin Biomédico)">
-                    🔄 Restaurar
-                  </button>
-                ` : `
-                  <button onclick="intentarRestoreSinPermiso()" class="px-2 py-1 bg-slate-800 text-slate-500 border border-slate-700 rounded text-[10px] cursor-not-allowed" title="Solo el Admin Biomédico puede restaurar">
-                    🔒 Solo Admin
-                  </button>
-                `}
+                ${esMedicoAutor ? `
+                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">🔄 Restaurar (Autor)</button>
+                ` : `<span class="text-[10px] text-slate-500">Restauración reservada a autor</span>`}
               `}
             </td>
           `;
@@ -1259,26 +1239,31 @@
         });
 
       } catch (err) {
-        console.error("Error cargando observaciones:", err);
+        console.error("Error observaciones:", err);
       }
     }
 
-    function intentarRestoreSinPermiso() {
-      showToast("Acceso denegado: La restauración de observaciones clínicas eliminadas está reservada exclusivamente al Admin Biomédico.", "warning");
-    }
-
     async function cargarAuditoria() {
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+        const tbody = document.getElementById("tabla-auditoria-body");
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">La pista de auditoría inmutable está reservada exclusivamente al Administrador Biomédico.</td></tr>`;
+        return;
+      }
       try {
-        const res = await fetch("/audit-logs");
-        if (!res.ok) return;
-        const data = await res.json();
-        const logs = data.audit_logs || [];
-
+        const res = await fetch("/audit-logs", { headers: getAuthHeaders() });
         const tbody = document.getElementById("tabla-auditoria-body");
         tbody.innerHTML = "";
 
+        if (!res.ok) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Acceso restringido</td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+        const logs = data.audit_logs || [];
+
         if (logs.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay registros de auditoría aún</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay eventos de auditoría registrados</td></tr>`;
           return;
         }
 
@@ -1287,18 +1272,15 @@
           if (l.accion === "SOFT_DELETE") badgeAccion = "bg-rose-950 text-rose-300 border-rose-800";
           if (l.accion === "SOFT_EDIT") badgeAccion = "bg-amber-950 text-amber-300 border-amber-800";
           if (l.accion === "RESTORE") badgeAccion = "bg-emerald-950 text-emerald-300 border-emerald-800";
-
-          const fechaStr = new Date(l.fecha).toLocaleString();
+          if (l.accion === "CREATE_EQUIPO") badgeAccion = "bg-purple-950 text-purple-300 border-purple-800";
 
           const tr = document.createElement("tr");
           tr.className = "hover:bg-slate-800/40 transition";
           tr.innerHTML = `
-            <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">${fechaStr}</td>
+            <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">${new Date(l.fecha).toLocaleString()}</td>
             <td class="py-3 px-4 font-medium text-white">${l.usuario_nombre || 'Sistema'}</td>
             <td class="py-3 px-4 text-slate-300">${l.rol_nombre || ''}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeAccion}">${l.accion}</span>
-            </td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeAccion}">${l.accion}</span></td>
             <td class="py-3 px-4 font-mono text-slate-300">${l.tabla_afectada}</td>
             <td class="py-3 px-4 font-mono text-cyan-400 font-bold">#${l.registro_id}</td>
           `;
@@ -1306,13 +1288,23 @@
         });
 
       } catch (err) {
-        console.error("Error cargando auditoría:", err);
+        console.error("Error auditoría:", err);
       }
     }
 
     async function cargarMonitoreoCamas() {
+      if (!sesionActiva || sesionActiva.rol === "Admin Biomedico") {
+        document.getElementById("camas-activas-count").innerText = "0";
+        document.getElementById("grid-camas-uci").innerHTML = `
+          <div class="col-span-full py-8 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-xs">
+            ${sesionActiva && sesionActiva.rol === 'Admin Biomedico' ? 'El Administrador Biomédico no accede a monitoreo clínico de camas de pacientes.' : 'Inicie sesión para ver el monitoreo de camas.'}
+          </div>
+        `;
+        return;
+      }
+
       try {
-        const res = await fetch("/encuentros");
+        const res = await fetch("/encuentros", { headers: getAuthHeaders() });
         if (!res.ok) return;
         const data = await res.json();
         cacheEncuentros = data.encuentros || [];
@@ -1326,7 +1318,7 @@
         if (activos.length === 0) {
           container.innerHTML = `
             <div class="col-span-full py-8 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-xs">
-              No hay pacientes con monitoreo activo en este momento. Puede iniciar un encuentro clínico desde la pestaña <strong>Pacientes y Encuentros</strong>.
+              No hay encuentros clínicos de monitoreo activos para este perfil.
             </div>
           `;
           return;
@@ -1345,27 +1337,18 @@
                 Encuentro #${enc.id}
               </span>
             </div>
-
             <div class="space-y-2 text-xs">
               <div>
                 <span class="text-slate-400">Paciente:</span>
                 <strong class="text-white block font-semibold">${enc.paciente_nombre}</strong>
                 <span class="text-[11px] text-slate-400 font-mono">CC: ${enc.documento_identidad}</span>
               </div>
-
-              <div class="pt-1">
+              <div>
                 <span class="text-slate-400">Tecnología Biomédica:</span>
                 <div class="flex items-center justify-between mt-0.5">
-                  <span class="text-cyan-300 font-medium">${enc.tipo_equipo || 'Monitor Multiparámetro'}</span>
+                  <span class="text-cyan-300 font-medium">${enc.tipo_equipo || 'Monitor'}</span>
                   <span class="text-[10px] text-slate-400 font-mono">${enc.codigo_inventario || 'N/A'}</span>
                 </div>
-              </div>
-
-              <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
-                <span class="text-[11px] text-slate-400">Iniciado por: <span class="text-slate-300">${enc.autor_nombre || 'Médico'}</span></span>
-                <button onclick="simularTelemetriaParaEncuentro(${enc.id})" class="px-2.5 py-1 bg-cyan-600/80 hover:bg-cyan-500 text-white rounded-lg text-[10px] font-semibold transition">
-                  ⚡ Simular Lectura
-                </button>
               </div>
             </div>
           `;
@@ -1373,12 +1356,281 @@
         });
 
       } catch (err) {
-        console.error("Error cargando camas:", err);
+        console.error("Error camas:", err);
       }
     }
 
     // ==========================================
-    // GRÁFICO DE TELEMETRÍA (CHART.JS)
+    // SIMULADOR IOT & OPERACIONES
+    // ==========================================
+
+    async function intentarSimulacionTelemetria() {
+      if (!sesionActiva || sesionActiva.rol !== "Servicio") {
+        showToast("Acceso denegado: La simulación de telemetría está disponible únicamente para la cuenta de servicio IoT.", "warning");
+        return;
+      }
+      try {
+        const res = await fetch("/simulate-telemetry", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const obs = data.observacion;
+          showToast(`Telemetría IoT: ${obs.parametro} = ${obs.valor} ${obs.unidad}`, obs.alerta_predictiva ? "warning" : "success");
+          actualizarGraficoConDato(obs.parametro, obs.valor);
+          cargarEstadisticas();
+          cargarObservaciones();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(`Error al simular: ${err.message}`, "error");
+      }
+    }
+
+    // Soft-Edit
+    function abrirModalEdicionObs(id, parametro, valorActual, alertaActual) {
+      document.getElementById("edit-obs-id").value = id;
+      document.getElementById("edit-obs-parametro-txt").innerText = parametro;
+      document.getElementById("edit-obs-valor").value = valorActual;
+      document.getElementById("edit-obs-alerta").value = alertaActual;
+      abrirModal("modal-edit-obs");
+    }
+
+    async function guardarEdicionObservacion(e) {
+      e.preventDefault();
+      const id = document.getElementById("edit-obs-id").value;
+      const valor = parseFloat(document.getElementById("edit-obs-valor").value);
+      const alerta = document.getElementById("edit-obs-alerta").value;
+
+      try {
+        const res = await fetch(`/observaciones/${id}/soft-edit`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ valor: valor, alerta_predictiva: alerta })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Observación editada correctamente (v${data.nueva_version})`, "success");
+          cerrarModal("modal-edit-obs");
+          cargarObservaciones();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Soft-Delete
+    async function ejecutarSoftDeleteObs(id) {
+      if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}?`)) return;
+      try {
+        const res = await fetch(`/observaciones/${id}/soft-delete`, {
+          method: "DELETE",
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Observación #${id} marcada como eliminada`, "warning");
+          cargarObservaciones();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Restore (Médico autor)
+    async function ejecutarRestoreObs(id) {
+      try {
+        const res = await fetch(`/observaciones/${id}/restore`, {
+          method: "POST",
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, "success");
+          cargarObservaciones();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Crear Equipo / Hoja de Vida (Admin Biomédico)
+    async function abrirModalNuevoEquipo() {
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") return;
+      try {
+        const res = await fetch("/catalogo-equipos", { headers: getAuthHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          const select = document.getElementById("eq-catalogo-id");
+          select.innerHTML = (data.catalogo || []).map(c => `
+            <option value="${c.id}">${c.nombre} (Riesgo ${c.clasificacion_riesgo})</option>
+          `).join("");
+          abrirModal("modal-nuevo-equipo");
+        } else {
+          showToast("Error al cargar catálogo de equipos", "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    async function guardarNuevoEquipoUCI(e) {
+      e.preventDefault();
+      const payload = {
+        equipo_catalogo_id: parseInt(document.getElementById("eq-catalogo-id").value),
+        codigo_inventario: document.getElementById("eq-codigo").value,
+        marca: document.getElementById("eq-marca").value,
+        modelo: document.getElementById("eq-modelo").value,
+        numero_serie: document.getElementById("eq-serie").value,
+        registro_invima: document.getElementById("eq-invima").value,
+        ubicacion_uci: document.getElementById("eq-ubicacion").value,
+        estado_operativo: document.getElementById("eq-estado").value,
+        bateria_backup_porcentaje: parseInt(document.getElementById("eq-bateria").value)
+      };
+
+      try {
+        const res = await fetch("/equipos-uci", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Equipo biomédico y hoja de vida registrados con éxito", "success");
+          cerrarModal("modal-nuevo-equipo");
+          cargarEquiposUCI();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Modal Pacientes & Encuentros
+    function abrirModalNuevoPaciente() { abrirModal("modal-nuevo-paciente"); }
+    async function guardarNuevoPaciente(e) {
+      e.preventDefault();
+      const payload = {
+        documento_identidad: document.getElementById("pac-doc").value,
+        nombre: document.getElementById("pac-nombre").value,
+        cama_uci: document.getElementById("pac-cama").value
+      };
+      try {
+        const res = await fetch("/pacientes", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Paciente ${data.paciente.nombre} registrado`, "success");
+          cerrarModal("modal-nuevo-paciente");
+          cargarPacientes();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    async function abrirModalNuevoEncuentro() {
+      const selectPac = document.getElementById("enc-paciente-id");
+      const selectEq = document.getElementById("enc-equipo-id");
+      selectPac.innerHTML = cachePacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.cama_uci})</option>`).join("");
+      selectEq.innerHTML = `<option value="">-- Sin equipo asignado --</option>` + 
+        cacheEquipos.map(eq => `<option value="${eq.equipo_uci_id}">${eq.tipo_equipo} - ${eq.marca} (${eq.codigo_inventario})</option>`).join("");
+      abrirModal("modal-nuevo-encuentro");
+    }
+
+    function iniciarEncuentroDirecto(pacienteId) {
+      abrirModalNuevoEncuentro();
+      document.getElementById("enc-paciente-id").value = pacienteId;
+    }
+
+    async function guardarNuevoEncuentro(e) {
+      e.preventDefault();
+      const pacId = parseInt(document.getElementById("enc-paciente-id").value);
+      const eqIdVal = document.getElementById("enc-equipo-id").value;
+      try {
+        const res = await fetch("/encuentros", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ paciente_id: pacId, equipo_uci_id: eqIdVal ? parseInt(eqIdVal) : null })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Encuentro iniciado", "success");
+          cerrarModal("modal-nuevo-encuentro");
+          cargarPacientes();
+          cargarMonitoreoCamas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Modal Nueva Obs
+    function abrirModalNuevaObservacion() {
+      const selectEnc = document.getElementById("nueva-obs-encuentro-id");
+      selectEnc.innerHTML = cacheEncuentros.map(e => `<option value="${e.id}">Encuentro #${e.id} - ${e.paciente_nombre} (${e.cama_uci})</option>`).join("");
+      abrirModal("modal-nueva-obs");
+    }
+
+    function actualizarUnidadLoinc(val) {
+      const parts = val.split("|");
+      document.getElementById("nueva-obs-unidad").value = parts[2];
+    }
+
+    async function guardarNuevaObservacion(e) {
+      e.preventDefault();
+      const rawParam = document.getElementById("nueva-obs-parametro").value.split("|");
+      const payload = {
+        encuentro_id: parseInt(document.getElementById("nueva-obs-encuentro-id").value),
+        parametro: rawParam[0],
+        codigo_loinc: rawParam[1],
+        unidad: rawParam[2],
+        valor: parseFloat(document.getElementById("nueva-obs-valor").value),
+        alerta_predictiva: document.getElementById("nueva-obs-alerta").value || null
+      };
+      try {
+        const res = await fetch("/observaciones", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Observación registrada", "success");
+          cerrarModal("modal-nueva-obs");
+          actualizarGraficoConDato(payload.parametro, payload.valor);
+          cargarObservaciones();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // ==========================================
+    // GRÁFICO TELEMETRÍA (CHART.JS)
     // ==========================================
 
     function inicializarGrafico() {
@@ -1426,31 +1678,12 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: {
-              labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
-            }
+            legend: { labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } } }
           },
           scales: {
-            x: {
-              grid: { color: '#1e293b' },
-              ticks: { color: '#64748b', font: { size: 10 } }
-            },
-            y: {
-              type: 'linear',
-              position: 'left',
-              min: 0,
-              max: 100,
-              grid: { color: '#1e293b' },
-              ticks: { color: '#06b6d4', font: { size: 10 } }
-            },
-            y1: {
-              type: 'linear',
-              position: 'right',
-              min: 40,
-              max: 150,
-              grid: { drawOnChartArea: false },
-              ticks: { color: '#10b981', font: { size: 10 } }
-            }
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
+            y: { type: 'linear', position: 'left', min: 0, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#06b6d4', font: { size: 10 } } },
+            y1: { type: 'linear', position: 'right', min: 40, max: 150, grid: { drawOnChartArea: false }, ticks: { color: '#10b981', font: { size: 10 } } }
           }
         }
       });
@@ -1458,7 +1691,6 @@
 
     function actualizarGraficoConDato(param, valor) {
       if (!chartInstance) return;
-
       const now = new Date().toLocaleTimeString();
       chartInstance.data.labels.shift();
       chartInstance.data.labels.push(now);
@@ -1473,371 +1705,13 @@
         chartInstance.data.datasets[2].data.shift();
         chartInstance.data.datasets[2].data.push(valor);
       }
-
       chartInstance.update();
     }
 
     // ==========================================
-    // OPERACIONES CRUD CON CONTROL DE AUTORIZACIONES
+    // INICIALIZACIÓN GENERAL
     // ==========================================
 
-    async function simularTelemetriaRapida() {
-      try {
-        const res = await fetch("/simulate-telemetry", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({})
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const obs = data.observacion;
-          showToast(`Telemetría recibida: ${obs.parametro} = ${obs.valor} ${obs.unidad}`, obs.alerta_predictiva ? "warning" : "success");
-          actualizarGraficoConDato(obs.parametro, obs.valor);
-          cargarEstadisticas();
-          cargarObservaciones();
-        } else {
-          showToast(`Error al simular: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Fallo al conectar con simulador: ${err.message}`, "error");
-      }
-    }
-
-    async function simularTelemetriaParaEncuentro(encuentroId) {
-      try {
-        const res = await fetch("/simulate-telemetry", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ encuentro_id: encuentroId })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const obs = data.observacion;
-          showToast(`Lectura para encuentro #${encuentroId}: ${obs.valor} ${obs.unidad}`, obs.alerta_predictiva ? "warning" : "success");
-          actualizarGraficoConDato(obs.parametro, obs.valor);
-          cargarObservaciones();
-          cargarEstadisticas();
-        } else {
-          showToast(data.detail, "error");
-        }
-      } catch (err) {
-        showToast(err.message, "error");
-      }
-    }
-
-    // Soft-Edit
-    function abrirModalEdicionObs(id, parametro, valorActual, alertaActual, createdBy) {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil primero", "warning");
-        return;
-      }
-      if (sesionActiva.rol === "Medico" && createdBy !== sesionActiva.id) {
-        showToast("Restricción de autoría: Como médico solo puedes editar tus propios registros.", "warning");
-        return;
-      }
-      document.getElementById("edit-obs-id").value = id;
-      document.getElementById("edit-obs-parametro-txt").innerText = parametro;
-      document.getElementById("edit-obs-valor").value = valorActual;
-      document.getElementById("edit-obs-alerta").value = alertaActual;
-      abrirModal("modal-edit-obs");
-    }
-
-    async function guardarEdicionObservacion(e) {
-      e.preventDefault();
-      const id = document.getElementById("edit-obs-id").value;
-      const valor = parseFloat(document.getElementById("edit-obs-valor").value);
-      const alerta = document.getElementById("edit-obs-alerta").value;
-
-      try {
-        const res = await fetch(`/observaciones/${id}/soft-edit`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ valor: valor, alerta_predictiva: alerta })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Observación editada correctamente (Nueva v${data.nueva_version})`, "success");
-          cerrarModal("modal-edit-obs");
-          cargarObservaciones();
-          cargarAuditoria();
-        } else {
-          showToast(`No autorizado: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error al editar: ${err.message}`, "error");
-      }
-    }
-
-    // Soft-Delete
-    async function ejecutarSoftDeleteObs(id, createdBy) {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil primero", "warning");
-        return;
-      }
-      if (sesionActiva.rol === "Medico" && createdBy !== sesionActiva.id) {
-        showToast("Restricción de autoría: Como médico solo puedes eliminar tus propios registros.", "warning");
-        return;
-      }
-
-      if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}? El registro permanecerá en la pista de auditoría.`)) return;
-
-      try {
-        const res = await fetch(`/observaciones/${id}/soft-delete`, {
-          method: "DELETE",
-          headers: getAuthHeaders()
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Observación #${id} marcada como eliminada`, "warning");
-          cargarObservaciones();
-          cargarAuditoria();
-          cargarEstadisticas();
-        } else {
-          showToast(`Error de autorización: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error al eliminar: ${err.message}`, "error");
-      }
-    }
-
-    // Restore (Exclusivo Admin Biomédico)
-    async function ejecutarRestoreObs(id) {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil como Admin Biomédico", "warning");
-        return;
-      }
-
-      try {
-        const res = await fetch(`/observaciones/${id}/restore`, {
-          method: "POST",
-          headers: getAuthHeaders()
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message, "success");
-          cargarObservaciones();
-          cargarAuditoria();
-          cargarEstadisticas();
-        } else {
-          showToast(`Acceso denegado: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error al restaurar: ${err.message}`, "error");
-      }
-    }
-
-    // Admisión de Paciente
-    function abrirModalNuevoPaciente() {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil primero", "warning");
-        return;
-      }
-      if (sesionActiva.rol === "Servicio") {
-        showToast("Acceso denegado: El Servicio IoT no tiene permisos para registrar pacientes.", "warning");
-        return;
-      }
-      abrirModal("modal-nuevo-paciente");
-    }
-    
-    async function guardarNuevoPaciente(e) {
-      e.preventDefault();
-      const payload = {
-        documento_identidad: document.getElementById("pac-doc").value,
-        nombre: document.getElementById("pac-nombre").value,
-        cama_uci: document.getElementById("pac-cama").value
-      };
-
-      try {
-        const res = await fetch("/pacientes", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Paciente ${data.paciente.nombre} admitido en ${data.paciente.cama_uci}`, "success");
-          cerrarModal("modal-nuevo-paciente");
-          document.getElementById("pac-doc").value = "";
-          document.getElementById("pac-nombre").value = "";
-          document.getElementById("pac-cama").value = "";
-          cargarPacientes();
-          cargarEstadisticas();
-        } else {
-          showToast(`Error: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error al registrar paciente: ${err.message}`, "error");
-      }
-    }
-
-    // Encuentro Clínico
-    async function abrirModalNuevoEncuentro() {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil primero", "warning");
-        return;
-      }
-      if (sesionActiva.rol === "Servicio") {
-        showToast("Acceso denegado: El Servicio IoT no tiene permisos para iniciar encuentros.", "warning");
-        return;
-      }
-
-      const selectPac = document.getElementById("enc-paciente-id");
-      const selectEq = document.getElementById("enc-equipo-id");
-
-      selectPac.innerHTML = cachePacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.cama_uci})</option>`).join("");
-      selectEq.innerHTML = `<option value="">-- Sin equipo asignado --</option>` + 
-        cacheEquipos.map(eq => `<option value="${eq.equipo_uci_id}">${eq.tipo_equipo} - ${eq.marca} (${eq.codigo_inventario})</option>`).join("");
-
-      abrirModal("modal-nuevo-encuentro");
-    }
-
-    function iniciarEncuentroDirecto(pacienteId) {
-      abrirModalNuevoEncuentro();
-      document.getElementById("enc-paciente-id").value = pacienteId;
-    }
-
-    async function guardarNuevoEncuentro(e) {
-      e.preventDefault();
-      const pacId = parseInt(document.getElementById("enc-paciente-id").value);
-      const eqIdVal = document.getElementById("enc-equipo-id").value;
-      const eqId = eqIdVal ? parseInt(eqIdVal) : null;
-
-      try {
-        const res = await fetch("/encuentros", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ paciente_id: pacId, equipo_uci_id: eqId })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast("Encuentro clínico de monitoreo iniciado exitosamente", "success");
-          cerrarModal("modal-nuevo-encuentro");
-          cargarPacientes();
-          cargarMonitoreoCamas();
-          cargarEquiposUCI();
-          cargarEstadisticas();
-        } else {
-          showToast(`Error: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error al crear encuentro: ${err.message}`, "error");
-      }
-    }
-
-    // Modificar Equipo UCI (Metrología Biomédica)
-    function abrirModalEdicionEquipo(id, nombre, ubicacion, estado, bateria) {
-      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
-        showToast("Exclusivo del Admin Biomédico: Gestión técnica y metrológica de equipos.", "warning");
-        return;
-      }
-      document.getElementById("edit-equipo-id").value = id;
-      document.getElementById("edit-equipo-nombre-txt").innerText = nombre;
-      document.getElementById("edit-equipo-ubicacion").value = ubicacion;
-      document.getElementById("edit-equipo-estado").value = estado;
-      document.getElementById("edit-equipo-bateria").value = bateria;
-      abrirModal("modal-edit-equipo");
-    }
-
-    async function guardarEdicionEquipo(e) {
-      e.preventDefault();
-      const id = document.getElementById("edit-equipo-id").value;
-      const payload = {
-        ubicacion_uci: document.getElementById("edit-equipo-ubicacion").value,
-        estado_operativo: document.getElementById("edit-equipo-estado").value,
-        bateria_backup_porcentaje: parseInt(document.getElementById("edit-equipo-bateria").value)
-      };
-
-      try {
-        const res = await fetch(`/equipos-uci/${id}/soft-edit`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast("Parámetros metrológicos del equipo actualizados", "success");
-          cerrarModal("modal-edit-equipo");
-          cargarEquiposUCI();
-          cargarAuditoria();
-          cargarEstadisticas();
-        } else {
-          showToast(`Acceso denegado: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(err.message, "error");
-      }
-    }
-
-    // Registrar Nueva Observación Manual
-    async function abrirModalNuevaObservacion() {
-      if (!sesionActiva) {
-        abrirModal("modal-login");
-        showToast("Por favor autentica tu perfil primero", "warning");
-        return;
-      }
-
-      const selectEnc = document.getElementById("nueva-obs-encuentro-id");
-      const activos = cacheEncuentros.filter(e => e.estado === "in-progress");
-      
-      if (activos.length === 0) {
-        showToast("No hay encuentros clínicos activos para registrar mediciones", "warning");
-        return;
-      }
-
-      selectEnc.innerHTML = activos.map(e => `<option value="${e.id}">Encuentro #${e.id} - ${e.paciente_nombre} (${e.cama_uci})</option>`).join("");
-      abrirModal("modal-nueva-obs");
-    }
-
-    function actualizarUnidadLoinc(val) {
-      const parts = val.split("|");
-      document.getElementById("nueva-obs-unidad").value = parts[2];
-    }
-
-    async function guardarNuevaObservacion(e) {
-      e.preventDefault();
-      const encId = parseInt(document.getElementById("nueva-obs-encuentro-id").value);
-      const rawParam = document.getElementById("nueva-obs-parametro").value.split("|");
-      const valor = parseFloat(document.getElementById("nueva-obs-valor").value);
-      const alerta = document.getElementById("nueva-obs-alerta").value || null;
-
-      const payload = {
-        encuentro_id: encId,
-        parametro: rawParam[0],
-        codigo_loinc: rawParam[1],
-        unidad: rawParam[2],
-        valor: valor,
-        alerta_predictiva: alerta
-      };
-
-      try {
-        const res = await fetch("/observaciones", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast("Nueva medición telemétrica registrada correctamente", "success");
-          cerrarModal("modal-nueva-obs");
-          actualizarGraficoConDato(payload.parametro, payload.valor);
-          cargarObservaciones();
-          cargarEstadisticas();
-        } else {
-          showToast(`Error: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error: ${err.message}`, "error");
-      }
-    }
-
-    // ==========================================
-    // INICIALIZACIÓN
-    // ==========================================
     async function cargarTodoElDashboard() {
       await Promise.all([
         checkHealthStatus(),
@@ -1853,8 +1727,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       inicializarGrafico();
       
-      // Recuperar sesión persistente si existe
-      const savedSession = sessionStorage.getItem("telemetria_session");
+      const savedSession = sessionStorage.getItem("pechys_session");
       if (savedSession) {
         try {
           sesionActiva = JSON.parse(savedSession);
@@ -1865,13 +1738,11 @@
       }
 
       if (!sesionActiva) {
-        // Abrir modal de login si aún no ha iniciado sesión
-        setTimeout(() => abrirModal("modal-login"), 500);
+        setTimeout(() => abrirModal("modal-login"), 400);
       }
 
       cargarTodoElDashboard();
 
-      // Sondeo periódico para telemetría
       setInterval(() => {
         checkHealthStatus();
         cargarEstadisticas();

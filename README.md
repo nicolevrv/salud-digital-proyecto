@@ -1,6 +1,6 @@
-# Telemetría UCI - Sistema de Salud Digital con Dashboard Web
+# PECHY'S IOT - Salud Digital
 
-Plataforma integral de telemetría biomédica y control clínico en Unidad de Cuidados Intensivos (UCI), desarrollada con **FastAPI**, base de datos relacional (**Neon PostgreSQL** / PostgreSQL), integración con el estándar **HL7 FHIR R4**, control de acceso basado en 3 roles (*Admin Biomédico*, *Médico*, *Servicio IoT*) y **Dashboard Web Interactivo** listo para despliegue en la nube en **Render**.
+Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas identificadas por código LOINC. Usa **FastAPI**, **PostgreSQL** y un panel de inspección de base de datos; toda la aplicación local se ejecuta con Docker Compose.
 
 ---
 
@@ -9,7 +9,7 @@ Plataforma integral de telemetría biomédica y control clínico en Unidad de Cu
 1. **Dashboard Web Clínico en Tiempo Real**:
    - Monitoreo dinámico de señales vitales con **Chart.js** (SpO2, Frecuencia Cardíaca, Presión Vía Aérea Pico).
    - Vista en tiempo real del estado de camas UCI y asignación tecnológica.
-   - Botón de **Simulación Rápida de Telemetría IoT** para pruebas en vivo en Render.
+   - Simulación de telemetría disponible únicamente para la cuenta de servicio IoT.
    - Gestión de pacientes y asignación a camas UCI (`+ Nuevo Paciente`, `+ Iniciar Encuentro`).
 
 2. **Gestión Tecnológica Biomédica & Hojas de Vida**:
@@ -17,36 +17,55 @@ Plataforma integral de telemetría biomédica y control clínico en Unidad de Cu
    - Control de nivel de batería de backup, clasificación de riesgo INVIMA (I, IIA, IIB, III) y cambio de estado operativo (*Disponible*, *En Uso*, *Mantenimiento*, *Descalibrado*).
 
 3. **Restricciones de Autoría y Soft Delete**:
-   - **Soft Edit**: Versionamiento automático de mediciones clínicas con trazabilidad.
-   - **Soft Delete**: Los médicos solo pueden eliminar o editar sus propios registros clínicos.
-   - **Restore**: Operación reservada **exclusivamente al Admin Biomédico**.
+   - **Soft Edit / Soft Delete**: Los médicos solo pueden modificar sus propios registros clínicos.
+   - **Restauración clínica**: Reservada al médico autor.
+   - **Bloqueo de acceso**: La cuenta se bloquea durante 15 minutos tras tres contraseñas incorrectas; el sistema informa el intento alcanzado.
 
 4. **Pista de Auditoría Inmutable (`audit_logs`)**:
    - Trazabilidad estricta de cada evento `SOFT_EDIT`, `SOFT_DELETE` y `RESTORE` con marca temporal y usuario responsable.
 
-5. **Preparado para Despliegue en Render**:
-   - Soporte automático para la variable de entorno `DATABASE_URL` (Neon PostgreSQL).
-   - Botón en interfaz `⚡ Sembrar BD` para inicializar el esquema y datos semilla con un solo clic desde el navegador.
+5. **Datos normalizados**:
+   - Las hojas de vida se relacionan con el catálogo de tipos de equipos.
+   - Las observaciones se relacionan con un catálogo único de parámetros LOINC y unidades.
 
 ---
 
 ## 👥 Roles y Credenciales de Prueba
 
-El sistema implementa 3 roles con permisos diferenciados:
+El sistema implementa cuatro perfiles con permisos diferenciados:
 
-| Rol | Usuario | Correo Electrónico | Contraseña | Permisos Clave |
-| :--- | :--- | :--- | :--- | :--- |
-| **Admin Biomédico** | Ing. Biomédico Admin | `admin.biomedico@hospital.com` | `admin123` | Gestión metrológica de equipos, edición global, **Restauración exclusiva (RESTORE)**, acceso a auditoría. |
-| **Médico** | Dr. Camilo Torres | `medico@hospital.com` | `med123` | Registro de pacientes, inicio de encuentros, edición y borrado **únicamente de sus propios registros clínicos**. |
-| **Servicio IoT** | Servicio Telemetría UCI | `servicio.iot@hospital.com` | `service123` | Emisión continua de paquetes de telemetría y signos vitales desde sensores biomédicos. |
+| Perfil | Correo | Contraseña demo | Permisos |
+| :--- | :--- | :--- | :--- |
+| **Paciente** | `paciente@hospital.com` | `paciente123` | Consulta únicamente su propio registro, encuentros, mediciones y equipos asignados. |
+| **Médico** | `medico@hospital.com` | `med123` | Consulta y crea registros clínicos; solo modifica los registros que creó. |
+| **Administrador biomédico** | `admin.biomedico@hospital.com` | `admin123` | Crea y administra hojas de vida/equipos y consulta auditoría. No accede a datos clínicos. |
+| **Servicio IoT** | `servicio.iot@hospital.com` | `service123` | Registra telemetría; no consulta datos ni administra cuentas. |
 
-> 💡 *En el Dashboard web puedes alternar entre cualquiera de estos 3 roles desde el menú superior con un solo clic.*
+Estas credenciales son únicamente para demostración local. Las contraseñas se convierten a PBKDF2 tras el primer inicio de sesión correcto. No las uses en producción.
 
 ---
 
-## 🌐 Guía de Despliegue en Render (Paso a Paso)
+## Ejecución con Docker
 
-Para publicar el proyecto en Render y obtener tu URL pública (ejemplo: `https://salud-digital-telemetria-uci.onrender.com`):
+Desde la carpeta `salud-digital-proyecto-main`, inicia la API, PostgreSQL, el visor de base de datos y el servidor FHIR:
+
+```bash
+docker compose up --build -d
+docker compose ps
+```
+
+- Aplicación: <http://localhost:8000>
+- Documentación de la API: <http://localhost:8000/docs>
+- Revisión de tablas y registros: <http://localhost:8081>
+- Servidor FHIR: <http://localhost:8080/fhir>
+
+En Adminer selecciona **PostgreSQL**, servidor `host.docker.internal:5433`, usuario `admin`, contraseña `adminpassword` y base de datos `uci_telemetria`. El esquema y los datos demo se cargan automáticamente al crear el volumen por primera vez. La cuenta de paciente demo solo consulta el paciente asociado a su usuario.
+
+`docker compose down` detiene los servicios y conserva la base de datos. `docker compose down -v` elimina los volúmenes y todos sus datos; úsalo solo cuando quieras borrar la base de datos local.
+
+## Despliegue en Render (opcional)
+
+Para publicar el proyecto en Render se necesita una base PostgreSQL aprovisionada y aplicar el esquema antes del primer inicio de sesión:
 
 ### Paso 1: Subir tus Cambios a GitHub
 Asegúrate de hacer push de este repositorio a tu cuenta de GitHub:
@@ -73,15 +92,19 @@ git push origin main
    - **Value**: Tu cadena de conexión de Neon (ejemplo: `postgresql://neondb_owner:tu_password@ep-cold-lake-123456.us-east-2.aws.neon.tech/neondb?sslmode=require`)
 2. Haz clic en **Deploy Web Service**.
 
-### Paso 4: Inicializar la Base de Datos desde el Navegador
-1. Una vez que Render complete el despliegue, abre la URL que te asigna Render (ejemplo: `https://tu-proyecto.onrender.com`).
-2. En la barra superior verás el botón **⚡ Sembrar BD**. Haz clic en él.
-3. El sistema ejecutará automáticamente el script `01_schema.sql` en Neon, creando todas las tablas, roles, usuarios, catálogo de equipos biomédicos y datos semilla.
-4. ¡Listo! El Dashboard estará 100% operativo con gráficos, botones y control de roles.
+### Paso 4: Aplicar el esquema
+Antes de iniciar sesión, ejecuta el esquema contra la base configurada en `DATABASE_URL`:
+
+```bash
+docker run --rm -v "$PWD/init-scripts:/schema:ro" postgres:15-alpine \
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /schema/01_schema.sql
+```
+
+El endpoint `/init-db` requiere autenticación administrativa y sirve para actualizar un esquema ya inicializado; no es un mecanismo de aprovisionamiento anónimo.
 
 ---
 
-## 🖥️ Ejecución Local (Opcional)
+## Ejecución manual fuera de Docker (opcional)
 
 Si deseas probarlo localmente:
 
@@ -122,17 +145,19 @@ Si deseas probarlo localmente:
 ## 📡 Endpoints Principales de la API REST
 
 - `GET /`: Dashboard web interactivo para monitoreo clínico.
-- `GET /health`: Verificación del estado de salud y conectividad con Neon PostgreSQL.
-- `POST /init-db`: Inicialización y siembra del esquema de base de datos.
+- `GET /health`: Estado de la API y conexión PostgreSQL.
+- `POST /init-db`: Actualización autenticada del esquema por administración biomédica.
 - `GET /dashboard-stats`: Estadísticas en tiempo real (camas, pacientes, equipos, alertas).
 - `GET /pacientes`: Listado de pacientes y estado de encuentros.
 - `POST /pacientes`: Admisión de nuevo paciente a UCI.
+- `GET /catalogo-equipos`: Tipos de equipo disponibles para el administrador biomédico.
+- `POST /equipos-uci`: Creación de hoja de vida y registro UCI por administración biomédica.
 - `GET /equipos-uci`: Inventario metrológico de equipos y hojas de vida.
 - `PUT /equipos-uci/{id}/soft-edit`: Actualización de estado y batería de backup (*Admin Biomédico*).
 - `GET /observaciones`: Mediciones telemétricas con filtro de registros eliminados.
 - `POST /observaciones`: Registro de nueva medición telemétrica.
 - `PUT /observaciones/{id}/soft-edit`: Modificación con versionamiento y log de auditoría.
 - `DELETE /observaciones/{id}/soft-delete`: Soft delete respetando restricciones de autoría.
-- `POST /observaciones/{id}/restore`: **Restauración exclusiva** (*Admin Biomédico*).
-- `GET /audit-logs`: Pistas de auditoría inmutables.
-- `POST /simulate-telemetry`: Generador de paquetes de telemetría IoT en vivo.
+- `POST /observaciones/{id}/restore`: Restauración del registro propio por su médico autor.
+- `GET /audit-logs`: Auditoría administrativa.
+- `POST /simulate-telemetry`: Simulación disponible únicamente para el servicio IoT.

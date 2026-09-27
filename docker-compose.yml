@@ -1,7 +1,24 @@
 version: '3.8'
 
 services:
-  # 1. Base de datos PostgreSQL Nativa (Tu modelo de tablas relacionales)
+  # 1. API y Dashboard Web (PECHY'S IOT - FastAPI)
+  api:
+    build: .
+    container_name: pechys_iot_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=app-db
+      - DB_NAME=uci_telemetria
+      - DB_USER=admin
+      - DB_PASS=adminpassword
+      - HAPI_FHIR_URL=http://hapi-fhir:8080/fhir
+      - PORT=8000
+    depends_on:
+      - app-db
+    restart: unless-stopped
+
+  # 2. Base de datos PostgreSQL Nativa (Modelo Relacional Telemetría UCI)
   app-db:
     image: postgres:15-alpine
     container_name: uci_app_db
@@ -14,8 +31,21 @@ services:
     volumes:
       - ./init-scripts:/docker-entrypoint-initdb.d
       - app_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
-  # 2. Base de datos para HAPI FHIR
+  # 3. Visor de Base de Datos Web (Adminer)
+  adminer:
+    image: adminer:latest
+    container_name: uci_adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - app-db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 4. Base de datos para HAPI FHIR
   fhir-db:
     image: postgres:15-alpine
     container_name: hapi_fhir_db
@@ -27,8 +57,9 @@ services:
       - "5432:5432"
     volumes:
       - fhir_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
-  # 3. Servidor HAPI FHIR R4
+  # 5. Servidor HAPI FHIR R4
   hapi-fhir:
     image: hapifhir/hapi-fhir-jpaserver-starter:latest
     container_name: hapi_fhir_server
@@ -43,6 +74,7 @@ services:
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     depends_on:
       - fhir-db
+    restart: unless-stopped
 
 volumes:
   app_db_data:

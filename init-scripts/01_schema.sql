@@ -85,6 +85,7 @@ ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS equipo_uci_id INT REFERENCES equ
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS fecha_fin TIMESTAMP;
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS created_by INT REFERENCES usuarios(id);
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS usuario_id INT REFERENCES usuarios(id);
 
 -- 8. Tabla de Observaciones Telemétricas (Control Predictivo)
 CREATE TABLE IF NOT EXISTS observaciones (
@@ -116,18 +117,20 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- DATOS SEMILLA Y POBLAMIENTO INICIAL
 -- =========================================================================
 
--- 1. Insertar 3 Roles Requeridos (Actualiza si existían con nombres viejos)
+-- 1. Insertar 4 Roles Requeridos (Admin Biomedico, Medico, Servicio, Paciente)
 INSERT INTO roles (id, nombre) VALUES 
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
-(3, 'Servicio')
+(3, 'Servicio'),
+(4, 'Paciente')
 ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
 -- 2. Insertar Usuarios de Prueba (Garantiza credenciales exactas del proyecto)
 INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
 (1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'admin123', 1),
 (2, 'Dr. Camilo Torres', 'medico@hospital.com', 'med123', 2),
-(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3)
+(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3),
+(4, 'Carlos Mendoza', 'paciente@hospital.com', 'paciente123', 4)
 ON CONFLICT (id) DO UPDATE SET 
     nombre = EXCLUDED.nombre,
     email = EXCLUDED.email,
@@ -185,12 +188,13 @@ ON CONFLICT (id) DO UPDATE SET
     bateria_backup_porcentaje = EXCLUDED.bateria_backup_porcentaje;
 
 -- 6. Insertar Paciente de Prueba
-INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, created_by) VALUES
-(1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 1)
+INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, usuario_id, created_by) VALUES
+(1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 4, 1)
 ON CONFLICT (id) DO UPDATE SET
     documento_identidad = EXCLUDED.documento_identidad,
     nombre = EXCLUDED.nombre,
     cama_uci = EXCLUDED.cama_uci,
+    usuario_id = 4,
     is_deleted = FALSE;
 
 -- 7. Insertar Encuentro Clínico
