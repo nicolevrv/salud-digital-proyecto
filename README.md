@@ -16,10 +16,11 @@ Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI 
    - Inventario metrológico de ventiladores mecánicos (Hamilton, Dräger), monitores multiparámetro (Mindray, Philips), bombas de infusión (BBraun, Baxter) y analizadores de gases.
    - Control de nivel de batería de backup, clasificación de riesgo INVIMA (I, IIA, IIB, III) y cambio de estado operativo (*Disponible*, *En Uso*, *Mantenimiento*, *Descalibrado*).
 
-3. **Restricciones de Autoría y Soft Delete**:
-   - **Soft Edit / Soft Delete**: Los médicos solo pueden modificar sus propios registros clínicos.
-   - **Restauración clínica**: Reservada al médico autor.
-   - **Bloqueo de acceso**: La cuenta se bloquea durante 15 minutos tras tres contraseñas incorrectas; el sistema informa el intento alcanzado.
+3. **Autenticación y control de acceso**:
+   - Tres perfiles funcionales: **Administrador biomédico**, **Médico** y **Servicio IoT**. No existe rol de paciente.
+   - Las contraseñas se almacenan mediante PBKDF2 y las credenciales demo se migran de forma compatible con instalaciones anteriores.
+   - El navegador conserva únicamente un token de sesión firmado; nunca almacena la contraseña para consumir la API.
+   - La cuenta se bloquea durante 15 minutos tras tres contraseñas incorrectas.
 
 4. **Pista de Auditoría Inmutable (`audit_logs`)**:
    - Trazabilidad estricta de cada evento `SOFT_EDIT`, `SOFT_DELETE` y `RESTORE` con marca temporal y usuario responsable.
@@ -62,46 +63,29 @@ En Adminer selecciona **PostgreSQL**, servidor `host.docker.internal:5433`, usua
 
 `docker compose down` detiene los servicios y conserva la base de datos. `docker compose down -v` elimina los volúmenes y todos sus datos; úsalo solo cuando quieras borrar la base de datos local.
 
-## Despliegue en Render (opcional)
+## Despliegue en Render
 
-Para publicar el proyecto en Render se necesita una base PostgreSQL aprovisionada y aplicar el esquema antes del primer inicio de sesión:
+El repositorio incluye un `render.yaml` para mantener la configuración del servicio como código.
 
-### Paso 1: Subir tus Cambios a GitHub
-Asegúrate de hacer push de este repositorio a tu cuenta de GitHub:
-```bash
-git add .
-git commit -m "feat: dashboard interactivo uci y soporte para despliegue en render con neon"
-git push origin main
-```
+### Variables de entorno
 
-### Paso 2: Crear el Web Service en Render
-1. Ve a [dashboard.render.com](https://dashboard.render.com) e inicia sesión.
-2. Haz clic en **New +** y selecciona **Web Service**.
-3. Conecta tu repositorio de GitHub `salud-digital-proyecto`.
-4. Render detectará la configuración. Verifica o ajusta lo siguiente:
-   - **Name**: `salud-digital-proyecto` (o el nombre que desees)
-   - **Language / Runtime**: `Python`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn middleware.app.main:app --host 0.0.0.0 --port $PORT`
-   - **Instance Type**: `Free`
+En Render debes proporcionar únicamente:
+- `DATABASE_URL`: cadena de conexión de tu PostgreSQL de Neon con `sslmode=require`.
+- `SESSION_SECRET`: se genera automáticamente desde el Blueprint.
+- `AUTO_INIT_DB=true`: hace que la aplicación verifique/aplique `init-scripts/01_schema.sql` al arrancar.
+- `SESSION_TTL_MINUTES=480`: duración de la sesión en minutos.
 
-### Paso 3: Configurar la Base de Datos (Neon PostgreSQL)
-1. En la sección **Environment Variables** en Render, agrega la siguiente variable:
-   - **Key**: `DATABASE_URL`
-   - **Value**: Tu cadena de conexión de Neon (ejemplo: `postgresql://neondb_owner:tu_password@ep-cold-lake-123456.us-east-2.aws.neon.tech/neondb?sslmode=require`)
-2. Haz clic en **Deploy Web Service**.
+No debes colocar secretos dentro de GitHub.
 
-### Paso 4: Aplicar el esquema
-Antes de iniciar sesión, ejecuta el esquema contra la base configurada en `DATABASE_URL`:
+### Comportamiento de despliegue
 
-```bash
-docker run --rm -v "$PWD/init-scripts:/schema:ro" postgres:15-alpine \
-   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /schema/01_schema.sql
-```
+El servicio está configurado con `autoDeployTrigger: commit` sobre la rama `main`. Cuando Render tiene el repositorio GitHub vinculado y los auto-deploys están activos, un push a `main` genera el nuevo despliegue automáticamente. citeturn357666search0turn357666search1
 
-El endpoint `/init-db` requiere autenticación administrativa y sirve para actualizar un esquema ya inicializado; no es un mecanismo de aprovisionamiento anónimo.
+El endpoint `/health` se usa como health check. En el primer arranque con Neon, la aplicación inicializa/verifica las tablas y los datos semilla automáticamente.
 
----
+### HAPI FHIR
+
+HAPI FHIR es opcional para el funcionamiento del dashboard principal. Si `HAPI_FHIR_URL` no está configurada, las operaciones de sincronización FHIR se omiten sin bloquear la autenticación ni el resto del sistema. Para usar FHIR en producción, configura una instancia HAPI FHIR accesible desde Render y define esa URL en la variable correspondiente.
 
 ## Ejecución manual fuera de Docker (opcional)
 
