@@ -558,8 +558,8 @@ def crear_observacion(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Permite al Servicio IoT o Médico registrar una nueva medición telemétrica."""
-    if user["rol_nombre"] not in ["Medico", "Servicio"]:
+    """Permite al Servicio IoT, Médico o Administrador Biomédico registrar una nueva medición telemétrica."""
+    if user["rol_nombre"] not in ["Medico", "Servicio", "Admin Biomedico"]:
         raise HTTPException(status_code=403, detail="No tiene permisos para registrar observaciones telemétricas.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -610,13 +610,14 @@ def soft_edit_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada o eliminada")
 
-    if user["rol_nombre"] != "Medico":
-        cursor.close()
-        raise HTTPException(status_code=403, detail="Rol sin permisos para editar registros clínicos.")
+    es_admin = user["rol_nombre"] == "Admin Biomedico"
+    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
 
-    if obs["created_by"] != user["id"]:
+    if not (es_admin or es_medico_autor):
         cursor.close()
-        raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede editar sus propios registros clínicos.")
+        if user["rol_nombre"] == "Medico":
+            raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede editar sus propios registros clínicos.")
+        raise HTTPException(status_code=403, detail="Rol sin permisos para editar registros clínicos.")
 
     new_version = obs["version"] + 1
     cursor.execute("""
@@ -640,7 +641,7 @@ def soft_delete_observation(
     user: dict = Depends(verify_user_credentials), 
     conn = Depends(get_db)
 ):
-    """Los médicos solo pueden eliminar sus propios registros clínicos."""
+    """Permite al Admin Biomédico o Médico autor eliminar registros clínicos."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s AND is_deleted = FALSE", (obs_id,))
     obs = cursor.fetchone()
@@ -649,13 +650,14 @@ def soft_delete_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada o ya eliminada")
 
-    if user["rol_nombre"] != "Medico":
-        cursor.close()
-        raise HTTPException(status_code=403, detail="Rol sin permisos para eliminar registros clínicos.")
+    es_admin = user["rol_nombre"] == "Admin Biomedico"
+    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
 
-    if obs["created_by"] != user["id"]:
+    if not (es_admin or es_medico_autor):
         cursor.close()
-        raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede eliminar sus propios registros clínicos.")
+        if user["rol_nombre"] == "Medico":
+            raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede eliminar sus propios registros clínicos.")
+        raise HTTPException(status_code=403, detail="Rol sin permisos para eliminar registros clínicos.")
 
     cursor.execute("UPDATE observaciones SET is_deleted = TRUE WHERE id = %s", (obs_id,))
     cursor.execute("""
@@ -673,7 +675,7 @@ def restore_observation(
     user: dict = Depends(verify_user_credentials), 
     conn = Depends(get_db)
 ):
-    """Restauración clínica: Reservada al médico autor."""
+    """Permite al Admin Biomédico o Médico autor restaurar un registro clínico."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s", (obs_id,))
     obs = cursor.fetchone()
@@ -682,13 +684,14 @@ def restore_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada")
 
-    if user["rol_nombre"] != "Medico":
-        cursor.close()
-        raise HTTPException(status_code=403, detail="Acceso denegado: La restauración clínica está reservada exclusivamente a médicos.")
+    es_admin = user["rol_nombre"] == "Admin Biomedico"
+    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
 
-    if obs["created_by"] != user["id"]:
+    if not (es_admin or es_medico_autor):
         cursor.close()
-        raise HTTPException(status_code=403, detail="Acceso denegado: Restauración clínica reservada al médico autor de este registro.")
+        if user["rol_nombre"] == "Medico":
+            raise HTTPException(status_code=403, detail="Acceso denegado: Restauración clínica reservada al médico autor de este registro.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: No tiene permisos para restaurar registros.")
 
     cursor.execute("UPDATE observaciones SET is_deleted = FALSE WHERE id = %s", (obs_id,))
     cursor.execute("""
@@ -698,7 +701,7 @@ def restore_observation(
 
     conn.commit()
     cursor.close()
-    return {"message": f"Observación ID {obs_id} restaurada exitosamente por su médico autor"}
+    return {"message": f"Observación ID {obs_id} restaurada exitosamente"}
 
 # ==========================================
 # 2. SECCIÓN DE ENCUENTROS CLÍNICOS

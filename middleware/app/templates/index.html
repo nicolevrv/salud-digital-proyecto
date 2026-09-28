@@ -974,11 +974,11 @@
           avatar.className = "w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/40";
           avatar.innerText = "AB";
           
-          // Botones: Gestión metrológica de equipos
+          // Botones: Gestión metrológica de equipos y telemetría
           if (btnNuevoEq) btnNuevoEq.classList.remove("hidden");
           if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
           if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
-          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.remove("hidden");
           if (btnSimularIot) btnSimularIot.classList.add("hidden");
 
           // Tabs: Admin Biomédico tiene acceso a todos los módulos
@@ -1085,8 +1085,8 @@
         iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
         descList.innerHTML = `
           <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología:</strong> Crea y administra hojas de vida y equipos UCI.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">✏️ <strong>Control Total:</strong> Soft Edit, Soft Delete y Restauración en telemetría.</span>
           <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable e inicializa BD.</span>
-          <span class="inline-flex items-center gap-1 text-emerald-300">👁️ <strong>Supervisión:</strong> Acceso a monitoreo, pacientes y telemetría.</span>
         `;
       } else {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800";
@@ -1310,7 +1310,9 @@
             ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`
             : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
 
+          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
           const esMedicoAutor = sesionActiva && sesionActiva.rol === "Medico" && sesionActiva.id === o.created_by;
+          const puedeModificar = esAdmin || esMedicoAutor;
 
           tr.innerHTML = `
             <td class="py-2.5 px-3 font-mono text-slate-400">#${o.id}</td>
@@ -1323,14 +1325,14 @@
             <td class="py-2.5 px-3">${badgeEstado}</td>
             <td class="py-2.5 px-3 text-right whitespace-nowrap">
               ${!o.is_deleted ? `
-                ${esMedicoAutor ? `
+                ${puedeModificar ? `
                   <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1">✏️ Editar</button>
                   <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]">🗑️ Borrar</button>
                 ` : `<span class="text-[11px] text-slate-500">Protegido por autor</span>`}
               ` : `
-                ${esMedicoAutor ? `
-                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">🔄 Restaurar (Autor)</button>
-                ` : `<span class="text-[10px] text-slate-500">Restauración reservada a autor</span>`}
+                ${puedeModificar ? `
+                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">🔄 Restaurar</button>
+                ` : `<span class="text-[10px] text-slate-500">Restauración reservada a autor / admin</span>`}
               `}
             </td>
           `;
@@ -1491,8 +1493,8 @@
 
     // Soft-Edit
     function abrirModalEdicionObs(id, parametro, valorActual, alertaActual) {
-      if (!sesionActiva || sesionActiva.rol !== "Medico") {
-        showToast("Acceso denegado: Solo el médico autor puede editar registros clínicos.", "error");
+      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
+        showToast("Acceso denegado: Solo el Administrador Biomédico o el médico autor pueden editar registros clínicos.", "error");
         return;
       }
       document.getElementById("edit-obs-id").value = id;
@@ -1504,8 +1506,8 @@
 
     async function guardarEdicionObservacion(e) {
       e.preventDefault();
-      if (!sesionActiva || sesionActiva.rol !== "Medico") {
-        showToast("Acceso denegado: Solo el médico autor puede guardar cambios.", "error");
+      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
+        showToast("Acceso denegado: Solo el Administrador Biomédico o el médico autor pueden guardar cambios.", "error");
         return;
       }
       const id = document.getElementById("edit-obs-id").value;
@@ -1533,8 +1535,8 @@
 
     // Soft-Delete
     async function ejecutarSoftDeleteObs(id) {
-      if (!sesionActiva || sesionActiva.rol !== "Medico") {
-        showToast("Acceso denegado: Solo el médico autor puede eliminar registros clínicos.", "error");
+      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
+        showToast("Acceso denegado: Solo el Administrador Biomédico o el médico autor pueden eliminar registros clínicos.", "error");
         return;
       }
       if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}?`)) return;
@@ -1556,10 +1558,10 @@
       }
     }
 
-    // Restore (Médico autor)
+    // Restore (Médico autor / Admin Biomédico)
     async function ejecutarRestoreObs(id) {
-      if (!sesionActiva || sesionActiva.rol !== "Medico") {
-        showToast("Acceso denegado: Solo el médico autor puede restaurar el registro clínico.", "error");
+      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
+        showToast("Acceso denegado: Solo el Administrador Biomédico o el médico autor pueden restaurar el registro clínico.", "error");
         return;
       }
       try {
@@ -1794,14 +1796,14 @@
       }
     }
 
-    // Modal Nueva Obs (Exclusivo Médico)
+    // Modal Nueva Obs (Médico / Admin Biomédico)
     function abrirModalNuevaObservacion() {
       if (!sesionActiva) {
-        showToast("Debes iniciar sesión como Médico para registrar mediciones clínicas.", "warning");
+        showToast("Debes iniciar sesión para registrar mediciones clínicas.", "warning");
         abrirModal("modal-login");
         return;
       }
-      if (sesionActiva.rol !== "Medico") {
+      if (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico") {
         showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no puede registrar mediciones clínicas manuales. Las señales IoT se transmiten por sensor/simulación.`, "error");
         return;
       }
@@ -1817,8 +1819,8 @@
 
     async function guardarNuevaObservacion(e) {
       e.preventDefault();
-      if (!sesionActiva || sesionActiva.rol !== "Medico") {
-        showToast("Acceso denegado: Solo los médicos pueden registrar mediciones clínicas.", "error");
+      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
+        showToast("Acceso denegado: Solo los médicos o el Administrador Biomédico pueden registrar mediciones clínicas.", "error");
         return;
       }
       const rawParam = document.getElementById("nueva-obs-parametro").value.split("|");
