@@ -1,8 +1,14 @@
 import os
 import requests
 
-HAPI_FHIR_URL = os.getenv("HAPI_FHIR_URL", "http://hapi-fhir:8080/fhir")
+HAPI_FHIR_URL = os.getenv("HAPI_FHIR_URL", "").rstrip("/")
 HEADERS = {"Content-Type": "application/fhir+json"}
+
+def fhir_enabled():
+    return bool(HAPI_FHIR_URL)
+
+def fhir_request_allowed():
+    return fhir_enabled()
 
 def sync_patient_to_fhir(patient_data: dict):
     """Envía o actualiza un recurso Patient en HAPI FHIR"""
@@ -148,6 +154,9 @@ def enviar_observacion_a_fhir(encuentro_id_fhir, parametro, loinc_code, valor, u
         },
         "note": [{"text": alerta}] if alerta else []
     }
+
+    if not fhir_enabled():
+        return None
 
     try:
         response = requests.post(f"{HAPI_FHIR_URL}/Observation", json=payload, headers=HEADERS)
