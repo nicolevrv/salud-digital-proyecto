@@ -164,12 +164,19 @@ def verify_and_upgrade_password(conn, user_id, provided_password, stored_hash):
     if stored_hash.startswith("pbkdf2:sha256:"):
         try:
             parts = stored_hash.split("$")
-            if len(parts) != 3:
+            # Compatibilidad con ambos formatos históricos:
+            # pbkdf2:sha256:$100000$salt$hash
+            # pbkdf2:sha256:100000$salt$hash
+            if len(parts) == 4 and parts[0] == "pbkdf2:sha256:":
+                iterations = int(parts[1])
+                salt = parts[2]
+                expected_hash = parts[3]
+            elif len(parts) == 3 and parts[0].startswith("pbkdf2:sha256:"):
+                iterations = int(parts[0].rsplit(":", 1)[1])
+                salt = parts[1]
+                expected_hash = parts[2]
+            else:
                 return False
-            prefix = parts[0]
-            salt = parts[1]
-            expected_hash = parts[2]
-            iterations = int(prefix.rsplit(":", 1)[1])
             computed = hashlib.pbkdf2_hmac(
                 "sha256",
                 provided_password.encode("utf-8"),
