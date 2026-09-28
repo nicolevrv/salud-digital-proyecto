@@ -472,7 +472,7 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL DE AUTENTICACIÓN (LOGIN, INTENTOS FALLIDOS & 4 PERFILES) -->
+  <!-- MODAL DE AUTENTICACIÓN (LOGIN E INTENTOS FALLIDOS) -->
   <!-- ========================================================================= -->
   <div id="modal-login" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
@@ -516,7 +516,7 @@
       <!-- SEPARADOR -->
       <div class="relative flex items-center justify-center">
         <div class="border-t border-slate-800 w-full"></div>
-        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Credenciales Demo Oficiales</span>
+        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Credenciales de Acceso Demo</span>
         <div class="border-t border-slate-800 w-full"></div>
       </div>
 
@@ -777,14 +777,11 @@
     let cacheEquipos = [];
 
     function getAuthHeaders() {
-      if (!sesionActiva) {
-        return { "Content-Type": "application/json" };
+      const headers = { "Content-Type": "application/json" };
+      if (sesionActiva?.token) {
+        headers["X-Session-Token"] = sesionActiva.token;
       }
-      return {
-        "Content-Type": "application/json",
-        "X-User-Email": sesionActiva.email,
-        "X-User-Password": sesionActiva.password
-      };
+      return headers;
     }
 
     function showToast(mensaje, tipo = "info") {
@@ -846,13 +843,14 @@
 
         const data = await res.json();
 
-        if (res.ok) {
+        if (res.ok && data.token) {
           sesionActiva = {
             id: data.usuario.id,
             nombre: data.usuario.nombre,
             email: data.usuario.email,
             rol: data.usuario.rol,
-            password: password
+            token: data.token,
+            expiresAt: Date.now() + ((data.expires_in_seconds || 28800) * 1000)
           };
 
           sessionStorage.setItem("salud_predictiva_session", JSON.stringify(sesionActiva));
@@ -1707,9 +1705,17 @@
       const savedSession = sessionStorage.getItem("salud_predictiva_session");
       if (savedSession) {
         try {
-          sesionActiva = JSON.parse(savedSession);
-          actualizarInterfazPerfil();
+          const parsed = JSON.parse(savedSession);
+          // Sesiones antiguas guardaban la contraseña: se invalidan de inmediato.
+          if (!parsed.token || (parsed.expiresAt && Date.now() >= parsed.expiresAt)) {
+            sessionStorage.removeItem("salud_predictiva_session");
+            sesionActiva = null;
+          } else {
+            sesionActiva = parsed;
+            actualizarInterfazPerfil();
+          }
         } catch (e) {
+          sessionStorage.removeItem("salud_predictiva_session");
           sesionActiva = null;
         }
       }
