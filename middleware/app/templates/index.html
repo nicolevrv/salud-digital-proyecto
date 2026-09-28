@@ -134,7 +134,7 @@
   <!-- ========================================================================= -->
   <!-- MAIN CONTENT WRAPPER -->
   <!-- ========================================================================= -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 transition-all duration-300">
 
     <!-- BANNER DE AUTORIZACIONES Y PERMISOS DEL PERFIL ACTIVO -->
     <div id="permissions-banner" class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">
@@ -488,11 +488,11 @@
             <p class="text-xs text-slate-400">Bloqueo de 15 minutos tras 3 intentos fallidos</p>
           </div>
         </div>
-        <button onclick="cerrarModal('modal-login')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+        <button id="btn-modal-login-close" onclick="cerrarModal('modal-login')" class="hidden text-slate-400 hover:text-white text-lg p-1 rounded-lg hover:bg-slate-800 transition" title="Cerrar">&times;</button>
       </div>
 
       <!-- Alerta de Error / Bloqueo en Login -->
-      <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-medium flex items-start gap-2">
+      <div id="login-error-alert" class="hidden p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 text-xs font-semibold flex items-start gap-2.5 shadow-lg shadow-rose-950/40">
         <svg class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span id="login-error-text">Credenciales incorrectas</span>
       </div>
@@ -504,8 +504,16 @@
           <input type="email" id="login-email" required placeholder="ej: medico@hospital.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1.5">Contraseña:</label>
-          <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-slate-300 font-semibold">Contraseña:</label>
+            <button type="button" onclick="alternarVisibilidadPassword()" class="text-[11px] text-cyan-400 hover:text-cyan-300 transition">
+              <span id="pass-visibility-text">Mostrar</span>
+            </button>
+          </div>
+          <div class="relative">
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10 transition">
+            <span id="pass-status-icon" class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none">🔒</span>
+          </div>
         </div>
         <button type="submit" id="btn-submit-login" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/20 transition flex items-center justify-center gap-2">
           <span>Iniciar Sesión</span>
@@ -516,7 +524,7 @@
       <!-- SEPARADOR -->
       <div class="relative flex items-center justify-center">
         <div class="border-t border-slate-800 w-full"></div>
-        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Credenciales de Acceso Demo</span>
+        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Cargar Credenciales de Prueba</span>
         <div class="border-t border-slate-800 w-full"></div>
       </div>
 
@@ -524,38 +532,38 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         
         <!-- Perfil 1: Admin Biomédico -->
-        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group">
+        <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
           <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/30">
             AB
           </div>
           <div>
             <div class="text-xs font-bold text-white group-hover:text-purple-300">Admin Biomédico</div>
-            <div class="text-[10px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
-            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight">Hojas de vida, catálogo y auditoría (Sin datos clínicos)</div>
+            <div class="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">admin.biomedico</div>
+            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight font-mono">clave: admin123</div>
           </div>
         </button>
 
         <!-- Perfil 2: Médico -->
-        <button onclick="autenticarRapido('medico@hospital.com', 'med123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2.5 group">
+        <button onclick="cargarPerfilDemo('medico@hospital.com', 'med123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
           <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-emerald-500/30">
             CT
           </div>
           <div>
             <div class="text-xs font-bold text-white group-hover:text-emerald-300">Médico</div>
             <div class="text-[10px] text-slate-400 font-mono">medico@hospital.com</div>
-            <div class="text-[9px] text-emerald-400 mt-0.5 leading-tight">Crea registros; restaura y modifica solo los suyos</div>
+            <div class="text-[9px] text-emerald-400 mt-0.5 leading-tight font-mono">clave: med123</div>
           </div>
         </button>
 
         <!-- Perfil 3: Servicio IoT -->
-        <button onclick="autenticarRapido('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group">
+        <button onclick="cargarPerfilDemo('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
           <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/30">
             ST
           </div>
           <div>
             <div class="text-xs font-bold text-white group-hover:text-cyan-300">Servicio IoT</div>
-            <div class="text-[10px] text-slate-400 font-mono">servicio.iot@hospital.com</div>
-            <div class="text-[9px] text-cyan-400 mt-0.5 leading-tight">Registra telemetría; emite paquetes de simulación</div>
+            <div class="text-[10px] text-slate-400 font-mono">servicio.iot</div>
+            <div class="text-[9px] text-cyan-400 mt-0.5 leading-tight font-mono">clave: service123</div>
           </div>
         </button>
 
@@ -846,8 +854,66 @@
       }, 4500);
     }
 
-    function abrirModal(id) { document.getElementById(id).classList.remove("hidden"); }
-    function cerrarModal(id) { document.getElementById(id).classList.add("hidden"); }
+    function abrirModal(id) { 
+      if (id === "modal-login") {
+        abrirModalLogin();
+        return;
+      }
+      document.getElementById(id).classList.remove("hidden"); 
+    }
+
+    function cerrarModal(id) { 
+      if (id === "modal-login") {
+        if (!sesionActiva) {
+          showToast("Acceso bloqueado: Debe ingresar una contraseña válida para acceder a la interfaz.", "warning");
+          return;
+        }
+      }
+      document.getElementById(id).classList.add("hidden"); 
+    }
+
+    function abrirModalLogin() {
+      const modal = document.getElementById("modal-login");
+      const closeBtn = document.getElementById("btn-modal-login-close");
+      if (closeBtn) {
+        if (sesionActiva) {
+          closeBtn.classList.remove("hidden");
+        } else {
+          closeBtn.classList.add("hidden");
+        }
+      }
+      document.getElementById("login-error-alert").classList.add("hidden");
+      const passInput = document.getElementById("login-password");
+      if (passInput) {
+        passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function alternarVisibilidadPassword() {
+      const pass = document.getElementById("login-password");
+      const txt = document.getElementById("pass-visibility-text");
+      const icon = document.getElementById("pass-status-icon");
+      if (pass.type === "password") {
+        pass.type = "text";
+        if (txt) txt.innerText = "Ocultar";
+        if (icon) icon.innerText = "🔓";
+      } else {
+        pass.type = "password";
+        if (txt) txt.innerText = "Mostrar";
+        if (icon) icon.innerText = "🔒";
+      }
+    }
+
+    function cargarPerfilDemo(email, pass) {
+      document.getElementById("login-email").value = email;
+      const passInput = document.getElementById("login-password");
+      passInput.value = pass;
+      passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+      document.getElementById("login-error-alert").classList.add("hidden");
+      passInput.focus();
+      showToast(`Credenciales cargadas para ${email}. Clic en 'Iniciar Sesión' para acceder, o modifique la clave para probar validación.`, "info");
+    }
 
     function cambiarTab(tabName) {
       if (sesionActiva) {
@@ -858,7 +924,7 @@
       } else {
         if (tabName === "auditoria") {
           showToast("Inicia sesión como Administrador Biomédico para consultar la auditoría.", "info");
-          abrirModal("modal-login");
+          abrirModalLogin();
           return;
         }
       }
@@ -877,13 +943,29 @@
     }
 
     // ==========================================
-    // AUTENTICACIÓN
+    // AUTENTICACIÓN ESTRICTA (LOGIN, VALIDACIÓN Y RECHAZO DE CLAVES MALAS)
     // ==========================================
 
     async function ejecutarLogin(email, password) {
       const errorBox = document.getElementById("login-error-alert");
       const errorTxt = document.getElementById("login-error-text");
+      const submitBtn = document.getElementById("btn-submit-login");
+      const passInput = document.getElementById("login-password");
+      const closeBtn = document.getElementById("btn-modal-login-close");
+
       errorBox.classList.add("hidden");
+      if (passInput) passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+
+      if (!email || !password) {
+        errorTxt.innerText = "Por favor ingrese tanto el correo como la contraseña.";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span>Validando credenciales...</span>`;
+      }
 
       try {
         const res = await fetch("/login", {
@@ -895,6 +977,7 @@
         const data = await res.json();
 
         if (res.ok && data.token) {
+          // AUTENTICACIÓN EXITOSA
           sesionActiva = {
             id: data.usuario.id,
             nombre: data.usuario.nombre,
@@ -907,41 +990,71 @@
           sessionStorage.setItem("salud_predictiva_session", JSON.stringify(sesionActiva));
 
           actualizarInterfazPerfil();
-          cerrarModal("modal-login");
+          document.getElementById("modal-login").classList.add("hidden");
+          if (closeBtn) closeBtn.classList.remove("hidden");
+
           showToast(`Sesión iniciada: ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
           cargarTodoElDashboard();
         } else {
-          errorTxt.innerText = data.detail || "Error de credenciales";
+          // CONTRASEÑA ERRÓNEA O USUARIO INCORRECTO: BLOQUEO INMEDIATO DE LA INTERFAZ
+          sesionActiva = null;
+          sessionStorage.removeItem("salud_predictiva_session");
+          actualizarInterfazPerfil();
+
+          // El modal permanece abierto y no se puede cerrar
+          if (closeBtn) closeBtn.classList.add("hidden");
+          document.getElementById("modal-login").classList.remove("hidden");
+
+          // Mensaje de rechazo claro
+          const msg = data.detail || "Contraseña incorrecta. Acceso denegado.";
+          errorTxt.innerText = msg;
           errorBox.classList.remove("hidden");
+
+          if (passInput) {
+            passInput.value = "";
+            passInput.classList.add("border-rose-500", "ring-2", "ring-rose-500");
+            passInput.focus();
+          }
+
+          showToast(msg, "error");
         }
       } catch (err) {
+        // En caso de caída de red o error de servidor
+        sesionActiva = null;
+        sessionStorage.removeItem("salud_predictiva_session");
+        actualizarInterfazPerfil();
+
+        if (closeBtn) closeBtn.classList.add("hidden");
+        document.getElementById("modal-login").classList.remove("hidden");
+
         errorTxt.innerText = `Error de conexión: ${err.message}`;
         errorBox.classList.remove("hidden");
+        showToast("Error de conexión al autenticar.", "error");
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>Iniciar Sesión</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+        }
       }
     }
 
     function ejecutarLoginManual(e) {
       e.preventDefault();
       const email = document.getElementById("login-email").value.trim();
-      const pass = document.getElementById("login-password").value.trim();
+      const pass = document.getElementById("login-password").value;
       ejecutarLogin(email, pass);
     }
 
     function autenticarRapido(email, pass) {
-      document.getElementById("login-email").value = email;
-      document.getElementById("login-password").value = pass;
-      ejecutarLogin(email, pass);
+      cargarPerfilDemo(email, pass);
     }
 
     function cerrarSesion() {
       sesionActiva = null;
       sessionStorage.removeItem("salud_predictiva_session");
-      document.getElementById("btn-open-login").classList.remove("hidden");
-      document.getElementById("user-badge-logged").classList.add("hidden");
-      abrirModal("modal-login");
-      actualizarBannerPermisos();
-      showToast("Sesión finalizada.", "info");
-      cargarTodoElDashboard();
+      actualizarInterfazPerfil();
+      abrirModalLogin();
+      showToast("Sesión finalizada. Ingrese credenciales para continuar.", "info");
     }
 
     function actualizarInterfazPerfil() {
@@ -1033,12 +1146,17 @@
           }
         }
 
+        const mainContent = document.getElementById("main-content");
+        if (mainContent) {
+          mainContent.classList.remove("filter", "blur-md", "pointer-events-none", "opacity-25", "select-none");
+        }
+
         actualizarBannerPermisos();
       } else {
         btnOpen.classList.remove("hidden");
         badgeLogged.classList.add("hidden");
         
-        // Sin sesión activa: Ocultar todas las acciones
+        // Sin sesión activa: Bloquear interfaz y ocultar todas las acciones
         if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
         if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
         if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
@@ -1049,6 +1167,11 @@
         if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
         if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
         if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+
+        const mainContent = document.getElementById("main-content");
+        if (mainContent) {
+          mainContent.classList.add("filter", "blur-md", "pointer-events-none", "opacity-25", "select-none");
+        }
 
         actualizarBannerPermisos();
       }
@@ -1936,8 +2059,9 @@
     // ==========================================
 
     async function cargarTodoElDashboard() {
+      await checkHealthStatus();
+      if (!sesionActiva) return;
       await Promise.all([
-        checkHealthStatus(),
         cargarEstadisticas(),
         cargarPacientes(),
         cargarEquiposUCI(),
@@ -1960,7 +2084,6 @@
             sesionActiva = null;
           } else {
             sesionActiva = parsed;
-            actualizarInterfazPerfil();
           }
         } catch (e) {
           sessionStorage.removeItem("salud_predictiva_session");
@@ -1968,17 +2091,22 @@
         }
       }
 
-      if (!sesionActiva) {
-        setTimeout(() => abrirModal("modal-login"), 400);
-      }
+      actualizarInterfazPerfil();
 
-      cargarTodoElDashboard();
+      if (!sesionActiva) {
+        abrirModalLogin();
+        checkHealthStatus();
+      } else {
+        cargarTodoElDashboard();
+      }
 
       setInterval(() => {
         checkHealthStatus();
-        cargarEstadisticas();
-        cargarMonitoreoCamas();
-        cargarObservaciones();
+        if (sesionActiva) {
+          cargarEstadisticas();
+          cargarMonitoreoCamas();
+          cargarObservaciones();
+        }
       }, 8000);
     });
   </script>

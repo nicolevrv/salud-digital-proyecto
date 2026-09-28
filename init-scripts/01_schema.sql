@@ -138,6 +138,7 @@ INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
 ON CONFLICT (id) DO UPDATE SET 
     nombre = EXCLUDED.nombre,
     email = EXCLUDED.email,
+    password_hash = EXCLUDED.password_hash,
     rol_id = EXCLUDED.rol_id,
     is_deleted = FALSE;
 
