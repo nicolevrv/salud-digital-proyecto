@@ -32,14 +32,13 @@ Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI 
 
 ## 👥 Roles y Credenciales de Prueba
 
-El sistema implementa cuatro perfiles con permisos diferenciados:
+El sistema implementa tres perfiles con permisos diferenciados:
 
 | Perfil | Correo | Contraseña demo | Permisos |
 | :--- | :--- | :--- | :--- |
-| **Paciente** | `paciente@hospital.com` | `paciente123` | Consulta únicamente su propio registro, encuentros, mediciones y equipos asignados. |
-| **Médico** | `medico@hospital.com` | `med123` | Consulta y crea registros clínicos; solo modifica los registros que creó. |
-| **Administrador biomédico** | `admin.biomedico@hospital.com` | `admin123` | Crea y administra hojas de vida/equipos y consulta auditoría. No accede a datos clínicos. |
-| **Servicio IoT** | `servicio.iot@hospital.com` | `service123` | Registra telemetría; no consulta datos ni administra cuentas. |
+| **Administrador biomédico** | `admin.biomedico@hospital.com` | `admin123` | Crea y administra hojas de vida, catálogo y consulta pistas de auditoría. No accede a datos clínicos. |
+| **Médico** | `medico@hospital.com` | `med123` | Consulta y crea pacientes, encuentros y registros clínicos; modifica y restaura solo sus propios registros. |
+| **Servicio IoT** | `servicio.iot@hospital.com` | `service123` | Registra telemetría y emite lotes de simulación. |
 
 Estas credenciales son únicamente para demostración local. Las contraseñas se convierten a PBKDF2 tras el primer inicio de sesión correcto. No las uses en producción.
 

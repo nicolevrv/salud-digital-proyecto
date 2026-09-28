@@ -520,18 +520,18 @@
         <div class="border-t border-slate-800 w-full"></div>
       </div>
 
-      <!-- 4 PERFILES DEMO -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <!-- 3 PERFILES DEMO OFICIALES -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         
-        <!-- Perfil 1: Paciente -->
-        <button onclick="autenticarRapido('paciente@hospital.com', 'paciente123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-blue-900/40 hover:border-blue-500 text-left transition flex items-start gap-2.5 group">
-          <div class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-blue-500/30">
-            PA
+        <!-- Perfil 1: Admin Biomédico -->
+        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/30">
+            AB
           </div>
           <div>
-            <div class="text-xs font-bold text-white group-hover:text-blue-300">Paciente</div>
-            <div class="text-[10px] text-slate-400 font-mono">paciente@hospital.com</div>
-            <div class="text-[9px] text-blue-400 mt-0.5 leading-tight">Consulta únicamente su propio registro y equipos</div>
+            <div class="text-xs font-bold text-white group-hover:text-purple-300">Admin Biomédico</div>
+            <div class="text-[10px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
+            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight">Hojas de vida, catálogo y auditoría (Sin datos clínicos)</div>
           </div>
         </button>
 
@@ -547,19 +547,7 @@
           </div>
         </button>
 
-        <!-- Perfil 3: Admin Biomédico -->
-        <button onclick="autenticarRapido('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group">
-          <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/30">
-            AB
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-purple-300">Admin Biomédico</div>
-            <div class="text-[10px] text-slate-400 font-mono">admin.biomedico@hospital.com</div>
-            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight">Hojas de vida, catálogo y auditoría (Sin datos clínicos)</div>
-          </div>
-        </button>
-
-        <!-- Perfil 4: Servicio IoT -->
+        <!-- Perfil 3: Servicio IoT -->
         <button onclick="autenticarRapido('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group">
           <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/30">
             ST
@@ -930,10 +918,6 @@
           avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
           avatar.innerText = "CT";
           btnNuevoEq.classList.add("hidden");
-        } else if (sesionActiva.rol === "Paciente") {
-          avatar.className = "w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-xs border border-blue-500/40";
-          avatar.innerText = "PA";
-          btnNuevoEq.classList.add("hidden");
         } else {
           avatar.className = "w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/40";
           avatar.innerText = "ST";
@@ -965,14 +949,7 @@
 
       email.innerText = sesionActiva.email;
 
-      if (sesionActiva.rol === "Paciente") {
-        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-950 text-blue-300 border border-blue-800";
-        pill.innerText = "Paciente";
-        iconBox.className = "p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20";
-        descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-blue-300">👤 <strong>Vista Personal:</strong> Consulta únicamente su propio registro clínico, telemetría y equipos asignados.</span>
-        `;
-      } else if (sesionActiva.rol === "Medico") {
+      if (sesionActiva.rol === "Medico") {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
         pill.innerText = "Médico";
         iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";

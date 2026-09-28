@@ -85,7 +85,13 @@ ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS equipo_uci_id INT REFERENCES equ
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS fecha_fin TIMESTAMP;
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE encuentros ADD COLUMN IF NOT EXISTS created_by INT REFERENCES usuarios(id);
-ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS usuario_id INT REFERENCES usuarios(id);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pacientes' AND column_name = 'usuario_id') THEN
+        ALTER TABLE pacientes DROP CONSTRAINT IF EXISTS pacientes_usuario_id_fkey;
+        ALTER TABLE pacientes DROP COLUMN IF EXISTS usuario_id CASCADE;
+    END IF;
+END $$;
 
 -- 8. Tabla de Observaciones Telemétricas (Control Predictivo)
 CREATE TABLE IF NOT EXISTS observaciones (
@@ -117,26 +123,28 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- DATOS SEMILLA Y POBLAMIENTO INICIAL
 -- =========================================================================
 
--- 1. Insertar 4 Roles Requeridos (Admin Biomedico, Medico, Servicio, Paciente)
+-- 1. Insertar 3 Roles Requeridos (Admin Biomedico, Medico, Servicio)
 INSERT INTO roles (id, nombre) VALUES 
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
-(3, 'Servicio'),
-(4, 'Paciente')
+(3, 'Servicio')
 ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
 -- 2. Insertar Usuarios de Prueba (Garantiza credenciales exactas del proyecto)
 INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
 (1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'admin123', 1),
 (2, 'Dr. Camilo Torres', 'medico@hospital.com', 'med123', 2),
-(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3),
-(4, 'Carlos Mendoza', 'paciente@hospital.com', 'paciente123', 4)
+(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3)
 ON CONFLICT (id) DO UPDATE SET 
     nombre = EXCLUDED.nombre,
     email = EXCLUDED.email,
     password_hash = EXCLUDED.password_hash,
     rol_id = EXCLUDED.rol_id,
     is_deleted = FALSE;
+
+-- Eliminar usuario o rol de paciente si existían previamente
+DELETE FROM usuarios WHERE email = 'paciente@hospital.com' OR id = 4;
+DELETE FROM roles WHERE id = 4;
 
 -- 3. Insertar Catálogo General de Equipos Médicos Hospitalarios
 INSERT INTO catalogo_equipos (id, nombre, tipo_servicio, clasificacion_riesgo, tecnologia_predominante) VALUES
@@ -188,13 +196,12 @@ ON CONFLICT (id) DO UPDATE SET
     bateria_backup_porcentaje = EXCLUDED.bateria_backup_porcentaje;
 
 -- 6. Insertar Paciente de Prueba
-INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, usuario_id, created_by) VALUES
-(1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 4, 1)
+INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, created_by) VALUES
+(1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 2)
 ON CONFLICT (id) DO UPDATE SET
     documento_identidad = EXCLUDED.documento_identidad,
     nombre = EXCLUDED.nombre,
     cama_uci = EXCLUDED.cama_uci,
-    usuario_id = 4,
     is_deleted = FALSE;
 
 -- 7. Insertar Encuentro Clínico

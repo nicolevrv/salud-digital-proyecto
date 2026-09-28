@@ -36,7 +36,7 @@ except ImportError:
 
 app = FastAPI(
     title="Salud Predictiva - Salud Digital",
-    description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas LOINC con 4 perfiles (Paciente, Médico, Admin Biomédico, Servicio IoT).",
+    description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas LOINC con 3 perfiles (Médico, Admin Biomédico, Servicio IoT).",
     version="2.0.0"
 )
 
@@ -370,7 +370,6 @@ def listar_observaciones(
 ):
     """
     Lista observaciones telemétricas según perfil:
-    - Paciente: consulta únicamente sus propias mediciones.
     - Admin Biomédico: no accede a datos clínicos.
     - Médico: consulta registros clínicos.
     """
@@ -384,7 +383,7 @@ def listar_observaciones(
         SELECT o.id, o.encuentro_id, o.parametro, o.codigo_loinc, o.valor, o.unidad,
                o.alerta_predictiva, o.version, o.is_deleted, o.created_at, o.created_by,
                u.nombre as autor_nombre, r.nombre as autor_rol,
-               p.nombre as paciente_nombre, p.cama_uci, p.usuario_id as paciente_usuario_id,
+               p.nombre as paciente_nombre, p.cama_uci,
                c.nombre as tipo_equipo, hv.codigo_inventario as equipo_codigo
         FROM observaciones o
         LEFT JOIN usuarios u ON o.created_by = u.id
@@ -397,11 +396,6 @@ def listar_observaciones(
         WHERE 1=1
     """
     params = []
-    
-    # Aislamiento para Paciente
-    if user["rol_nombre"] == "Paciente":
-        query += " AND (p.usuario_id = %s OR p.nombre ILIKE %s)"
-        params.extend([user["id"], f"%{user['nombre']}%"])
 
     if not include_deleted:
         query += " AND o.is_deleted = FALSE"
@@ -581,7 +575,7 @@ def listar_encuentros(
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT e.id, e.paciente_id, e.equipo_uci_id, e.fecha_inicio, e.fecha_fin, e.estado, e.is_deleted, e.created_by,
-               p.nombre as paciente_nombre, p.documento_identidad, p.cama_uci, p.usuario_id as paciente_usuario_id,
+               p.nombre as paciente_nombre, p.documento_identidad, p.cama_uci,
                u.nombre as autor_nombre,
                c.nombre as tipo_equipo, hv.codigo_inventario, hv.marca as equipo_marca, hv.modelo as equipo_modelo,
                eq.ubicacion_uci, eq.estado_operativo as equipo_estado
@@ -594,9 +588,6 @@ def listar_encuentros(
         WHERE 1=1
     """
     params = []
-    if user["rol_nombre"] == "Paciente":
-        query += " AND (p.usuario_id = %s OR p.nombre ILIKE %s)"
-        params.extend([user["id"], f"%{user['nombre']}%"])
 
     if not include_deleted:
         query += " AND e.is_deleted = FALSE"
@@ -678,7 +669,6 @@ def listar_pacientes(
 ):
     """
     Listado de pacientes:
-    - Paciente: consulta únicamente su propio registro.
     - Admin Biomédico: no accede a registros clínicos.
     - Médico: consulta pacientes UCI.
     """
@@ -689,7 +679,7 @@ def listar_pacientes(
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
-        SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.usuario_id, p.created_by,
+        SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
                e.id as encuentro_activo_id, e.estado as encuentro_estado,
                eq.ubicacion_uci as equipo_ubicacion, c.nombre as equipo_nombre
         FROM pacientes p
@@ -698,15 +688,9 @@ def listar_pacientes(
         LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
         LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
         WHERE p.is_deleted = FALSE
+        ORDER BY p.id ASC
     """
-    params = []
-    if user["rol_nombre"] == "Paciente":
-        query += " AND (p.usuario_id = %s OR p.nombre ILIKE %s)"
-        params.extend([user["id"], f"%{user['nombre']}%"])
-        
-    query += " ORDER BY p.id ASC"
-
-    cursor.execute(query, tuple(params))
+    cursor.execute(query)
     pacientes = cursor.fetchall()
     cursor.close()
     return {"pacientes": pacientes}
@@ -791,24 +775,16 @@ def listar_equipos_uci(
                hv.id as hoja_vida_id, hv.codigo_inventario, hv.marca, hv.modelo, hv.numero_serie, hv.registro_invima,
                hv.servicio_asignado, hv.fecha_adquisicion,
                c.nombre as tipo_equipo, c.clasificacion_riesgo, c.tecnologia_predominante,
-               enc.id as encuentro_activo_id, p.id as paciente_id, p.nombre as paciente_nombre, p.usuario_id as paciente_usuario_id
+               enc.id as encuentro_activo_id, p.id as paciente_id, p.nombre as paciente_nombre
         FROM equipos_uci e
         JOIN hoja_vida_equipos hv ON e.hoja_vida_id = hv.id
         JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
         LEFT JOIN encuentros enc ON e.id = enc.equipo_uci_id AND enc.estado = 'in-progress' AND enc.is_deleted = FALSE
         LEFT JOIN pacientes p ON enc.paciente_id = p.id
         WHERE e.is_deleted = FALSE
+        ORDER BY e.id ASC
     """
-    params = []
-    
-    # Paciente solo consulta su equipo asignado
-    if user["rol_nombre"] == "Paciente":
-        query += " AND (p.usuario_id = %s OR p.nombre ILIKE %s)"
-        params.extend([user["id"], f"%{user['nombre']}%"])
-        
-    query += " ORDER BY e.id ASC"
-
-    cursor.execute(query, tuple(params))
+    cursor.execute(query)
     equipos = cursor.fetchall()
     cursor.close()
     return {"equipos_uci": equipos}
