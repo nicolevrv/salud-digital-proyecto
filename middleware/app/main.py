@@ -9,6 +9,9 @@ from typing import Optional, List
 import random
 import hashlib
 import secrets
+import base64
+import hmac
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -57,13 +60,19 @@ DB_NAME = os.getenv("DB_NAME", "uci_telemetria")
 DB_USER = os.getenv("DB_USER", "admin")
 DB_PASS = os.getenv("DB_PASS", "adminpassword")
 
+# El token de sesión usa una clave secreta de Render cuando existe.
+# En Neon/Render, DATABASE_URL sirve como respaldo sin exponerlo al navegador.
+SESSION_SECRET = os.getenv("SESSION_SECRET") or os.getenv("DATABASE_URL") or "dev-only-session-secret-change-in-production"
+SESSION_TTL_MINUTES = int(os.getenv("SESSION_TTL_MINUTES", "480"))
+AUTO_INIT_DB = os.getenv("AUTO_INIT_DB", "false").lower() in {"1", "true", "yes"}
+
 def get_connection():
     """Establece conexión a PostgreSQL soportando DATABASE_URL (Neon/Render) y variables individuales (Docker/Local)."""
     if DATABASE_URL:
         db_url = DATABASE_URL
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
-        return psycopg2.connect(db_url)
+        return psycopg2.connect(db_url, connect_timeout=10)
     
     # Fallback para local o Docker Compose
     try:
@@ -72,7 +81,8 @@ def get_connection():
             port=int(DB_PORT),
             database=DB_NAME,
             user=DB_USER,
-            password=DB_PASS
+            password=DB_PASS,
+            connect_timeout=5
         )
     except Exception:
         # Reintento en puerto 5432 estándar por si se corre dentro del contenedor app-db
@@ -81,7 +91,8 @@ def get_connection():
             port=5432,
             database=DB_NAME,
             user=DB_USER,
-            password=DB_PASS
+            password=DB_PASS,
+            connect_timeout=5
         )
 
 def get_db():
@@ -105,24 +116,27 @@ LOGIN_ATTEMPTS = {}
 MAX_FAILED_ATTEMPTS = 3
 LOCKOUT_MINUTES = 15
 
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
 def check_account_lockout(email: str):
-    email_key = email.lower().strip()
+    email_key = normalize_email(email)
     record = LOGIN_ATTEMPTS.get(email_key)
     if not record:
         return
-    if record.get("locked_until"):
+    locked_until = record.get("locked_until")
+    if locked_until:
         now = datetime.now()
-        if now < record["locked_until"]:
-            mins_left = max(1, int((record["locked_until"] - now).total_seconds() / 60))
+        if now < locked_until:
+            mins_left = max(1, int((locked_until - now).total_seconds() / 60))
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos de contraseña. Intente de nuevo en {mins_left} minuto(s)."
+                detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos. Intente de nuevo en {mins_left} minuto(s)."
             )
-        else:
-            LOGIN_ATTEMPTS.pop(email_key, None)
+        LOGIN_ATTEMPTS.pop(email_key, None)
 
 def register_failed_attempt(email: str):
-    email_key = email.lower().strip()
+    email_key = normalize_email(email)
     now = datetime.now()
     record = LOGIN_ATTEMPTS.get(email_key, {"attempts": 0, "locked_until": None})
     record["attempts"] += 1
@@ -131,50 +145,117 @@ def register_failed_attempt(email: str):
         LOGIN_ATTEMPTS[email_key] = record
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos de contraseña."
+            detail="Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos."
         )
-    else:
-        LOGIN_ATTEMPTS[email_key] = record
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Contraseña incorrecta. Intento {record['attempts']} de {MAX_FAILED_ATTEMPTS}."
-        )
+    LOGIN_ATTEMPTS[email_key] = record
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Contraseña incorrecta. Intento {record['attempts']} de {MAX_FAILED_ATTEMPTS}."
+    )
 
 def reset_login_attempts(email: str):
-    LOGIN_ATTEMPTS.pop(email.lower().strip(), None)
+    LOGIN_ATTEMPTS.pop(normalize_email(email), None)
 
 def verify_and_upgrade_password(conn, user_id, provided_password, stored_hash):
-    """
-    Verifica la contraseña contra hash PBKDF2 o contra texto plano de demo.
-    Si coincide en texto plano, la convierte a PBKDF2 en la base de datos tras el primer login.
-    """
+    """Acepta formatos PBKDF2 antiguos/nuevos y migra claves demo en texto plano."""
+    if not stored_hash:
+        return False
+
     if stored_hash.startswith("pbkdf2:sha256:"):
         try:
             parts = stored_hash.split("$")
-            iterations = int(parts[1])
-            salt = parts[2]
-            expected_hash = parts[3]
-            computed = hashlib.pbkdf2_hmac("sha256", provided_password.encode(), salt.encode(), iterations).hex()
+            if len(parts) != 3:
+                return False
+            prefix = parts[0]
+            salt = parts[1]
+            expected_hash = parts[2]
+            iterations = int(prefix.rsplit(":", 1)[1])
+            computed = hashlib.pbkdf2_hmac(
+                "sha256",
+                provided_password.encode("utf-8"),
+                salt.encode("utf-8"),
+                iterations
+            ).hex()
             return secrets.compare_digest(computed, expected_hash)
-        except Exception:
+        except (ValueError, TypeError, IndexError):
             return False
-    elif stored_hash == provided_password:
-        # Conversión automática a PBKDF2 tras el primer inicio de sesión correcto
+
+    if secrets.compare_digest(str(stored_hash), str(provided_password)):
         salt = secrets.token_hex(16)
         iterations = 100000
-        new_hash = hashlib.pbkdf2_hmac("sha256", provided_password.encode(), salt.encode(), iterations).hex()
-        formatted = f"pbkdf2:sha256:${iterations}${salt}${new_hash}"
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE usuarios SET password_hash = %s WHERE id = %s", (formatted, user_id))
-            conn.commit()
-            cursor.close()
-        except Exception as e:
-            print(f"Error convirtiendo clave a PBKDF2: {e}")
+        new_hash = hashlib.pbkdf2_hmac(
+            "sha256",
+            provided_password.encode("utf-8"),
+            salt.encode("utf-8"),
+            iterations
+        ).hex()
+        formatted = "pbkdf2:sha256:" + str(iterations) + "$" + salt + "$" + new_hash
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE usuarios SET password_hash = %s WHERE id = %s",
+            (formatted, user_id)
+        )
+        conn.commit()
+        cursor.close()
         return True
+
     return False
 
-# ==========================================
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+def _b64url_decode(value: str) -> bytes:
+    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+
+def create_session_token(user_id: int) -> str:
+    expires_at = int(time.time()) + SESSION_TTL_MINUTES * 60
+    payload = f"{int(user_id)}.{expires_at}"
+    signature = hmac.new(
+        SESSION_SECRET.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256
+    ).digest()
+    return f"{_b64url(payload.encode('utf-8'))}.{_b64url(signature)}"
+
+def decode_session_token(token: str) -> int:
+    try:
+        encoded_payload, encoded_signature = token.split(".", 1)
+        payload_bytes = _b64url_decode(encoded_payload)
+        provided_signature = _b64url_decode(encoded_signature)
+        expected_signature = hmac.new(
+            SESSION_SECRET.encode("utf-8"),
+            payload_bytes,
+            hashlib.sha256
+        ).digest()
+        if not secrets.compare_digest(provided_signature, expected_signature):
+            raise ValueError("firma inválida")
+        user_part, exp_part = payload_bytes.decode("utf-8").split(".", 1)
+        if int(exp_part) <= int(time.time()):
+            raise ValueError("sesión expirada")
+        return int(user_part)
+    except (ValueError, TypeError, UnicodeDecodeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sesión inválida o expirada. Inicie sesión nuevamente."
+        )
+
+def get_user_by_id(conn, user_id: int):
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT u.id, u.nombre, u.email, u.rol_id, r.nombre as rol_nombre
+        FROM usuarios u
+        JOIN roles r ON u.rol_id = r.id
+        WHERE u.id = %s AND u.is_deleted = FALSE
+    """, (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="El usuario de la sesión ya no existe o está inactivo."
+        )
+    return user
+
 # MODELOS PYDANTIC
 # ==========================================
 
@@ -233,28 +314,39 @@ class SimularTelemetriaRequest(BaseModel):
 # ==========================================
 
 def verify_user_credentials(
-    x_user_email: str = Header(..., description="Correo del usuario"),
-    x_user_password: str = Header(..., description="Contraseña del usuario"),
+    x_session_token: Optional[str] = Header(default=None, description="Token de sesión"),
+    x_user_email: Optional[str] = Header(default=None, description="Correo del usuario (compatibilidad)"),
+    x_user_password: Optional[str] = Header(default=None, description="Contraseña (compatibilidad)"),
     conn = Depends(get_db)
 ):
-    check_account_lockout(x_user_email)
+    if x_session_token:
+        user_id = decode_session_token(x_session_token)
+        return get_user_by_id(conn, user_id)
+
+    if not x_user_email or not x_user_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Autenticación requerida."
+        )
+
+    email = normalize_email(x_user_email)
+    check_account_lockout(email)
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("""
-        SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre as rol_nombre 
-        FROM usuarios u 
-        JOIN roles r ON u.rol_id = r.id 
-        WHERE u.email = %s AND u.is_deleted = FALSE
-    """, (x_user_email,))
+        SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre as rol_nombre
+        FROM usuarios u
+        JOIN roles r ON u.rol_id = r.id
+        WHERE LOWER(u.email) = %s AND u.is_deleted = FALSE
+    """, (email,))
     user = cursor.fetchone()
     cursor.close()
 
     if not user:
-        register_failed_attempt(x_user_email)
-
+        register_failed_attempt(email)
     if not verify_and_upgrade_password(conn, user["id"], x_user_password, user["password_hash"]):
-        register_failed_attempt(x_user_email)
+        register_failed_attempt(email)
 
-    reset_login_attempts(x_user_email)
+    reset_login_attempts(email)
     user.pop("password_hash", None)
     return user
 
@@ -263,6 +355,47 @@ def verify_user_credentials(
 # ==========================================
 
 BASE_DIR = Path(__file__).resolve().parent
+
+def _find_schema_file():
+    candidates = [
+        BASE_DIR.parent.parent / "init-scripts" / "01_schema.sql",
+        Path("init-scripts/01_schema.sql").resolve(),
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+def initialize_database_on_startup():
+    if not AUTO_INIT_DB:
+        return
+
+    schema_path = _find_schema_file()
+    if not schema_path:
+        print("AUTO_INIT_DB habilitado, pero no se encontró init-scripts/01_schema.sql")
+        return
+
+    last_error = None
+    for attempt in range(1, 11):
+        try:
+            conn = get_connection()
+            with conn.cursor() as cursor:
+                with open(schema_path, "r", encoding="utf-8") as f:
+                    cursor.execute(f.read())
+            conn.commit()
+            conn.close()
+            print("Base de datos inicializada/verificada correctamente")
+            return
+        except Exception as exc:
+            last_error = exc
+            print(f"Esperando PostgreSQL (intento {attempt}/10): {exc}")
+            time.sleep(2)
+
+    print(f"No fue posible inicializar la base de datos automáticamente: {last_error}")
+
+@app.on_event("startup")
+def startup_event():
+    initialize_database_on_startup()
 
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard"])
 def root(request: Request):
@@ -318,15 +451,16 @@ def health_check():
 
 @app.post("/login", tags=["Autenticación"])
 def login(credentials: LoginRequest, conn = Depends(get_db)):
-    check_account_lockout(credentials.email)
+    email = normalize_email(credentials.email)
+    check_account_lockout(email)
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("""
-            SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre as rol_nombre 
-            FROM usuarios u 
-            JOIN roles r ON u.rol_id = r.id 
-            WHERE u.email = %s AND u.is_deleted = FALSE
-        """, (credentials.email,))
+            SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre as rol_nombre
+            FROM usuarios u
+            JOIN roles r ON u.rol_id = r.id
+            WHERE LOWER(u.email) = %s AND u.is_deleted = FALSE
+        """, (email,))
         user = cursor.fetchone()
         cursor.close()
     except Exception as e:
@@ -335,20 +469,21 @@ def login(credentials: LoginRequest, conn = Depends(get_db)):
         if "does not exist" in err_str or "no existe" in err_str:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="La base de datos aún no contiene las tablas necesarias. Ejecuta docker compose o aplica el esquema inicial."
+                detail="La base de datos aún no está inicializada. Espere unos segundos y vuelva a intentar."
             )
         raise HTTPException(status_code=500, detail=f"Error en base de datos: {str(e)}")
 
     if not user:
-        register_failed_attempt(credentials.email)
-
+        register_failed_attempt(email)
     if not verify_and_upgrade_password(conn, user["id"], credentials.password, user["password_hash"]):
-        register_failed_attempt(credentials.email)
+        register_failed_attempt(email)
 
-    reset_login_attempts(credentials.email)
-
+    reset_login_attempts(email)
+    token = create_session_token(user["id"])
     return {
         "message": "Autenticación exitosa",
+        "token": token,
+        "expires_in_seconds": SESSION_TTL_MINUTES * 60,
         "usuario": {
             "id": user["id"],
             "nombre": user["nombre"],
@@ -356,6 +491,10 @@ def login(credentials: LoginRequest, conn = Depends(get_db)):
             "rol": user["rol_nombre"]
         }
     }
+
+@app.get("/me", tags=["Autenticación"])
+def current_user(user: dict = Depends(verify_user_credentials)):
+    return {"usuario": user}
 
 # ==========================================
 # 1. SECCIÓN DE OBSERVACIONES TELEMÉTRICAS
@@ -1001,11 +1140,6 @@ def initialize_database(
                         END IF;
                         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'encuentros' AND column_name = 'is_deleted') THEN
                             ALTER TABLE encuentros ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
-                        END IF;
-                    END IF;
-                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'pacientes') THEN
-                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pacientes' AND column_name = 'usuario_id') THEN
-                            ALTER TABLE pacientes ADD COLUMN usuario_id INT;
                         END IF;
                     END IF;
                 END $$;
