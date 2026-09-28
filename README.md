@@ -1,4 +1,4 @@
-# Salud Predictiva - Salud Digital
+# BIOT UAO - Salud Digital
 
 Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas identificadas por código LOINC. Usa **FastAPI**, **PostgreSQL** y un panel de inspección de base de datos; toda la aplicación local se ejecuta con Docker Compose.
 
@@ -37,11 +37,11 @@ El sistema implementa tres perfiles con permisos diferenciados:
 
 | Perfil | Correo | Contraseña demo | Permisos |
 | :--- | :--- | :--- | :--- |
-| **Administrador biomédico** | `admin.biomedico@hospital.com` | `admin123` | Crea y administra hojas de vida, catálogo y consulta pistas de auditoría. No accede a datos clínicos. |
-| **Médico** | `medico@hospital.com` | `med123` | Consulta y crea pacientes, encuentros y registros clínicos; modifica y restaura solo sus propios registros. |
-| **Servicio IoT** | `servicio.iot@hospital.com` | `service123` | Registra telemetría y emite lotes de simulación. |
+| **Médico** | `medico@hospital.com` | `med123` | Consulta y crea registros clínicos; solo modifica los registros que creó. |
+| **Administrador biomédico** | `admin.biomedico@hospital.com` | `admin123` | Crea y administra hojas de vida/equipos y consulta auditoría. No accede a datos clínicos. |
+| **Servicio IoT** | `servicio.iot@hospital.com` | `service123` | Registra telemetría; no consulta datos ni administra cuentas. |
 
-Estas credenciales son únicamente para demostración local. Las contraseñas se convierten a PBKDF2 tras el primer inicio de sesión correcto. No las uses en producción.
+Los pacientes son registros clínicos y no tienen cuentas de acceso. Estas credenciales son únicamente para demostración local. Las contraseñas se convierten a PBKDF2 tras el primer inicio de sesión correcto. No las uses en producción.
 
 ---
 
@@ -59,7 +59,7 @@ docker compose ps
 - Revisión de tablas y registros: <http://localhost:8081>
 - Servidor FHIR: <http://localhost:8080/fhir>
 
-En Adminer selecciona **PostgreSQL**, servidor `host.docker.internal:5433`, usuario `admin`, contraseña `adminpassword` y base de datos `uci_telemetria`. El esquema y los datos demo se cargan automáticamente al crear el volumen por primera vez. La cuenta de paciente demo solo consulta el paciente asociado a su usuario.
+En Adminer selecciona **PostgreSQL**, servidor `host.docker.internal:5433`, usuario `admin`, contraseña `adminpassword` y base de datos `uci_telemetria`. El esquema y los datos demo se cargan automáticamente al crear el volumen por primera vez.
 
 `docker compose down` detiene los servicios y conserva la base de datos. `docker compose down -v` elimina los volúmenes y todos sus datos; úsalo solo cuando quieras borrar la base de datos local.
 
@@ -113,6 +113,8 @@ Si deseas probarlo localmente:
    ```env
    DATABASE_URL=postgresql://usuario:password@ep-xyz.neon.tech/neondb?sslmode=require
    ```
+
+La aplicación carga este archivo automáticamente. Para usar PostgreSQL de Docker desde un `uvicorn` ejecutado en el host, la conexión local predeterminada es `localhost:5433`; desde el contenedor de la API se usa el servicio `app-db:5432`.
 
 5. Iniciar el servidor FastAPI:
    ```bash

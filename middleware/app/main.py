@@ -38,7 +38,7 @@ except ImportError:
         enviar_observacion_a_fhir = None
 
 app = FastAPI(
-    title="Salud Predictiva - Salud Digital",
+    title="BIOT UAO - Salud Digital",
     description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas LOINC con 3 perfiles (Médico, Admin Biomédico, Servicio IoT).",
     version="2.0.0"
 )
@@ -409,13 +409,13 @@ def startup_event():
 def root(request: Request):
     accept_header = request.headers.get("accept", "")
     if "application/json" in accept_header and "text/html" not in accept_header:
-        return JSONResponse({"status": "Salud Predictiva - API Salud Digital Funcionando Correctamente"})
+        return JSONResponse({"status": "BIOT UAO - API Salud Digital Funcionando Correctamente"})
     
     html_path = BASE_DIR / "templates" / "index.html"
     if html_path.exists():
         with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h2>Salud Predictiva - Dashboard no encontrado</h2>")
+    return HTMLResponse(content="<h2>BIOT UAO - Dashboard no encontrado</h2>")
 
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard"])
 def dashboard_view():
@@ -447,7 +447,7 @@ def health_check():
 
     return {
         "status": "online",
-        "app": "Salud Predictiva - Salud Digital",
+        "app": "BIOT UAO - Salud Digital",
         "database": {
             "connected": db_connected,
             "provider": "Neon PostgreSQL" if DATABASE_URL and "neon.tech" in DATABASE_URL else ("PostgreSQL Remoto" if DATABASE_URL else "PostgreSQL Local / Docker"),

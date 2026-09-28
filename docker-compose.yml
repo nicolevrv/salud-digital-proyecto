@@ -1,5 +1,5 @@
 services:
-  # 1. API y Dashboard Web (Salud Predictiva - FastAPI)
+  # 1. API y Dashboard Web (BIOT UAO - FastAPI)
   api:
     build: .
     container_name: salud_predictiva_api
