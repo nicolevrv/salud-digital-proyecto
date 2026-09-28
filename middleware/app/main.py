@@ -365,6 +365,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def _find_schema_file():
     candidates = [
+        BASE_DIR.parent / "init-scripts" / "01_schema.sql",
         BASE_DIR.parent.parent / "init-scripts" / "01_schema.sql",
         Path("init-scripts/01_schema.sql").resolve(),
     ]
