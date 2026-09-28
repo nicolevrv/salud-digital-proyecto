@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- DATOS SEMILLA Y POBLAMIENTO INICIAL
 -- =========================================================================
 
--- 1. Insertar 3 Roles Requeridos (Admin Biomedico, Medico, Servicio)
+-- 1. Insertar únicamente los 3 roles funcionales del sistema (sin rol Paciente)
 INSERT INTO roles (id, nombre) VALUES 
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
@@ -132,18 +132,21 @@ ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
 -- 2. Insertar Usuarios de Prueba (Garantiza credenciales exactas del proyecto)
 INSERT INTO usuarios (id, nombre, email, password_hash, rol_id) VALUES
-(1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'admin123', 1),
-(2, 'Dr. Camilo Torres', 'medico@hospital.com', 'med123', 2),
-(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'service123', 3)
+(1, 'Ing. Biomédico Admin', 'admin.biomedico@hospital.com', 'pbkdf2:sha256:100000$4162f6b05c46b157a4e14d6987c2cbe4$2edd7825de7b5e615a7719c4023fd70d21790533bf3a2c97bf3847849cbd6f66', 1),
+(2, 'Dr. Camilo Torres', 'medico@hospital.com', 'pbkdf2:sha256:100000$f5180b90e0dd062ac752c79a1ae1d3f6$c26e4d9c6f66a19738dac10876164c44f8c53c64d0ae165d380c2fedcde8a96f', 2),
+(3, 'Servicio Telemetria UCI', 'servicio.iot@hospital.com', 'pbkdf2:sha256:100000$651cfa2ff61c3eb6711f78977289731f$4c6232135425b657c38bcacad0cfe4d9fbf683d50cfb75302accd794870e41a8', 3)
 ON CONFLICT (id) DO UPDATE SET 
     nombre = EXCLUDED.nombre,
     email = EXCLUDED.email,
-    password_hash = EXCLUDED.password_hash,
     rol_id = EXCLUDED.rol_id,
     is_deleted = FALSE;
 
--- Eliminar usuario o rol de paciente si existían previamente
-DELETE FROM usuarios WHERE email = 'paciente@hospital.com' OR id = 4;
+-- Retirar por completo el rol Paciente y cualquier usuario que todavía lo tenga.
+-- Se conserva el registro del usuario como soft-delete para no romper auditorías/FK históricas.
+UPDATE usuarios
+SET rol_id = NULL, is_deleted = TRUE
+WHERE rol_id = 4;
+
 DELETE FROM roles WHERE id = 4;
 
 -- 3. Insertar Catálogo General de Equipos Médicos Hospitalarios
