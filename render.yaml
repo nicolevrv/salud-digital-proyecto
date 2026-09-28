@@ -2,11 +2,20 @@ services:
   - type: web
     name: salud-digital-telemetria-uci
     runtime: python
+    branch: main
+    autoDeployTrigger: commit
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn middleware.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     plan: free
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SESSION_TTL_MINUTES
+        value: "480"
+      - key: AUTO_INIT_DB
+        value: "true"
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: "3.11.9"
