@@ -87,15 +87,15 @@ def get_connection():
 def get_db():
     try:
         conn = get_connection()
-        try:
-            yield conn
-        finally:
-            conn.close()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Error de conexión con la base de datos PostgreSQL: {str(e)}"
         )
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 # ==========================================
 # SEGURIDAD: CONTROL DE ACCESO, INTENTOS FALLIDOS Y PBKDF2
