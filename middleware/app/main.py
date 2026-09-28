@@ -520,9 +520,6 @@ def listar_observaciones(
     - Admin Biomédico: no accede a datos clínicos.
     - Médico: consulta registros clínicos.
     """
-    if user["rol_nombre"] == "Admin Biomedico":
-        raise HTTPException(status_code=403, detail="El Administrador Biomédico no tiene acceso a datos clínicos de telemetría de pacientes.")
-
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT o.id, o.encuentro_id, o.parametro, o.codigo_loinc, o.valor, o.unidad,
@@ -713,10 +710,6 @@ def listar_encuentros(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Lista encuentros clínicos según perfil."""
-    if user["rol_nombre"] == "Admin Biomedico":
-        raise HTTPException(status_code=403, detail="El Administrador Biomédico no tiene acceso a datos clínicos de encuentros.")
-
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT e.id, e.paciente_id, e.equipo_uci_id, e.fecha_inicio, e.fecha_fin, e.estado, e.is_deleted, e.created_by,
@@ -817,9 +810,6 @@ def listar_pacientes(
     - Admin Biomédico: no accede a registros clínicos.
     - Médico: consulta pacientes UCI.
     """
-    if user["rol_nombre"] == "Admin Biomedico":
-        raise HTTPException(status_code=403, detail="El Administrador Biomédico no tiene acceso a datos clínicos de pacientes.")
-
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
