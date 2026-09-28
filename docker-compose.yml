@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. API y Dashboard Web (PECHY'S IOT - FastAPI)
   api:
@@ -61,7 +59,7 @@ services:
 
   # 5. Servidor HAPI FHIR R4
   hapi-fhir:
-    image: hapifhir/hapi-fhir-jpaserver-starter:latest
+    image: hapiproject/hapi:latest
     container_name: hapi_fhir_server
     ports:
       - "8080:8080"
