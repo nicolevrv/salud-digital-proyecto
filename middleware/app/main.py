@@ -522,8 +522,6 @@ def listar_observaciones(
     """
     if user["rol_nombre"] == "Admin Biomedico":
         raise HTTPException(status_code=403, detail="El Administrador Biomédico no tiene acceso a datos clínicos de telemetría de pacientes.")
-    if user["rol_nombre"] == "Servicio":
-        raise HTTPException(status_code=403, detail="El Servicio IoT no consulta observaciones clínicas.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
@@ -821,8 +819,6 @@ def listar_pacientes(
     """
     if user["rol_nombre"] == "Admin Biomedico":
         raise HTTPException(status_code=403, detail="El Administrador Biomédico no tiene acceso a datos clínicos de pacientes.")
-    if user["rol_nombre"] == "Servicio":
-        raise HTTPException(status_code=403, detail="El servicio IoT no consulta pacientes.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """

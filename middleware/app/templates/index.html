@@ -254,7 +254,7 @@
 
       <!-- Botones de Acción Global -->
       <div class="flex items-center gap-2">
-        <button id="btn-simular-iot-global" onclick="intentarSimulacionTelemetria()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20 transition">
+        <button id="btn-simular-iot-global" onclick="intentarSimulacionTelemetria()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20 transition">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           <span id="txt-simular-iot">+ Simular Telemetría IoT</span>
         </button>
@@ -315,11 +315,11 @@
             <p class="text-xs text-slate-400">Asignación de camas, médicos tratantes e inicio de encuentros</p>
           </div>
           <div id="pacientes-action-buttons" class="flex items-center gap-2">
-            <button onclick="abrirModalNuevoPaciente()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+            <button id="btn-nuevo-paciente" onclick="abrirModalNuevoPaciente()" class="hidden px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
               <span>+ Nuevo Paciente</span>
             </button>
-            <button onclick="abrirModalNuevoEncuentro()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5">
+            <button id="btn-nuevo-encuentro" onclick="abrirModalNuevoEncuentro()" class="hidden px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               <span>+ Iniciar Encuentro</span>
             </button>
@@ -404,7 +404,7 @@
               <input type="checkbox" id="check-incluir-eliminados" onchange="cargarObservaciones()" class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0">
               <span>Incluir eliminados (Soft-Deleted)</span>
             </label>
-            <button id="btn-nueva-obs-header" onclick="abrirModalNuevaObservacion()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+            <button id="btn-nueva-obs-header" onclick="abrirModalNuevaObservacion()" class="hidden px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               <span>+ Nueva Medición</span>
             </button>
@@ -638,6 +638,44 @@
     </div>
   </div>
 
+  <!-- Modal Edición de Equipo (Exclusivo Admin Biomédico) -->
+  <div id="modal-edicion-equipo" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h4 class="font-bold text-white text-sm">Gestión Metrológica de Equipo UCI</h4>
+        <button onclick="cerrarModal('modal-edicion-equipo')" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <form onsubmit="guardarEdicionEquipo(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="edit-eq-id">
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Equipo Biomédico:</label>
+          <span id="edit-eq-nombre-txt" class="block font-semibold text-purple-300 py-1">--</span>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Ubicación UCI:</label>
+          <input type="text" id="edit-eq-ubicacion" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Estado Operativo:</label>
+          <select id="edit-eq-estado" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            <option value="Disponible">Disponible</option>
+            <option value="En Uso">En Uso</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Descalibrado">Descalibrado</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Batería Backup (%):</label>
+          <input type="number" min="0" max="100" id="edit-eq-bateria" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="cerrarModal('modal-edicion-equipo')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Otros Modales: Paciente, Encuentro, Observación, Edición -->
   <!-- Modal Paciente -->
   <div id="modal-nuevo-paciente" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -812,6 +850,23 @@
     function cerrarModal(id) { document.getElementById(id).classList.add("hidden"); }
 
     function cambiarTab(tabName) {
+      if (sesionActiva) {
+        if (sesionActiva.rol === "Admin Biomedico" && (tabName === "pacientes" || tabName === "observaciones")) {
+          showToast("Acceso restringido: El Administrador Biomédico no tiene autorización para acceder a áreas clínicas de pacientes por confidencialidad médica.", "warning");
+          return;
+        }
+        if (sesionActiva.rol !== "Admin Biomedico" && tabName === "auditoria") {
+          showToast("Acceso restringido: La pista de auditoría está reservada exclusivamente para el Administrador Biomédico.", "warning");
+          return;
+        }
+      } else {
+        if (tabName === "auditoria") {
+          showToast("Inicia sesión como Administrador Biomédico para consultar la auditoría.", "info");
+          abrirModal("modal-login");
+          return;
+        }
+      }
+
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(el => {
         el.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2";
@@ -899,7 +954,18 @@
       const avatar = document.getElementById("user-avatar");
       const nameDisp = document.getElementById("user-name-display");
       const roleDisp = document.getElementById("user-role-display");
+      
       const btnNuevoEq = document.getElementById("btn-nuevo-equipo-admin");
+      const btnNuevoPac = document.getElementById("btn-nuevo-paciente");
+      const btnNuevoEnc = document.getElementById("btn-nuevo-encuentro");
+      const btnNuevaObs = document.getElementById("btn-nueva-obs-header");
+      const btnSimularIot = document.getElementById("btn-simular-iot-global");
+
+      const tabBtnMonitoreo = document.getElementById("tab-btn-monitoreo");
+      const tabBtnPacientes = document.getElementById("tab-btn-pacientes");
+      const tabBtnEquipos = document.getElementById("tab-btn-equipos");
+      const tabBtnObservaciones = document.getElementById("tab-btn-observaciones");
+      const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
 
       if (sesionActiva) {
         btnOpen.classList.add("hidden");
@@ -911,22 +977,90 @@
         if (sesionActiva.rol === "Admin Biomedico") {
           avatar.className = "w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs border border-purple-500/40";
           avatar.innerText = "AB";
-          btnNuevoEq.classList.remove("hidden");
+          
+          // Botones: Solo registrar equipos
+          if (btnNuevoEq) btnNuevoEq.classList.remove("hidden");
+          if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
+          if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnSimularIot) btnSimularIot.classList.add("hidden");
+
+          // Tabs: Admin NO debe acceder a pacientes ni observaciones clínicas
+          if (tabBtnPacientes) tabBtnPacientes.classList.add("hidden");
+          if (tabBtnObservaciones) tabBtnObservaciones.classList.add("hidden");
+          if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+          if (tabBtnAuditoria) tabBtnAuditoria.classList.remove("hidden");
+
+          // Si el admin estaba parado en una pestaña clínica, cambiar a equipos
+          const currentTabPac = document.getElementById("tab-pacientes");
+          const currentTabObs = document.getElementById("tab-observaciones");
+          if ((currentTabPac && !currentTabPac.classList.contains("hidden")) || 
+              (currentTabObs && !currentTabObs.classList.contains("hidden"))) {
+            cambiarTab("equipos");
+          }
+
         } else if (sesionActiva.rol === "Medico") {
           avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
           avatar.innerText = "CT";
-          btnNuevoEq.classList.add("hidden");
-        } else {
+          
+          // Botones clínicos
+          if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
+          if (btnNuevoPac) btnNuevoPac.classList.remove("hidden");
+          if (btnNuevoEnc) btnNuevoEnc.classList.remove("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.remove("hidden");
+          if (btnSimularIot) btnSimularIot.classList.add("hidden");
+
+          // Tabs
+          if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
+          if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
+          if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+          if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+
+          const currentTabAud = document.getElementById("tab-auditoria");
+          if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
+            cambiarTab("pacientes");
+          }
+
+        } else if (sesionActiva.rol === "Servicio") {
           avatar.className = "w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/40";
           avatar.innerText = "ST";
-          btnNuevoEq.classList.add("hidden");
+          
+          // Botones: Servicio IoT NO puede agregar pacientes ni modificar nada, solo simular telemetría
+          if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
+          if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
+          if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnSimularIot) btnSimularIot.classList.remove("hidden");
+
+          // Tabs: Solo lectura de monitoreo, telemetría y equipos. No auditoría.
+          if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
+          if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
+          if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+          if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+
+          const currentTabAud = document.getElementById("tab-auditoria");
+          if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
+            cambiarTab("monitoreo");
+          }
         }
 
         actualizarBannerPermisos();
       } else {
         btnOpen.classList.remove("hidden");
         badgeLogged.classList.add("hidden");
-        btnNuevoEq.classList.add("hidden");
+        
+        // Sin sesión activa: Ocultar todas las acciones
+        if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
+        if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
+        if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
+        if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+        if (btnSimularIot) btnSimularIot.classList.add("hidden");
+
+        if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
+        if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
+        if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+        if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+
         actualizarBannerPermisos();
       }
     }
@@ -952,8 +1086,8 @@
         pill.innerText = "Médico";
         iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-emerald-300">🩺 <strong>Clínico:</strong> Consulta y crea pacientes y encuentros.</span>
-          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría:</strong> Solo modifica los registros que creó.</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300">🩺 <strong>Clínico:</strong> Consulta y admite pacientes e inicia encuentros.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría:</strong> Solo modifica o borra los registros que creó.</span>
           <span class="inline-flex items-center gap-1 text-teal-300">🔄 <strong>Restauración:</strong> Reservada al médico autor.</span>
         `;
       } else if (sesionActiva.rol === "Admin Biomedico") {
@@ -962,7 +1096,7 @@
         iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
         descList.innerHTML = `
           <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología:</strong> Crea y administra hojas de vida y equipos UCI.</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta bitácoras de auditoría inmutable.</span>
           <span class="inline-flex items-center gap-1 text-slate-400">⛔ <strong>Confidencialidad:</strong> No accede a datos clínicos de pacientes.</span>
         `;
       } else {
@@ -970,8 +1104,9 @@
         pill.innerText = "Servicio IoT";
         iconBox.className = "p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión de señales IoT.</span>
-          <span class="inline-flex items-center gap-1 text-emerald-300">⚡ <strong>Simulación:</strong> Disponible únicamente para esta cuenta.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión automática de señales IoT.</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300">⚡ <strong>Simulación:</strong> Exclusiva de esta cuenta de servicio.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> No puede agregar pacientes ni modificar datos.</span>
         `;
       }
     }
@@ -1048,6 +1183,11 @@
 
     async function cargarPacientes() {
       if (!sesionActiva) return;
+      if (sesionActiva.rol === "Admin Biomedico") {
+        const tbody = document.getElementById("tabla-pacientes-body");
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">⛔ El Administrador Biomédico no tiene acceso a datos clínicos de pacientes por confidencialidad médica.</td></tr>`;
+        return;
+      }
       try {
         const res = await fetch("/pacientes", { headers: getAuthHeaders() });
         const tbody = document.getElementById("tabla-pacientes-body");
@@ -1154,6 +1294,11 @@
 
     async function cargarObservaciones() {
       if (!sesionActiva) return;
+      if (sesionActiva.rol === "Admin Biomedico") {
+        const tbody = document.getElementById("tabla-observaciones-body");
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">⛔ El Administrador Biomédico no tiene acceso a observaciones clínicas de pacientes por confidencialidad médica.</td></tr>`;
+        return;
+      }
       try {
         const includeDeleted = document.getElementById("check-incluir-eliminados").checked;
         const res = await fetch(`/observaciones?include_deleted=${includeDeleted}`, { headers: getAuthHeaders() });
@@ -1367,6 +1512,10 @@
 
     // Soft-Edit
     function abrirModalEdicionObs(id, parametro, valorActual, alertaActual) {
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el médico autor puede editar registros clínicos.", "error");
+        return;
+      }
       document.getElementById("edit-obs-id").value = id;
       document.getElementById("edit-obs-parametro-txt").innerText = parametro;
       document.getElementById("edit-obs-valor").value = valorActual;
@@ -1376,6 +1525,10 @@
 
     async function guardarEdicionObservacion(e) {
       e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el médico autor puede guardar cambios.", "error");
+        return;
+      }
       const id = document.getElementById("edit-obs-id").value;
       const valor = parseFloat(document.getElementById("edit-obs-valor").value);
       const alerta = document.getElementById("edit-obs-alerta").value;
@@ -1401,6 +1554,10 @@
 
     // Soft-Delete
     async function ejecutarSoftDeleteObs(id) {
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el médico autor puede eliminar registros clínicos.", "error");
+        return;
+      }
       if (!confirm(`¿Confirmas el Soft-Delete de la observación #${id}?`)) return;
       try {
         const res = await fetch(`/observaciones/${id}/soft-delete`, {
@@ -1422,6 +1579,10 @@
 
     // Restore (Médico autor)
     async function ejecutarRestoreObs(id) {
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el médico autor puede restaurar el registro clínico.", "error");
+        return;
+      }
       try {
         const res = await fetch(`/observaciones/${id}/restore`, {
           method: "POST",
@@ -1442,7 +1603,15 @@
 
     // Crear Equipo / Hoja de Vida (Admin Biomédico)
     async function abrirModalNuevoEquipo() {
-      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") return;
+      if (!sesionActiva) {
+        showToast("Debes iniciar sesión como Administrador Biomédico para registrar equipos.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      if (sesionActiva.rol !== "Admin Biomedico") {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no tiene permisos para crear equipos biomédicos. Exclusivo de Administración Biomédica.`, "error");
+        return;
+      }
       try {
         const res = await fetch("/catalogo-equipos", { headers: getAuthHeaders() });
         if (res.ok) {
@@ -1462,6 +1631,10 @@
 
     async function guardarNuevoEquipoUCI(e) {
       e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+        showToast("Acceso denegado: Solo el Administrador Biomédico puede registrar equipos.", "error");
+        return;
+      }
       const payload = {
         equipo_catalogo_id: parseInt(document.getElementById("eq-catalogo-id").value),
         codigo_inventario: document.getElementById("eq-codigo").value,
@@ -1494,10 +1667,78 @@
       }
     }
 
-    // Modal Pacientes & Encuentros
-    function abrirModalNuevoPaciente() { abrirModal("modal-nuevo-paciente"); }
+    // Modal Edición de Equipo (Admin Biomédico)
+    function abrirModalEdicionEquipo(id, nombre, ubicacion, estado, bateria) {
+      if (!sesionActiva) {
+        showToast("Debes iniciar sesión como Administrador Biomédico para gestionar equipos.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      if (sesionActiva.rol !== "Admin Biomedico") {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no tiene permisos para gestionar equipos. Exclusivo de Administración Biomédica.`, "error");
+        return;
+      }
+      document.getElementById("edit-eq-id").value = id;
+      document.getElementById("edit-eq-nombre-txt").innerText = nombre;
+      document.getElementById("edit-eq-ubicacion").value = ubicacion;
+      document.getElementById("edit-eq-estado").value = estado;
+      document.getElementById("edit-eq-bateria").value = bateria;
+      abrirModal("modal-edicion-equipo");
+    }
+
+    async function guardarEdicionEquipo(e) {
+      e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+        showToast("Acceso denegado: Solo el Administrador Biomédico puede modificar equipos.", "error");
+        return;
+      }
+      const id = document.getElementById("edit-eq-id").value;
+      const payload = {
+        ubicacion_uci: document.getElementById("edit-eq-ubicacion").value,
+        estado_operativo: document.getElementById("edit-eq-estado").value,
+        bateria_backup_porcentaje: parseInt(document.getElementById("edit-eq-bateria").value)
+      };
+
+      try {
+        const res = await fetch(`/equipos-uci/${id}/soft-edit`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, "success");
+          cerrarModal("modal-edicion-equipo");
+          cargarEquiposUCI();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail, "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    // Modal Pacientes & Encuentros (Exclusivo Médico)
+    function abrirModalNuevoPaciente() { 
+      if (!sesionActiva) {
+        showToast("Debes iniciar sesión como Médico para admitir pacientes.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      if (sesionActiva.rol !== "Medico") {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no tiene autorización para admitir pacientes. Exclusivo de Médicos asistenciales.`, "error");
+        return;
+      }
+      abrirModal("modal-nuevo-paciente"); 
+    }
+
     async function guardarNuevoPaciente(e) {
       e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el perfil Médico está autorizado para admitir pacientes.", "error");
+        return;
+      }
       const payload = {
         documento_identidad: document.getElementById("pac-doc").value,
         nombre: document.getElementById("pac-nombre").value,
@@ -1524,6 +1765,15 @@
     }
 
     async function abrirModalNuevoEncuentro() {
+      if (!sesionActiva) {
+        showToast("Debes iniciar sesión como Médico para iniciar encuentros.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      if (sesionActiva.rol !== "Medico") {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no tiene autorización para iniciar encuentros. Exclusivo de Médicos asistenciales.`, "error");
+        return;
+      }
       const selectPac = document.getElementById("enc-paciente-id");
       const selectEq = document.getElementById("enc-equipo-id");
       selectPac.innerHTML = cachePacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.cama_uci})</option>`).join("");
@@ -1539,6 +1789,10 @@
 
     async function guardarNuevoEncuentro(e) {
       e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo el perfil Médico está autorizado para iniciar encuentros.", "error");
+        return;
+      }
       const pacId = parseInt(document.getElementById("enc-paciente-id").value);
       const eqIdVal = document.getElementById("enc-equipo-id").value;
       try {
@@ -1561,8 +1815,17 @@
       }
     }
 
-    // Modal Nueva Obs
+    // Modal Nueva Obs (Exclusivo Médico)
     function abrirModalNuevaObservacion() {
+      if (!sesionActiva) {
+        showToast("Debes iniciar sesión como Médico para registrar mediciones clínicas.", "warning");
+        abrirModal("modal-login");
+        return;
+      }
+      if (sesionActiva.rol !== "Medico") {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no puede registrar mediciones clínicas manuales. Las señales IoT se transmiten por sensor/simulación.`, "error");
+        return;
+      }
       const selectEnc = document.getElementById("nueva-obs-encuentro-id");
       selectEnc.innerHTML = cacheEncuentros.map(e => `<option value="${e.id}">Encuentro #${e.id} - ${e.paciente_nombre} (${e.cama_uci})</option>`).join("");
       abrirModal("modal-nueva-obs");
@@ -1575,6 +1838,10 @@
 
     async function guardarNuevaObservacion(e) {
       e.preventDefault();
+      if (!sesionActiva || sesionActiva.rol !== "Medico") {
+        showToast("Acceso denegado: Solo los médicos pueden registrar mediciones clínicas.", "error");
+        return;
+      }
       const rawParam = document.getElementById("nueva-obs-parametro").value.split("|");
       const payload = {
         encuentro_id: parseInt(document.getElementById("nueva-obs-encuentro-id").value),
