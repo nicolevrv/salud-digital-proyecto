@@ -35,7 +35,7 @@ except ImportError:
         enviar_observacion_a_fhir = None
 
 app = FastAPI(
-    title="PECHY'S IOT - Salud Digital",
+    title="Salud Predictiva - Salud Digital",
     description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas LOINC con 4 perfiles (Paciente, Médico, Admin Biomédico, Servicio IoT).",
     version="2.0.0"
 )
@@ -268,13 +268,13 @@ BASE_DIR = Path(__file__).resolve().parent
 def root(request: Request):
     accept_header = request.headers.get("accept", "")
     if "application/json" in accept_header and "text/html" not in accept_header:
-        return JSONResponse({"status": "PECHY'S IOT - API Salud Digital Funcionando Correctamente"})
+        return JSONResponse({"status": "Salud Predictiva - API Salud Digital Funcionando Correctamente"})
     
     html_path = BASE_DIR / "templates" / "index.html"
     if html_path.exists():
         with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h2>PECHY'S IOT - Dashboard no encontrado</h2>")
+    return HTMLResponse(content="<h2>Salud Predictiva - Dashboard no encontrado</h2>")
 
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard"])
 def dashboard_view():
@@ -306,7 +306,7 @@ def health_check():
 
     return {
         "status": "online",
-        "app": "PECHY'S IOT - Salud Digital",
+        "app": "Salud Predictiva - Salud Digital",
         "database": {
             "connected": db_connected,
             "provider": "Neon PostgreSQL" if DATABASE_URL and "neon.tech" in DATABASE_URL else ("PostgreSQL Remoto" if DATABASE_URL else "PostgreSQL Local / Docker"),

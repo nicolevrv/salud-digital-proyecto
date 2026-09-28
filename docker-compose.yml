@@ -1,8 +1,8 @@
 services:
-  # 1. API y Dashboard Web (PECHY'S IOT - FastAPI)
+  # 1. API y Dashboard Web (Salud Predictiva - FastAPI)
   api:
     build: .
-    container_name: pechys_iot_api
+    container_name: salud_predictiva_api
     ports:
       - "8000:8000"
     environment:

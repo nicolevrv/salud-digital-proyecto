@@ -1,4 +1,4 @@
-# PECHY'S IOT - Salud Digital
+# Salud Predictiva - Salud Digital
 
 Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas identificadas por código LOINC. Usa **FastAPI**, **PostgreSQL** y un panel de inspección de base de datos; toda la aplicación local se ejecuta con Docker Compose.
 
