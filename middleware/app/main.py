@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from fastapi import FastAPI, HTTPException, Header, Depends, status, Request
@@ -770,6 +771,72 @@ def crear_encuentro(
             pass
 
     return {"message": "Encuentro clínico iniciado exitosamente", "encuentro": nuevo_encuentro}
+
+@app.put("/encuentros/{encuentro_id}/finalizar", tags=["Encuentros"])
+@app.post("/encuentros/{encuentro_id}/finalizar", tags=["Encuentros"])
+def finalizar_encuentro(
+    encuentro_id: int,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Permite únicamente al Médico finalizar y cerrar un encuentro clínico activo."""
+    if user["rol_nombre"] != "Medico":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado: Únicamente los médicos están autorizados para finalizar y cerrar encuentros clínicos."
+        )
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT id, paciente_id, equipo_uci_id, estado, created_by 
+        FROM encuentros 
+        WHERE id = %s AND is_deleted = FALSE
+    """, (encuentro_id,))
+    encuentro = cursor.fetchone()
+
+    if not encuentro:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Encuentro clínico no encontrado o inactivo.")
+
+    if encuentro["estado"] == "finished":
+        cursor.close()
+        raise HTTPException(status_code=400, detail="El encuentro clínico ya se encuentra finalizado.")
+
+    cursor.execute("""
+        UPDATE encuentros 
+        SET estado = 'finished', fecha_fin = CURRENT_TIMESTAMP 
+        WHERE id = %s
+        RETURNING id, paciente_id, equipo_uci_id, estado, fecha_inicio, fecha_fin;
+    """, (encuentro_id,))
+    encuentro_finalizado = cursor.fetchone()
+
+    # Si tenía un equipo UCI asignado, liberarlo (volver a 'Disponible')
+    if encuentro["equipo_uci_id"]:
+        cursor.execute("""
+            UPDATE equipos_uci 
+            SET estado_operativo = 'Disponible' 
+            WHERE id = %s
+        """, (encuentro["equipo_uci_id"],))
+
+    # Registrar en pista de auditoría inmutable
+    cursor.execute("""
+        INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+        VALUES (%s, 'FINALIZAR_ENCUENTRO', 'encuentros', %s)
+    """, (user["id"], encuentro_id))
+
+    conn.commit()
+    cursor.close()
+
+    if sync_encounter_to_fhir:
+        try:
+            sync_encounter_to_fhir(encuentro_finalizado)
+        except Exception:
+            pass
+
+    return {
+        "message": f"Encuentro #{encuentro_id} finalizado y cerrado exitosamente por el médico tratante.",
+        "encuentro": encuentro_finalizado
+    }
 
 # ==========================================
 # 3. SECCIÓN DE PACIENTES
