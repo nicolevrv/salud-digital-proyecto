@@ -824,7 +824,7 @@ def listar_pacientes(
         LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
         LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
         WHERE p.is_deleted = FALSE
-        ORDER BY p.id ASC
+        ORDER BY p.id DESC
     """
     cursor.execute(query)
     pacientes = cursor.fetchall()
