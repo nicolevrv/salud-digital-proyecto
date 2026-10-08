@@ -118,6 +118,22 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 10. Control de bloqueo de cuentas (persistente, sobrevive a reinicios del servidor)
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS failed_login_attempts INT DEFAULT 0;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP;
+
+-- 11. Registro de ingresos (login) y desbloqueos de cuentas
+CREATE TABLE IF NOT EXISTS login_logs (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT REFERENCES usuarios(id),
+    email VARCHAR(100) NOT NULL,
+    evento VARCHAR(30) NOT NULL, -- 'LOGIN_OK', 'LOGIN_FAIL', 'LOCKED', 'UNLOCK'
+    detalle TEXT,
+    ip_origen VARCHAR(60),
+    realizado_por INT REFERENCES usuarios(id), -- admin que ejecutó un UNLOCK
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- =========================================================================
 -- DATOS SEMILLA Y POBLAMIENTO INICIAL
@@ -127,7 +143,11 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 INSERT INTO roles (id, nombre) VALUES 
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
-(3, 'Servicio')
+(3, 'Servicio'),
+(5, 'ADMIN'),
+(6, 'JEFE_AREA'),
+(7, 'ING_PREVENTIVO'),
+(8, 'ING_CORRECTIVO')
 ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
 -- 2. Insertar Usuarios de Prueba (Garantiza credenciales exactas del proyecto)
@@ -141,6 +161,19 @@ ON CONFLICT (id) DO UPDATE SET
     password_hash = EXCLUDED.password_hash,
     rol_id = EXCLUDED.rol_id,
     is_deleted = FALSE;
+
+-- Usuarios de los nuevos roles de mantenimiento (sin id fijo: no pisan usuarios existentes)
+SELECT setval('usuarios_id_seq', COALESCE((SELECT MAX(id) FROM usuarios), 1));
+INSERT INTO usuarios (nombre, email, password_hash, rol_id)
+SELECT v.nombre, v.email, v.password_hash, r.id
+FROM (VALUES
+    ('Administrador del Sistema', 'admin.sistema@hospital.com', 'pbkdf2:sha256:100000$a9d9b5fe08318a41eea86dc0664219aa$d62d945071758e230cb2d67df6d736f88e88681111f8947d2cfdadb04fb3a778', 'ADMIN'),
+    ('Jefe de Area UCI', 'jefe.area@hospital.com', 'pbkdf2:sha256:100000$ef3153ac01f40251fc10ec2787b543f4$e8187e48712ac4526d25c420e08911c2e464c7ffefd11e95977a720a3b2e8b59', 'JEFE_AREA'),
+    ('Ing. Mantenimiento Preventivo', 'ing.preventivo@hospital.com', 'pbkdf2:sha256:100000$574d817745c48d1cddca549857d44660$7d178807c8b3463fa381d956b756552dc9845148441fa997086e9479beac906e', 'ING_PREVENTIVO'),
+    ('Ing. Mantenimiento Correctivo', 'ing.correctivo@hospital.com', 'pbkdf2:sha256:100000$a323f2909707aca9d2e2bf8945115afc$e8b53e6feaae0cda5752892a7f4652916c33749724d4a1060f1e07e76705989f', 'ING_CORRECTIVO')
+) AS v(nombre, email, password_hash, rol_nombre)
+JOIN roles r ON r.nombre = v.rol_nombre
+ON CONFLICT (email) DO NOTHING;
 
 -- Retirar por completo el rol Paciente y cualquier usuario que todavía lo tenga.
 -- Se conserva el registro del usuario como soft-delete para no romper auditorías/FK históricas.

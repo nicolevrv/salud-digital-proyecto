@@ -14,6 +14,7 @@ import base64
 import hmac
 import time
 from datetime import datetime, timedelta
+from enum import Enum
 from pathlib import Path
 
 # Importar cliente FHIR si está disponible
@@ -120,42 +121,158 @@ LOCKOUT_MINUTES = 15
 def normalize_email(email: str) -> str:
     return email.strip().lower()
 
-def check_account_lockout(email: str):
+def log_login_event(email: str, evento: str, usuario_id: Optional[int] = None,
+                    detalle: Optional[str] = None, ip: Optional[str] = None,
+                    realizado_por: Optional[int] = None):
+    """Registra un evento de acceso en login_logs. Nunca interrumpe el flujo de login."""
+    try:
+        log_conn = get_connection()
+        try:
+            cur = log_conn.cursor()
+            cur.execute("""
+                INSERT INTO login_logs (usuario_id, email, evento, detalle, ip_origen, realizado_por)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (usuario_id, email, evento, detalle, ip, realizado_por))
+            log_conn.commit()
+            cur.close()
+        finally:
+            log_conn.close()
+    except Exception as exc:
+        print(f"No se pudo registrar el evento de login ({evento}): {exc}")
+
+def _minutes_left(locked_until) -> int:
+    secs = (locked_until - datetime.now()).total_seconds()
+    return max(1, int((secs + 59) // 60))
+
+def check_account_lockout(email: str, ip: Optional[str] = None):
     email_key = normalize_email(email)
+    now = datetime.now()
+
+    # 1) Estado persistente en base de datos
+    locked = None
+    try:
+        lock_conn = get_connection()
+        try:
+            cur = lock_conn.cursor()
+            cur.execute(
+                "SELECT id, locked_until FROM usuarios WHERE LOWER(email) = %s AND is_deleted = FALSE",
+                (email_key,)
+            )
+            row = cur.fetchone()
+            if row and row[1]:
+                if now < row[1]:
+                    locked = (row[0], row[1])
+                else:
+                    # Bloqueo vencido: se limpia el estado
+                    cur.execute(
+                        "UPDATE usuarios SET failed_login_attempts = 0, locked_until = NULL WHERE id = %s",
+                        (row[0],)
+                    )
+                    lock_conn.commit()
+            cur.close()
+        finally:
+            lock_conn.close()
+    except Exception:
+        pass
+
+    if locked:
+        log_login_event(email_key, "LOGIN_BLOCKED", locked[0], "Intento de ingreso con la cuenta bloqueada", ip)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos. Intente de nuevo en {_minutes_left(locked[1])} minuto(s) o solicite a un administrador que la desbloquee."
+        )
+
+    # 2) Respaldo en memoria (correos inexistentes o base de datos no disponible)
     record = LOGIN_ATTEMPTS.get(email_key)
     if not record:
         return
     locked_until = record.get("locked_until")
     if locked_until:
-        now = datetime.now()
         if now < locked_until:
-            mins_left = max(1, int((locked_until - now).total_seconds() / 60))
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos. Intente de nuevo en {mins_left} minuto(s)."
+                detail=f"Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos. Intente de nuevo en {_minutes_left(locked_until)} minuto(s)."
             )
         LOGIN_ATTEMPTS.pop(email_key, None)
 
-def register_failed_attempt(email: str):
+def register_failed_attempt(email: str, ip: Optional[str] = None):
     email_key = normalize_email(email)
     now = datetime.now()
-    record = LOGIN_ATTEMPTS.get(email_key, {"attempts": 0, "locked_until": None})
-    record["attempts"] += 1
-    if record["attempts"] >= MAX_FAILED_ATTEMPTS:
-        record["locked_until"] = now + timedelta(minutes=LOCKOUT_MINUTES)
+    outcome = None
+    uid = None
+
+    # 1) Contador persistente en base de datos
+    try:
+        att_conn = get_connection()
+        try:
+            cur = att_conn.cursor()
+            cur.execute(
+                "SELECT id, COALESCE(failed_login_attempts, 0) FROM usuarios WHERE LOWER(email) = %s AND is_deleted = FALSE",
+                (email_key,)
+            )
+            row = cur.fetchone()
+            if row:
+                uid = row[0]
+                attempts = row[1] + 1
+                is_locked = attempts >= MAX_FAILED_ATTEMPTS
+                if is_locked:
+                    cur.execute(
+                        "UPDATE usuarios SET failed_login_attempts = %s, locked_until = %s WHERE id = %s",
+                        (attempts, now + timedelta(minutes=LOCKOUT_MINUTES), uid)
+                    )
+                else:
+                    cur.execute("UPDATE usuarios SET failed_login_attempts = %s WHERE id = %s", (attempts, uid))
+                att_conn.commit()
+                outcome = (attempts, is_locked)
+            cur.close()
+        finally:
+            att_conn.close()
+    except Exception:
+        outcome = None
+        uid = None
+
+    # 2) Respaldo en memoria (correo inexistente o base de datos no disponible)
+    if outcome is None:
+        record = LOGIN_ATTEMPTS.get(email_key, {"attempts": 0, "locked_until": None})
+        record["attempts"] += 1
+        is_locked = record["attempts"] >= MAX_FAILED_ATTEMPTS
+        if is_locked:
+            record["locked_until"] = now + timedelta(minutes=LOCKOUT_MINUTES)
         LOGIN_ATTEMPTS[email_key] = record
+        outcome = (record["attempts"], is_locked)
+
+    attempts, is_locked = outcome
+    if is_locked:
+        log_login_event(email_key, "LOCKED", uid,
+                        f"Cuenta bloqueada {LOCKOUT_MINUTES} min tras {attempts} intentos fallidos", ip)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos."
         )
-    LOGIN_ATTEMPTS[email_key] = record
+    log_login_event(email_key, "LOGIN_FAIL", uid, f"Contraseña incorrecta (intento {attempts} de {MAX_FAILED_ATTEMPTS})", ip)
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=f"Contraseña incorrecta. Intento {record['attempts']} de {MAX_FAILED_ATTEMPTS}."
+        detail=f"Contraseña incorrecta. Intento {attempts} de {MAX_FAILED_ATTEMPTS}."
     )
 
 def reset_login_attempts(email: str):
-    LOGIN_ATTEMPTS.pop(normalize_email(email), None)
+    email_key = normalize_email(email)
+    LOGIN_ATTEMPTS.pop(email_key, None)
+    try:
+        rst_conn = get_connection()
+        try:
+            cur = rst_conn.cursor()
+            cur.execute("""
+                UPDATE usuarios SET failed_login_attempts = 0, locked_until = NULL
+                WHERE LOWER(email) = %s
+                  AND (COALESCE(failed_login_attempts, 0) <> 0 OR locked_until IS NOT NULL)
+            """, (email_key,))
+            rst_conn.commit()
+            cur.close()
+        finally:
+            rst_conn.close()
+    except Exception:
+        pass
 
 def verify_and_upgrade_password(conn, user_id, provided_password, stored_hash):
     """Acepta formatos PBKDF2 antiguos/nuevos y migra claves demo en texto plano."""
@@ -359,6 +476,47 @@ def verify_user_credentials(
     return user
 
 # ==========================================
+# ROLES (RBAC) Y DEPENDENCIAS DE SEGURIDAD
+# ==========================================
+
+class RolSistema(str, Enum):
+    """Roles del sistema: los 3 clínicos/biomédicos originales + los 4 nuevos de mantenimiento."""
+    # Roles originales
+    ADMIN_BIOMEDICO = "Admin Biomedico"
+    MEDICO = "Medico"
+    SERVICIO = "Servicio"
+    # Nuevos roles de gestión de mantenimiento
+    ADMIN = "ADMIN"
+    JEFE_AREA = "JEFE_AREA"
+    ING_PREVENTIVO = "ING_PREVENTIVO"
+    ING_CORRECTIVO = "ING_CORRECTIVO"
+
+# Roles con permisos de administración (el Admin Biomédico original conserva su acceso)
+ADMIN_ROLES = {RolSistema.ADMIN.value, RolSistema.ADMIN_BIOMEDICO.value}
+
+def require_roles(allowed_roles: List[str]):
+    """Fábrica de dependencias: require_roles(["ADMIN", "JEFE_AREA"])."""
+    allowed = {r.value if isinstance(r, Enum) else str(r) for r in allowed_roles}
+
+    def _role_checker(user: dict = Depends(verify_user_credentials)):
+        if user["rol_nombre"] not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Acceso denegado: el rol '{user['rol_nombre']}' no tiene permisos para esta operación."
+            )
+        return user
+    return _role_checker
+
+def get_current_admin(user: dict = Depends(verify_user_credentials)):
+    """Solo administradores (ADMIN y el Admin Biomédico existente)."""
+    if user["rol_nombre"] not in ADMIN_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado: esta operación es exclusiva del administrador del sistema."
+        )
+    return user
+
+# ==========================================
 # 0. GENERAL, DASHBOARD Y AUTENTICACIÓN
 # ==========================================
 
@@ -459,9 +617,11 @@ def health_check():
     }
 
 @app.post("/login", tags=["Autenticación"])
-def login(credentials: LoginRequest, conn = Depends(get_db)):
+def login(credentials: LoginRequest, request: Request, conn = Depends(get_db)):
     email = normalize_email(credentials.email)
-    check_account_lockout(email)
+    forwarded = request.headers.get("x-forwarded-for")
+    ip = (forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else None))
+    check_account_lockout(email, ip)
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("""
@@ -483,11 +643,12 @@ def login(credentials: LoginRequest, conn = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error en base de datos: {str(e)}")
 
     if not user:
-        register_failed_attempt(email)
+        register_failed_attempt(email, ip)
     if not verify_and_upgrade_password(conn, user["id"], credentials.password, user["password_hash"]):
-        register_failed_attempt(email)
+        register_failed_attempt(email, ip)
 
     reset_login_attempts(email)
+    log_login_event(email, "LOGIN_OK", user["id"], f"Ingreso exitoso ({user['rol_nombre']})", ip)
     token = create_session_token(user["id"])
     return {
         "message": "Autenticación exitosa",
@@ -504,6 +665,93 @@ def login(credentials: LoginRequest, conn = Depends(get_db)):
 @app.get("/me", tags=["Autenticación"])
 def current_user(user: dict = Depends(verify_user_credentials)):
     return {"usuario": user}
+
+# ==========================================
+# SEGURIDAD Y ACCESOS: USUARIOS, INGRESOS Y DESBLOQUEO (SOLO ADMIN)
+# ==========================================
+
+@app.get("/usuarios", tags=["Seguridad y Accesos"])
+def listar_usuarios(
+    admin: dict = Depends(get_current_admin),
+    conn = Depends(get_db)
+):
+    """Usuarios del sistema con su estado de bloqueo y último ingreso."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT u.id, u.nombre, u.email, r.nombre AS rol_nombre,
+               COALESCE(u.failed_login_attempts, 0) AS failed_login_attempts,
+               u.locked_until,
+               (u.locked_until IS NOT NULL AND u.locked_until > %s) AS bloqueado,
+               (SELECT MAX(l.fecha) FROM login_logs l
+                 WHERE l.usuario_id = u.id AND l.evento = 'LOGIN_OK') AS ultimo_ingreso
+        FROM usuarios u
+        LEFT JOIN roles r ON u.rol_id = r.id
+        WHERE u.is_deleted = FALSE
+        ORDER BY bloqueado DESC, u.id ASC
+    """, (datetime.now(),))
+    usuarios = cursor.fetchall()
+    cursor.close()
+    return {"usuarios": usuarios}
+
+@app.get("/login-logs", tags=["Seguridad y Accesos"])
+def listar_login_logs(
+    limit: int = 100,
+    admin: dict = Depends(get_current_admin),
+    conn = Depends(get_db)
+):
+    """Registro de ingresos: accesos exitosos, fallidos, bloqueos y desbloqueos."""
+    limit = max(1, min(limit, 500))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT l.id, l.usuario_id, l.email, l.evento, l.detalle, l.ip_origen, l.fecha,
+               u.nombre AS usuario_nombre, r.nombre AS rol_nombre,
+               a.nombre AS realizado_por_nombre
+        FROM login_logs l
+        LEFT JOIN usuarios u ON l.usuario_id = u.id
+        LEFT JOIN roles r ON u.rol_id = r.id
+        LEFT JOIN usuarios a ON l.realizado_por = a.id
+        ORDER BY l.fecha DESC, l.id DESC
+        LIMIT %s
+    """, (limit,))
+    logs = cursor.fetchall()
+    cursor.close()
+    return {"login_logs": logs}
+
+@app.post("/usuarios/{usuario_id}/desbloquear", tags=["Seguridad y Accesos"])
+def desbloquear_usuario(
+    usuario_id: int,
+    admin: dict = Depends(get_current_admin),
+    conn = Depends(get_db)
+):
+    """El administrador levanta el bloqueo de 15 minutos de una cuenta y queda registrado."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute(
+        "SELECT id, nombre, email FROM usuarios WHERE id = %s AND is_deleted = FALSE",
+        (usuario_id,)
+    )
+    objetivo = cursor.fetchone()
+    if not objetivo:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    cursor.execute("""
+        UPDATE usuarios SET failed_login_attempts = 0, locked_until = NULL WHERE id = %s
+    """, (usuario_id,))
+    cursor.execute("""
+        INSERT INTO login_logs (usuario_id, email, evento, detalle, realizado_por)
+        VALUES (%s, %s, 'UNLOCK', %s, %s)
+    """, (usuario_id, objetivo["email"], f"Cuenta desbloqueada por {admin['nombre']} ({admin['rol_nombre']})", admin["id"]))
+    cursor.execute("""
+        INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+        VALUES (%s, 'UNLOCK_USER', 'usuarios', %s)
+    """, (admin["id"], usuario_id))
+    conn.commit()
+    cursor.close()
+
+    # Limpia también el respaldo en memoria
+    LOGIN_ATTEMPTS.pop(normalize_email(objetivo["email"]), None)
+
+    return {"message": "Usuario desbloqueado correctamente"}
 
 # ==========================================
 # 1. SECCIÓN DE OBSERVACIONES TELEMÉTRICAS
@@ -1030,8 +1278,8 @@ def listar_audit_logs(
     conn = Depends(get_db)
 ):
     """Auditoría administrativa."""
-    if user["rol_nombre"] != "Admin Biomedico":
-        raise HTTPException(status_code=403, detail="Acceso denegado: La auditoría inmutable está reservada exclusivamente a la Administración Biomédica.")
+    if user["rol_nombre"] not in ADMIN_ROLES:
+        raise HTTPException(status_code=403, detail="Acceso denegado: La auditoría inmutable está reservada exclusivamente a la Administración.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("""
@@ -1180,6 +1428,7 @@ def initialize_database(
 
         if reset:
             cursor.execute("""
+                DROP TABLE IF EXISTS login_logs CASCADE;
                 DROP TABLE IF EXISTS audit_logs CASCADE;
                 DROP TABLE IF EXISTS observaciones CASCADE;
                 DROP TABLE IF EXISTS encuentros CASCADE;

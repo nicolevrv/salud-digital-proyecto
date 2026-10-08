@@ -250,6 +250,11 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span>Pista de Auditoría</span>
         </button>
+
+        <button onclick="cambiarTab('seguridad')" id="tab-btn-seguridad" class="hidden tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2v1h-4v-1zm-5 1h10a1 1 0 011 1v6a1 1 0 01-1 1H7a1 1 0 01-1-1v-6a1 1 0 011-1zm2 0V9a3 3 0 016 0v3"/></svg>
+          <span>Seguridad y Accesos</span>
+        </button>
       </div>
 
       <!-- Botones de Acción Global -->
@@ -464,6 +469,59 @@
             <tbody id="tabla-auditoria-body" class="divide-y divide-slate-800/60">
               <!-- Renderizado dinámicamente -->
             </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 6: SEGURIDAD Y ACCESOS (SOLO ADMINISTRADOR) -->
+    <!-- ========================================================================= -->
+    <section id="tab-seguridad" class="tab-content hidden space-y-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+          <div>
+            <h3 class="text-base font-bold text-white">Usuarios y Estado de Bloqueo</h3>
+            <p class="text-xs text-slate-400">Tras 3 intentos fallidos la cuenta se bloquea 15 minutos. El administrador puede desbloquearla y queda registrado.</p>
+          </div>
+          <button onclick="cargarSeguridad()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">🔄 Actualizar</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Usuario</th>
+                <th class="py-3 px-4">Correo</th>
+                <th class="py-3 px-4">Rol</th>
+                <th class="py-3 px-4">Intentos fallidos</th>
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4">Último ingreso</th>
+                <th class="py-3 px-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-usuarios-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="mb-5">
+          <h3 class="text-base font-bold text-white">Registro de Ingresos</h3>
+          <p class="text-xs text-slate-400">Ingresos exitosos, intentos fallidos, bloqueos y desbloqueos (últimos 100 eventos)</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Fecha / Hora</th>
+                <th class="py-3 px-4">Usuario</th>
+                <th class="py-3 px-4">Rol</th>
+                <th class="py-3 px-4">Evento</th>
+                <th class="py-3 px-4">Detalle</th>
+                <th class="py-3 px-4">IP</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-login-logs-body" class="divide-y divide-slate-800/60"></tbody>
           </table>
         </div>
       </div>
@@ -916,14 +974,19 @@
     }
 
     function cambiarTab(tabName) {
+      const esAdminUI = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
       if (sesionActiva) {
-        if (sesionActiva.rol !== "Admin Biomedico" && tabName === "auditoria") {
-          showToast("Acceso restringido: La pista de auditoría está reservada exclusivamente para el Administrador Biomédico.", "warning");
+        if (!esAdminUI && tabName === "auditoria") {
+          showToast("Acceso restringido: La pista de auditoría está reservada exclusivamente para el Administrador.", "warning");
+          return;
+        }
+        if (!esAdminUI && tabName === "seguridad") {
+          showToast("Acceso restringido: Seguridad y Accesos es exclusiva del Administrador.", "warning");
           return;
         }
       } else {
-        if (tabName === "auditoria") {
-          showToast("Inicia sesión como Administrador Biomédico para consultar la auditoría.", "info");
+        if (tabName === "auditoria" || tabName === "seguridad") {
+          showToast("Inicia sesión como Administrador para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
         }
@@ -931,7 +994,9 @@
 
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(el => {
+        const estabaOculto = el.classList.contains("hidden");
         el.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2";
+        if (estabaOculto) el.classList.add("hidden");
       });
 
       const selectedTab = document.getElementById(`tab-${tabName}`);
@@ -940,6 +1005,7 @@
         selectedTab.classList.remove("hidden");
         selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20";
       }
+      if (tabName === "seguridad") cargarSeguridad();
     }
 
     // ==========================================
@@ -1075,6 +1141,7 @@
       const tabBtnEquipos = document.getElementById("tab-btn-equipos");
       const tabBtnObservaciones = document.getElementById("tab-btn-observaciones");
       const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
+      const tabBtnSeguridad = document.getElementById("tab-btn-seguridad");
 
       if (sesionActiva) {
         btnOpen.classList.add("hidden");
@@ -1100,6 +1167,7 @@
           if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.remove("hidden");
+          if (tabBtnSeguridad) tabBtnSeguridad.classList.remove("hidden");
 
         } else if (sesionActiva.rol === "Medico") {
           avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
@@ -1117,9 +1185,14 @@
           if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+          if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
 
           const currentTabAud = document.getElementById("tab-auditoria");
           if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
+            cambiarTab("pacientes");
+          }
+          const currentTabSegM = document.getElementById("tab-seguridad");
+          if (currentTabSegM && !currentTabSegM.classList.contains("hidden")) {
             cambiarTab("pacientes");
           }
 
@@ -1144,6 +1217,37 @@
           if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
             cambiarTab("monitoreo");
           }
+          if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
+          const currentTabSegS = document.getElementById("tab-seguridad");
+          if (currentTabSegS && !currentTabSegS.classList.contains("hidden")) {
+            cambiarTab("monitoreo");
+          }
+        } else {
+          // ADMIN y roles de mantenimiento (JEFE_AREA, ING_PREVENTIVO, ING_CORRECTIVO): solo lectura clínica
+          const esAdminSistema = sesionActiva.rol === "ADMIN";
+          const iniciales = { "ADMIN": "AD", "JEFE_AREA": "JA", "ING_PREVENTIVO": "IP", "ING_CORRECTIVO": "IC" };
+          avatar.className = "w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-xs border border-amber-500/40";
+          avatar.innerText = iniciales[sesionActiva.rol] || "US";
+
+          if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
+          if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
+          if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnSimularIot) btnSimularIot.classList.add("hidden");
+
+          if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
+          if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
+          if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
+          if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+          if (tabBtnAuditoria) tabBtnAuditoria.classList.toggle("hidden", !esAdminSistema);
+          if (tabBtnSeguridad) tabBtnSeguridad.classList.toggle("hidden", !esAdminSistema);
+
+          if (!esAdminSistema) {
+            ["tab-auditoria", "tab-seguridad"].forEach(idTab => {
+              const t = document.getElementById(idTab);
+              if (t && !t.classList.contains("hidden")) cambiarTab("monitoreo");
+            });
+          }
         }
 
         const mainContent = document.getElementById("main-content");
@@ -1167,6 +1271,7 @@
         if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
         if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
         if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+        if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
 
         const mainContent = document.getElementById("main-content");
         if (mainContent) {
@@ -1211,7 +1316,7 @@
           <span class="inline-flex items-center gap-1 text-amber-300">✏️ <strong>Control Total:</strong> Soft Edit, Soft Delete y Restauración en telemetría.</span>
           <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable e inicializa BD.</span>
         `;
-      } else {
+      } else if (sesionActiva.rol === "Servicio") {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800";
         pill.innerText = "Servicio IoT";
         iconBox.className = "p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
@@ -1219,6 +1324,24 @@
           <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión automática de señales IoT.</span>
           <span class="inline-flex items-center gap-1 text-emerald-300">⚡ <strong>Simulación:</strong> Exclusiva de esta cuenta de servicio.</span>
           <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> No puede agregar pacientes ni modificar datos.</span>
+        `;
+      } else {
+        const etiquetas = {
+          "ADMIN": "Administrador del Sistema",
+          "JEFE_AREA": "Jefe de Área",
+          "ING_PREVENTIVO": "Ing. Mantenimiento Preventivo",
+          "ING_CORRECTIVO": "Ing. Mantenimiento Correctivo"
+        };
+        pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800";
+        pill.innerText = etiquetas[sesionActiva.rol] || sesionActiva.rol;
+        iconBox.className = "p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20";
+        descList.innerHTML = sesionActiva.rol === "ADMIN" ? `
+          <span class="inline-flex items-center gap-1 text-amber-300">🔐 <strong>Seguridad y Accesos:</strong> Consulta ingresos y desbloquea cuentas bloqueadas.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta el registro inmutable de eventos.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> Sin acceso a funciones clínicas ni biomédicas.</span>
+        ` : `
+          <span class="inline-flex items-center gap-1 text-amber-300">🛠️ <strong>Mantenimiento:</strong> Consulta de equipos, pacientes y telemetría.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> No puede modificar datos clínicos ni biomédicos.</span>
         `;
       }
     }
@@ -1478,9 +1601,9 @@
     }
 
     async function cargarAuditoria() {
-      if (!sesionActiva || sesionActiva.rol !== "Admin Biomedico") {
+      if (!sesionActiva || (sesionActiva.rol !== "Admin Biomedico" && sesionActiva.rol !== "ADMIN")) {
         const tbody = document.getElementById("tabla-auditoria-body");
-        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">La pista de auditoría inmutable está reservada exclusivamente al Administrador Biomédico.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">La pista de auditoría inmutable está reservada exclusivamente al Administrador.</td></tr>`;
         return;
       }
       try {
@@ -1523,6 +1646,117 @@
 
       } catch (err) {
         console.error("Error auditoría:", err);
+      }
+    }
+
+    // ==========================================
+    // SEGURIDAD Y ACCESOS (SOLO ADMINISTRADOR)
+    // ==========================================
+
+    function escapeHtml(valor) {
+      return String(valor === null || valor === undefined ? "" : valor)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function esAdminSesion() {
+      return !!sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
+    }
+
+    async function cargarSeguridad() {
+      if (!esAdminSesion()) return;
+      const tbodyU = document.getElementById("tabla-usuarios-body");
+      const tbodyL = document.getElementById("tabla-login-logs-body");
+      try {
+        const [resU, resL] = await Promise.all([
+          fetch("/usuarios", { headers: getAuthHeaders() }),
+          fetch("/login-logs?limit=100", { headers: getAuthHeaders() })
+        ]);
+
+        // --- Usuarios ---
+        tbodyU.innerHTML = "";
+        if (!resU.ok) {
+          const err = await resU.json();
+          tbodyU.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">${escapeHtml(err.detail || "Acceso restringido")}</td></tr>`;
+        } else {
+          const usuarios = (await resU.json()).usuarios || [];
+          usuarios.forEach(u => {
+            const estado = u.bloqueado
+              ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-bold">🔒 Bloqueado hasta ${escapeHtml(new Date(u.locked_until).toLocaleTimeString())}</span>`
+              : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
+            const accion = u.bloqueado
+              ? `<button data-nombre="${escapeHtml(u.nombre)}" onclick="desbloquearUsuario(${Number(u.id)}, this.dataset.nombre)" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[11px] font-semibold transition">🔓 Desbloquear</button>`
+              : `<span class="text-[11px] text-slate-500">—</span>`;
+            const tr = document.createElement("tr");
+            tr.className = `hover:bg-slate-800/40 transition ${u.bloqueado ? "bg-rose-950/10" : ""}`;
+            tr.innerHTML = `
+              <td class="py-3 px-4 font-semibold text-white">${escapeHtml(u.nombre)}</td>
+              <td class="py-3 px-4 font-mono text-slate-300">${escapeHtml(u.email)}</td>
+              <td class="py-3 px-4 text-cyan-300">${escapeHtml(u.rol_nombre || "—")}</td>
+              <td class="py-3 px-4 font-mono">${Number(u.failed_login_attempts)}</td>
+              <td class="py-3 px-4">${estado}</td>
+              <td class="py-3 px-4 text-slate-400 text-[11px]">${u.ultimo_ingreso ? escapeHtml(new Date(u.ultimo_ingreso).toLocaleString()) : "Nunca"}</td>
+              <td class="py-3 px-4 text-right">${accion}</td>
+            `;
+            tbodyU.appendChild(tr);
+          });
+        }
+
+        // --- Registro de ingresos ---
+        tbodyL.innerHTML = "";
+        if (!resL.ok) {
+          const err = await resL.json();
+          tbodyL.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">${escapeHtml(err.detail || "Acceso restringido")}</td></tr>`;
+        } else {
+          const logs = (await resL.json()).login_logs || [];
+          if (logs.length === 0) {
+            tbodyL.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Aún no hay ingresos registrados</td></tr>`;
+          }
+          const estilos = {
+            "LOGIN_OK": "bg-emerald-950 text-emerald-300 border-emerald-800",
+            "LOGIN_FAIL": "bg-amber-950 text-amber-300 border-amber-800",
+            "LOCKED": "bg-rose-950 text-rose-300 border-rose-800",
+            "LOGIN_BLOCKED": "bg-rose-950 text-rose-300 border-rose-800",
+            "UNLOCK": "bg-purple-950 text-purple-300 border-purple-800"
+          };
+          logs.forEach(l => {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-800/40 transition";
+            tr.innerHTML = `
+              <td class="py-2.5 px-4 font-mono text-slate-400 text-[11px] whitespace-nowrap">${escapeHtml(new Date(l.fecha).toLocaleString())}</td>
+              <td class="py-2.5 px-4 text-white">${escapeHtml(l.usuario_nombre || l.email)}<span class="block text-[10px] text-slate-500 font-mono">${escapeHtml(l.email)}</span></td>
+              <td class="py-2.5 px-4 text-slate-300">${escapeHtml(l.rol_nombre || "—")}</td>
+              <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${estilos[l.evento] || "bg-slate-800 text-slate-300 border-slate-700"}">${escapeHtml(l.evento)}</span></td>
+              <td class="py-2.5 px-4 text-slate-300">${escapeHtml(l.detalle || "")}</td>
+              <td class="py-2.5 px-4 font-mono text-slate-500 text-[11px]">${escapeHtml(l.ip_origen || "—")}</td>
+            `;
+            tbodyL.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error("Error seguridad:", err);
+      }
+    }
+
+    async function desbloquearUsuario(id, nombre) {
+      if (!esAdminSesion()) {
+        showToast("Acceso denegado: Solo el administrador puede desbloquear usuarios.", "error");
+        return;
+      }
+      if (!confirm(`¿Desbloquear la cuenta de ${nombre}?\n\nLa acción quedará registrada en el registro de ingresos y en la auditoría.`)) return;
+      try {
+        const res = await fetch(`/usuarios/${id}/desbloquear`, { method: "POST", headers: getAuthHeaders() });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`${data.message}: ${nombre}`, "success");
+          cargarSeguridad();
+          cargarAuditoria();
+          cargarEstadisticas();
+        } else {
+          showToast(data.detail || "No se pudo desbloquear el usuario", "error");
+        }
+      } catch (err) {
+        showToast(`Error al desbloquear: ${err.message}`, "error");
       }
     }
 
@@ -2129,6 +2363,7 @@
         cargarEquiposUCI(),
         cargarObservaciones(),
         cargarAuditoria(),
+        cargarSeguridad(),
         cargarMonitoreoCamas()
       ]);
     }
