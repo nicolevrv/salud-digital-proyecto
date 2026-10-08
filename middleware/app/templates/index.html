@@ -533,7 +533,7 @@
   <!-- MODAL DE AUTENTICACIÓN (LOGIN E INTENTOS FALLIDOS) -->
   <!-- ========================================================================= -->
   <div id="modal-login" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -580,51 +580,113 @@
       </form>
 
       <!-- SEPARADOR -->
-      <div class="relative flex items-center justify-center">
+      <div class="relative flex items-center justify-center pt-1">
         <div class="border-t border-slate-800 w-full"></div>
-        <span class="bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">Cargar Credenciales de Prueba</span>
+        <span class="bg-slate-900 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Cargar Credenciales de Prueba</span>
         <div class="border-t border-slate-800 w-full"></div>
       </div>
 
-      <!-- 3 PERFILES DEMO OFICIALES -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        
-        <!-- Perfil 1: Admin Biomédico -->
-        <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
-          <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/30">
-            AB
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-purple-300">Admin Biomédico</div>
-            <div class="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">admin.biomedico</div>
-            <div class="text-[9px] text-purple-400 mt-0.5 leading-tight font-mono">clave: admin123</div>
-          </div>
-        </button>
+      <!-- SECCIÓN 1: ROLES CLÍNICOS Y TELEMETRÍA UCI -->
+      <div class="space-y-1.5">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Perfiles Clínicos & Biomédicos</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          
+          <!-- Perfil 1: Admin Biomédico -->
+          <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-purple-500/30">
+              AB
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-purple-300 truncate">Admin Biomédico</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">admin.biomedico</div>
+              <div class="text-[9px] text-purple-400 leading-tight font-mono">clave: admin123</div>
+            </div>
+          </button>
 
-        <!-- Perfil 2: Médico -->
-        <button onclick="cargarPerfilDemo('medico@hospital.com', 'med123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
-          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-emerald-500/30">
-            CT
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-emerald-300">Médico</div>
-            <div class="text-[10px] text-slate-400 font-mono">medico@hospital.com</div>
-            <div class="text-[9px] text-emerald-400 mt-0.5 leading-tight font-mono">clave: med123</div>
-          </div>
-        </button>
+          <!-- Perfil 2: Médico -->
+          <button onclick="cargarPerfilDemo('medico@hospital.com', 'med123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-emerald-500/30">
+              CT
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-emerald-300 truncate">Médico UCI</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">medico@hospital.com</div>
+              <div class="text-[9px] text-emerald-400 leading-tight font-mono">clave: med123</div>
+            </div>
+          </button>
 
-        <!-- Perfil 3: Servicio IoT -->
-        <button onclick="cargarPerfilDemo('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
-          <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/30">
-            ST
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white group-hover:text-cyan-300">Servicio IoT</div>
-            <div class="text-[10px] text-slate-400 font-mono">servicio.iot</div>
-            <div class="text-[9px] text-cyan-400 mt-0.5 leading-tight font-mono">clave: service123</div>
-          </div>
-        </button>
+          <!-- Perfil 3: Servicio IoT -->
+          <button onclick="cargarPerfilDemo('servicio.iot@hospital.com', 'service123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-cyan-500/30">
+              ST
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-cyan-300 truncate">Servicio IoT</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">servicio.iot</div>
+              <div class="text-[9px] text-cyan-400 leading-tight font-mono">clave: service123</div>
+            </div>
+          </button>
 
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: NUEVOS ROLES DE GESTIÓN Y MANTENIMIENTO -->
+      <div class="space-y-1.5 pt-1">
+        <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+          <span>Nuevos Roles de Mantenimiento & Sistema</span>
+          <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] rounded font-mono">Nuevos</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+          <!-- Rol 1: ADMIN (Administrador del Sistema) -->
+          <button onclick="cargarPerfilDemo('admin.sistema@hospital.com', 'sistema123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-amber-900/40 hover:border-amber-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-amber-500/30">
+              AD
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-amber-300 truncate">Admin Sistema (ADMIN)</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">admin.sistema@hospital.com</div>
+              <div class="text-[9px] text-amber-400 leading-tight font-mono">clave: sistema123</div>
+            </div>
+          </button>
+
+          <!-- Rol 2: JEFE_AREA -->
+          <button onclick="cargarPerfilDemo('jefe.area@hospital.com', 'jefe123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-blue-900/40 hover:border-blue-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-blue-500/30">
+              JA
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-blue-300 truncate">Jefe de Área (JEFE_AREA)</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">jefe.area@hospital.com</div>
+              <div class="text-[9px] text-blue-400 leading-tight font-mono">clave: jefe123</div>
+            </div>
+          </button>
+
+          <!-- Rol 3: ING_PREVENTIVO -->
+          <button onclick="cargarPerfilDemo('ing.preventivo@hospital.com', 'prev123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-teal-900/40 hover:border-teal-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-teal-500/30">
+              IP
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-teal-300 truncate">Ing. Preventivo (ING_PREV)</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.preventivo@hospital.com</div>
+              <div class="text-[9px] text-teal-400 leading-tight font-mono">clave: prev123</div>
+            </div>
+          </button>
+
+          <!-- Rol 4: ING_CORRECTIVO -->
+          <button onclick="cargarPerfilDemo('ing.correctivo@hospital.com', 'corr123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-rose-900/40 hover:border-rose-500 text-left transition flex items-start gap-2 group cursor-pointer">
+            <div class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-rose-500/30">
+              IC
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white group-hover:text-rose-300 truncate">Ing. Correctivo (ING_CORR)</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.correctivo@hospital.com</div>
+              <div class="text-[9px] text-rose-400 leading-tight font-mono">clave: corr123</div>
+            </div>
+          </button>
+
+        </div>
       </div>
 
     </div>
@@ -1667,6 +1729,12 @@
       if (!esAdminSesion()) return;
       const tbodyU = document.getElementById("tabla-usuarios-body");
       const tbodyL = document.getElementById("tabla-login-logs-body");
+      if (tbodyU && !tbodyU.hasChildNodes()) {
+        tbodyU.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-mono text-xs">Cargando usuarios y estados de bloqueo...</td></tr>`;
+      }
+      if (tbodyL && !tbodyL.hasChildNodes()) {
+        tbodyL.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500 font-mono text-xs">Cargando registro de ingresos...</td></tr>`;
+      }
       try {
         const [resU, resL] = await Promise.all([
           fetch("/usuarios", { headers: getAuthHeaders() }),
@@ -1735,6 +1803,8 @@
         }
       } catch (err) {
         console.error("Error seguridad:", err);
+        if (tbodyU) tbodyU.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400">Error al cargar usuarios: ${escapeHtml(err.message)}</td></tr>`;
+        if (tbodyL) tbodyL.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-400">Error al cargar registros: ${escapeHtml(err.message)}</td></tr>`;
       }
     }
 
