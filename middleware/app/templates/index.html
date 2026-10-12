@@ -227,8 +227,18 @@
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="cambiarTab('monitoreo')" id="tab-btn-monitoreo" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
-          <span>Monitoreo en Tiempo Real</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>Estado del Equipo</span>
+        </button>
+
+        <button onclick="cambiarTab('prediccion')" id="tab-btn-prediccion" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Predicción de Equipos</span>
+        </button>
+
+        <button onclick="cambiarTab('dataset')" id="tab-btn-dataset" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+          <span>Base de Datos de Equipos</span>
         </button>
 
         <button onclick="cambiarTab('pacientes')" id="tab-btn-pacientes" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
@@ -237,7 +247,7 @@
         </button>
 
         <button onclick="cambiarTab('equipos')" id="tab-btn-equipos" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
           <span>Equipos UCI & Biomédica</span>
         </button>
 
@@ -271,42 +281,381 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 1: MONITOREO EN TIEMPO REAL -->
+    <!-- TAB 1: ESTADO DEL EQUIPO (TELEMETRÍA TÉCNICA BIOMÉDICA NEON) -->
     <!-- ========================================================================= -->
     <section id="tab-monitoreo" class="tab-content space-y-6">
       
-      <!-- Gráfico de Signos Vitales y Telemetría -->
+      <!-- Selector de Familia Tecnológica Biomédica -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2" id="familia-equipos-pills">
+          <button type="button" onclick="seleccionarFamiliaEquipo('ventiladores')" id="pill-fam-ventiladores" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white shadow-md shadow-cyan-600/20 transition flex items-center gap-2">
+            <span>🫁 Ventiladores Mecánicos</span>
+            <span id="badge-count-ventiladores" class="px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 text-[10px] border border-cyan-800 font-mono">--</span>
+          </button>
+          <button type="button" onclick="seleccionarFamiliaEquipo('monitores')" id="pill-fam-monitores" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-2">
+            <span>📈 Monitores de Signos Vitales</span>
+            <span id="badge-count-monitores" class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] border border-slate-700 font-mono">--</span>
+          </button>
+          <button type="button" onclick="seleccionarFamiliaEquipo('bombas-volumetricas')" id="pill-fam-bombas-volumetricas" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-2">
+            <span>💧 Bombas Volumétricas</span>
+            <span id="badge-count-bombas-volumetricas" class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] border border-slate-700 font-mono">--</span>
+          </button>
+          <button type="button" onclick="seleccionarFamiliaEquipo('bombas-jeringa')" id="pill-fam-bombas-jeringa" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-2">
+            <span>💉 Bombas de Jeringa</span>
+            <span id="badge-count-bombas-jeringa" class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] border border-slate-700 font-mono">--</span>
+          </button>
+          <button type="button" onclick="seleccionarFamiliaEquipo('rotativos')" id="pill-fam-rotativos" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-2">
+            <span>🔄 Equipos Compartidos Rotativos</span>
+            <span id="badge-count-rotativos" class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] border border-slate-700 font-mono">--</span>
+          </button>
+        </div>
+
+        <!-- Selector de Unidad Específica & Botón de Inyección -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <label class="text-xs text-slate-400 whitespace-nowrap hidden sm:inline">Equipo:</label>
+          <select id="select-equipo-especifico" onchange="seleccionarEquipoEspecifico(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-cyan-500 w-full sm:w-48">
+            <option value="">Cargando unidades...</option>
+          </select>
+          <button type="button" onclick="inyectarTelemetriaEquipo()" id="btn-inyectar-telemetria" class="px-3 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow-md shadow-cyan-500/20 transition flex items-center gap-1.5 whitespace-nowrap">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Inyectar Telemetría</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Variables de Estado Físico del Equipo Seleccionado -->
+      <div id="grid-variables-equipo" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <!-- Renderizado dinámicamente con las variables físicas reales del equipo -->
+      </div>
+
+      <!-- Gráfico de Telemetría Técnica del Equipo (Variables Físicas e Historial) -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
-              Ondas y Tendencias de Telemetría UCI
+              <span id="chart-equipo-titulo">Curvas de Telemetría Técnica del Equipo</span>
             </h3>
-            <p class="text-xs text-slate-400">Presión vía aérea (LOINC 19992-7), SpO2 (59408-5) y Frecuencia Cardíaca (8867-4)</p>
+            <p id="chart-equipo-subtitulo" class="text-xs text-slate-400">Tendencias dinámicas de variables operativas del sensor y mediciones técnicas</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">Flujo telemétrico:</span>
-            <span class="px-2 py-1 text-xs font-mono font-medium rounded-md bg-slate-800 text-cyan-300 border border-slate-700">IoT Stream 1Hz</span>
+            <span class="text-xs text-slate-400">Estado operativo:</span>
+            <span id="badge-estado-operativo-equipo" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800">Nominal</span>
           </div>
         </div>
         <div class="h-64 w-full">
-          <canvas id="telemetriaChart"></canvas>
+          <canvas id="equipoTelemetriaChart"></canvas>
         </div>
       </div>
 
-      <!-- Tarjetas de Camas Activas UCI -->
+      <!-- Matriz de Inventario y Estado de las Unidades de la Familia -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Estado de Camas y Monitores UCI</h3>
-          <span class="text-xs text-slate-400">En monitoreo activo: <strong id="camas-activas-count" class="text-cyan-400">0</strong></span>
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <span>Parque Activo:</span>
+            <span id="titulo-parque-activo" class="text-cyan-400 normal-case font-semibold">Ventiladores Mecánicos</span>
+          </h3>
+          <span class="text-xs text-slate-400">Total unidades: <strong id="conteo-unidades-parque" class="text-cyan-400 font-mono">--</strong></span>
         </div>
 
-        <div id="grid-camas-uci" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="grid-unidades-parque" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           <!-- Renderizado dinámicamente -->
         </div>
       </div>
 
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB: PREDICCIÓN DE EQUIPOS (EXCLUSIVO INGENIEROS Y ADMIN BIOMÉDICO) -->
+    <!-- ========================================================================= -->
+    <section id="tab-prediccion" class="tab-content hidden space-y-6">
+      
+      <!-- Banner KPIs Predictivos -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Confiabilidad Global</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-confiabilidad" class="text-2xl font-bold text-emerald-400">--%</span>
+            <span class="text-xs text-slate-400">flota operativa</span>
+          </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Riesgo Crítico (>70%)</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-criticos" class="text-2xl font-bold text-rose-400">--</span>
+            <span class="text-xs text-rose-300">atención inmediata</span>
+          </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Mantenimiento Preventivo</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-preventivos" class="text-2xl font-bold text-amber-400">--</span>
+            <span class="text-xs text-amber-300">programables</span>
+          </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Equipos Evaluados</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-total" class="text-2xl font-bold text-cyan-400">--</span>
+            <span class="text-xs text-slate-400">unidades analizadas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculadora / Simulador de Diagnóstico Predictivo -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">🔬</span>
+              Simulador Predictivo de Falla Biomédica
+            </h3>
+            <p class="text-xs text-slate-400">Evaluación analítica y probabilística de variables operativas basada en el histórico de Neon</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-950 text-purple-300 border border-purple-800">
+              ⚡ Modelo Heurístico & Estadístico
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Columna Izquierda: Controles y Parámetros -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Tecnología Biomédica:</label>
+                <select id="calc-tipo-equipo" onchange="actualizarCamposSimuladorPredictivo(this.value)" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-500">
+                  <option value="ventiladores">Ventilador Mecánico</option>
+                  <option value="monitores">Monitor de Signos Vitales</option>
+                  <option value="bombas-volumetricas">Bomba Volumétrica</option>
+                  <option value="bombas-jeringa">Bomba de Jeringa</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Identificador de Unidad:</label>
+                <input type="text" id="calc-id-equipo" value="SIM-001" placeholder="ej: VEN-012" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Horas Uso Total:</label>
+                <input type="number" id="calc-horas-uso" value="3850" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Días Desde Mtto:</label>
+                <input type="number" id="calc-dias-mtto" value="260" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Fallas Previas:</label>
+                <input type="number" id="calc-fallas-previas" value="3" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+            </div>
+
+            <!-- Parámetros físicos dinámicos según familia -->
+            <div id="calc-parametros-dinamicos" class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+              <!-- Renderizado dinámicamente -->
+            </div>
+
+            <button type="button" onclick="ejecutarCalculoPrediccion()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span>Calcular Probabilidad de Falla y Riesgo</span>
+            </button>
+          </div>
+
+          <!-- Columna Derecha: Resultado del Diagnóstico Predictivo -->
+          <div class="lg:col-span-5 bg-slate-950/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                <span class="text-xs font-semibold text-slate-300">Resultado Predictivo:</span>
+                <span id="calc-res-badge-riesgo" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Listo</span>
+              </div>
+
+              <!-- Medidor de Probabilidad -->
+              <div class="mb-4">
+                <div class="flex items-baseline justify-between mb-1.5">
+                  <span class="text-xs text-slate-400">Probabilidad de Falla:</span>
+                  <span id="calc-res-probabilidad" class="text-3xl font-extrabold text-cyan-400 font-mono">0.0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden">
+                  <div id="calc-res-barra" class="bg-cyan-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Factores de Riesgo / Anomalías Detectadas -->
+              <div class="mb-3">
+                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Factores & Anomalías:</div>
+                <div id="calc-res-factores" class="flex flex-wrap gap-1.5">
+                  <span class="text-xs text-slate-500 italic">Presione calcular para ver el análisis</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acción de Mantenimiento Recomendada -->
+            <div class="mt-4 pt-3 border-t border-slate-800">
+              <div class="text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span>🛠️ Protocolo Recomendado:</span>
+              </div>
+              <div id="calc-res-accion" class="text-xs text-slate-200 bg-slate-900 border border-slate-800 rounded-xl p-2.5 leading-relaxed">
+                Seleccione las variables operativas y presione el botón de cálculo para obtener la acción recomendada de mantenimiento.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matriz Priorizada de Equipos por Riesgo de Falla -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="p-1 rounded-lg bg-rose-500/20 text-rose-400">⚠️</span>
+              Matriz Priorizada de Mantenimiento Predictivo
+            </h3>
+            <p class="text-xs text-slate-400">Equipos ordenados por probabilidad de falla para asignación inmediata a ingenieros</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="filtro-pred-familia" onchange="filtrarMatrizPredictiva()" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-2.5 py-1.5 text-xs">
+              <option value="todos">Todas las Familias</option>
+              <option value="ventiladores">Ventiladores</option>
+              <option value="monitores">Monitores</option>
+              <option value="bombas-volumetricas">Bombas Vol.</option>
+              <option value="bombas-jeringa">Bombas Jeringa</option>
+            </select>
+            <select id="filtro-pred-riesgo" onchange="filtrarMatrizPredictiva()" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-2.5 py-1.5 text-xs">
+              <option value="todos">Todos los Riesgos</option>
+              <option value="CRITICO">Solo Crítico (>70%)</option>
+              <option value="MEDIO">Solo Medio (35-70%)</option>
+              <option value="BAJO">Solo Bajo (<35%)</option>
+            </select>
+            <button onclick="cargarPrediccionResumen()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition">🔄</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-3">Equipo ID</th>
+                <th class="py-3 px-3">Familia</th>
+                <th class="py-3 px-3">Cama</th>
+                <th class="py-3 px-3">Probabilidad Falla</th>
+                <th class="py-3 px-3">Nivel Riesgo</th>
+                <th class="py-3 px-3">Anomalías Detectadas</th>
+                <th class="py-3 px-3">Acción Recomendada</th>
+                <th class="py-3 px-3 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-prediccion-body" class="divide-y divide-slate-800/60">
+              <!-- Renderizado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB: BASE DE DATOS DE EQUIPOS (DATASET NEON & EXCEL EDITABLE) -->
+    <!-- ========================================================================= -->
+    <section id="tab-dataset" class="tab-content hidden space-y-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">📊</span>
+              Base de Datos Técnica de Equipos Biomédicos
+            </h3>
+            <p class="text-xs text-slate-400">Visualización interactiva, corrección y edición directa en PostgreSQL Neon de los datasets de entrenamiento</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="abrirModalNuevoRegistroDataset()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-cyan-600/20 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>+ Nuevo Registro</span>
+            </button>
+            <button type="button" onclick="descargarDatasetCSV()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Exportar CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestañas de Tablas Dataset -->
+        <div class="flex flex-wrap items-center gap-2 pb-4 border-b border-slate-800" id="dataset-familias-pills">
+          <button type="button" onclick="cambiarFamiliaDataset('ventiladores')" id="pill-ds-ventiladores" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 text-white shadow transition">
+            Ventiladores Mecánicos (910)
+          </button>
+          <button type="button" onclick="cambiarFamiliaDataset('monitores')" id="pill-ds-monitores" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Monitores de Signos Vitales (900)
+          </button>
+          <button type="button" onclick="cambiarFamiliaDataset('bombas-volumetricas')" id="pill-ds-bombas-volumetricas" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Bombas Volumétricas (900)
+          </button>
+          <button type="button" onclick="cambiarFamiliaDataset('bombas-jeringa')" id="pill-ds-bombas-jeringa" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Bombas de Jeringa (900)
+          </button>
+          <button type="button" onclick="cambiarFamiliaDataset('rotativos')" id="pill-ds-rotativos" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            Equipos Compartidos Rotativos (17)
+          </button>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtros -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 mb-4">
+          <div class="flex flex-wrap items-center gap-2.5 flex-1 max-w-xl">
+            <div class="relative flex-1 min-w-[200px]">
+              <input type="text" id="dataset-busqueda-input" onkeyup="manejarBusquedaDataset(event)" placeholder="Buscar por ID Equipo, Cama, Registro..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-1 focus:ring-cyan-500">
+              <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <select id="dataset-filtro-falla" onchange="aplicarFiltrosDataset()" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs">
+              <option value="todos">Todos los Estados</option>
+              <option value="1">Solo con Falla Actual (1)</option>
+              <option value="0">Solo Operativos Sin Falla (0)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span>Filas por página:</span>
+            <select id="dataset-filas-limite" onchange="cambiarLimiteDataset(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-2 py-1 text-xs">
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla Interactiva Dinámica Editable -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs text-slate-300" id="tabla-dataset-element">
+            <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700" id="tabla-dataset-head">
+              <!-- Renderizado dinámicamente con las columnas exactas de Neon -->
+            </thead>
+            <tbody id="tabla-dataset-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Controles de Paginación -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800 text-xs">
+          <div class="text-slate-400">
+            Mostrando <span id="dataset-pag-inicio" class="text-white font-mono">1</span> - <span id="dataset-pag-fin" class="text-white font-mono">25</span> de <span id="dataset-total-regs" class="text-cyan-400 font-mono font-bold">--</span> registros
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-ds-pag-prev" onclick="cambiarPaginaDataset(-1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+              &laquo; Anterior
+            </button>
+            <span class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-semibold" id="dataset-pag-actual">
+              Página 1
+            </span>
+            <button type="button" id="btn-ds-pag-next" onclick="cambiarPaginaDataset(1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+              Siguiente &raquo;
+            </button>
+          </div>
+        </div>
+
+      </div>
     </section>
 
     <!-- ========================================================================= -->
@@ -633,10 +982,10 @@
       <!-- SECCIÓN 2: NUEVOS ROLES DE GESTIÓN Y MANTENIMIENTO -->
       <div class="space-y-1.5 pt-1">
         <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-          <span>Nuevos Roles de Mantenimiento & Sistema</span>
-          <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] rounded font-mono">Nuevos</span>
+          <span>Roles de Mantenimiento & Sistema</span>
+          <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] rounded font-mono">Gestión</span>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
 
           <!-- Rol 1: ADMIN (Administrador del Sistema) -->
           <button onclick="cargarPerfilDemo('admin.sistema@hospital.com', 'sistema123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-amber-900/40 hover:border-amber-500 text-left transition flex items-start gap-2 group cursor-pointer">
@@ -644,44 +993,32 @@
               AD
             </div>
             <div class="min-w-0">
-              <div class="text-[11px] font-bold text-white group-hover:text-amber-300 truncate">Admin Sistema (ADMIN)</div>
-              <div class="text-[10px] text-slate-400 font-mono truncate">admin.sistema@hospital.com</div>
+              <div class="text-[11px] font-bold text-white group-hover:text-amber-300 truncate">Admin Sistema</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">admin.sistema</div>
               <div class="text-[9px] text-amber-400 leading-tight font-mono">clave: sistema123</div>
             </div>
           </button>
 
-          <!-- Rol 2: JEFE_AREA -->
-          <button onclick="cargarPerfilDemo('jefe.area@hospital.com', 'jefe123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-blue-900/40 hover:border-blue-500 text-left transition flex items-start gap-2 group cursor-pointer">
-            <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-blue-500/30">
-              JA
-            </div>
-            <div class="min-w-0">
-              <div class="text-[11px] font-bold text-white group-hover:text-blue-300 truncate">Jefe de Área (JEFE_AREA)</div>
-              <div class="text-[10px] text-slate-400 font-mono truncate">jefe.area@hospital.com</div>
-              <div class="text-[9px] text-blue-400 leading-tight font-mono">clave: jefe123</div>
-            </div>
-          </button>
-
-          <!-- Rol 3: ING_PREVENTIVO -->
+          <!-- Rol 2: ING_PREVENTIVO -->
           <button onclick="cargarPerfilDemo('ing.preventivo@hospital.com', 'prev123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-teal-900/40 hover:border-teal-500 text-left transition flex items-start gap-2 group cursor-pointer">
             <div class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-teal-500/30">
               IP
             </div>
             <div class="min-w-0">
-              <div class="text-[11px] font-bold text-white group-hover:text-teal-300 truncate">Ing. Preventivo (ING_PREV)</div>
-              <div class="text-[10px] text-slate-400 font-mono truncate">ing.preventivo@hospital.com</div>
+              <div class="text-[11px] font-bold text-white group-hover:text-teal-300 truncate">Ing. Preventivo</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.preventivo</div>
               <div class="text-[9px] text-teal-400 leading-tight font-mono">clave: prev123</div>
             </div>
           </button>
 
-          <!-- Rol 4: ING_CORRECTIVO -->
+          <!-- Rol 3: ING_CORRECTIVO -->
           <button onclick="cargarPerfilDemo('ing.correctivo@hospital.com', 'corr123')" type="button" class="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-rose-900/40 hover:border-rose-500 text-left transition flex items-start gap-2 group cursor-pointer">
             <div class="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-rose-500/30">
               IC
             </div>
             <div class="min-w-0">
-              <div class="text-[11px] font-bold text-white group-hover:text-rose-300 truncate">Ing. Correctivo (ING_CORR)</div>
-              <div class="text-[10px] text-slate-400 font-mono truncate">ing.correctivo@hospital.com</div>
+              <div class="text-[11px] font-bold text-white group-hover:text-rose-300 truncate">Ing. Correctivo</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.correctivo</div>
               <div class="text-[9px] text-rose-400 leading-tight font-mono">clave: corr123</div>
             </div>
           </button>
@@ -929,6 +1266,45 @@
     </div>
   </div>
 
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDITAR / CREAR REGISTRO DE DATASET DE EQUIPOS (NEON POSTGRESQL) -->
+  <!-- ========================================================================= -->
+  <div id="modal-editar-dataset" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <div>
+            <h4 id="ds-modal-titulo" class="font-bold text-white text-sm">Editar Registro de Equipo</h4>
+            <p id="ds-modal-subtitulo" class="text-xs text-slate-400">Actualiza las variables técnicas directamente en la base de datos de Neon</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModal('modal-editar-dataset')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <form id="form-dataset-registro" onsubmit="guardarRegistroDataset(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="ds-form-id">
+        <input type="hidden" id="ds-form-tipo">
+
+        <div id="ds-form-campos-dinamicos" class="space-y-3">
+          <!-- Renderizado dinámicamente con las columnas exactas de la tabla seleccionada -->
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-800">
+          <button type="button" onclick="cerrarModal('modal-editar-dataset')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-submit-ds-registro" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold shadow-md shadow-cyan-600/20 transition flex items-center gap-2">
+            <span>Guardar en Base de Datos</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
@@ -941,6 +1317,21 @@
     let cacheEncuentros = [];
     let cachePacientes = [];
     let cacheEquipos = [];
+
+    // Variables de Estado: Telemetría de Equipos & Dataset Neon
+    let cacheFamiliaSeleccionada = 'ventiladores';
+    let cacheEquipoSeleccionadoId = null;
+    let chartEquipoInstance = null;
+    let cacheEquiposEstado = null;
+    let cachePrediccionResumen = null;
+
+    let cacheDatasetTipo = 'ventiladores';
+    let cacheDatasetPage = 1;
+    let cacheDatasetLimit = 25;
+    let cacheDatasetTotal = 0;
+    let cacheDatasetFiltroFalla = 'todos';
+    let cacheDatasetBusqueda = '';
+    let cacheDatasetRows = [];
 
     function getAuthHeaders() {
       const headers = { "Content-Type": "application/json" };
@@ -1037,6 +1428,8 @@
 
     function cambiarTab(tabName) {
       const esAdminUI = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
+      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO");
+
       if (sesionActiva) {
         if (!esAdminUI && tabName === "auditoria") {
           showToast("Acceso restringido: La pista de auditoría está reservada exclusivamente para el Administrador.", "warning");
@@ -1046,9 +1439,13 @@
           showToast("Acceso restringido: Seguridad y Accesos es exclusiva del Administrador.", "warning");
           return;
         }
+        if (!esRolTecnico && (tabName === "prediccion" || tabName === "dataset")) {
+          showToast("Acceso restringido: Los módulos de Predicción y Base de Datos están reservados para Administración Biomédica e Ingenieros de Mantenimiento.", "warning");
+          return;
+        }
       } else {
-        if (tabName === "auditoria" || tabName === "seguridad") {
-          showToast("Inicia sesión como Administrador para acceder a esta sección.", "info");
+        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "dataset") {
+          showToast("Inicia sesión con un perfil autorizado para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
         }
@@ -1067,7 +1464,11 @@
         selectedTab.classList.remove("hidden");
         selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20";
       }
+
       if (tabName === "seguridad") cargarSeguridad();
+      if (tabName === "prediccion") cargarPrediccionResumen();
+      if (tabName === "dataset") cargarDataset(cacheDatasetTipo, 1);
+      if (tabName === "monitoreo") cargarEstadoEquipos(cacheFamiliaSeleccionada);
     }
 
     // ==========================================
@@ -1199,11 +1600,18 @@
       const btnSimularIot = document.getElementById("btn-simular-iot-global");
 
       const tabBtnMonitoreo = document.getElementById("tab-btn-monitoreo");
+      const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
+      const tabBtnDataset = document.getElementById("tab-btn-dataset");
       const tabBtnPacientes = document.getElementById("tab-btn-pacientes");
       const tabBtnEquipos = document.getElementById("tab-btn-equipos");
       const tabBtnObservaciones = document.getElementById("tab-btn-observaciones");
       const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
       const tabBtnSeguridad = document.getElementById("tab-btn-seguridad");
+
+      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO");
+
+      if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnDataset) tabBtnDataset.classList.toggle("hidden", !esRolTecnico);
 
       if (sesionActiva) {
         btnOpen.classList.add("hidden");
@@ -1243,20 +1651,19 @@
           if (btnSimularIot) btnSimularIot.classList.add("hidden");
 
           // Tabs
+          if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
           if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
           if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
 
-          const currentTabAud = document.getElementById("tab-auditoria");
-          if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
-            cambiarTab("pacientes");
-          }
-          const currentTabSegM = document.getElementById("tab-seguridad");
-          if (currentTabSegM && !currentTabSegM.classList.contains("hidden")) {
-            cambiarTab("pacientes");
-          }
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-dataset"].forEach(idTab => {
+            const currentTab = document.getElementById(idTab);
+            if (currentTab && !currentTab.classList.contains("hidden")) {
+              cambiarTab("pacientes");
+            }
+          });
 
         } else if (sesionActiva.rol === "Servicio") {
           avatar.className = "w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs border border-cyan-500/40";
@@ -1269,25 +1676,24 @@
           if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
           if (btnSimularIot) btnSimularIot.classList.remove("hidden");
 
-          // Tabs: Solo lectura de monitoreo, telemetría y equipos. No auditoría.
+          // Tabs: Solo lectura de monitoreo, telemetría y equipos. No auditoría ni predicción.
+          if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
           if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
           if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
-
-          const currentTabAud = document.getElementById("tab-auditoria");
-          if (currentTabAud && !currentTabAud.classList.contains("hidden")) {
-            cambiarTab("monitoreo");
-          }
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
-          const currentTabSegS = document.getElementById("tab-seguridad");
-          if (currentTabSegS && !currentTabSegS.classList.contains("hidden")) {
-            cambiarTab("monitoreo");
-          }
+
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-dataset"].forEach(idTab => {
+            const currentTab = document.getElementById(idTab);
+            if (currentTab && !currentTab.classList.contains("hidden")) {
+              cambiarTab("monitoreo");
+            }
+          });
         } else {
-          // ADMIN y roles de mantenimiento (JEFE_AREA, ING_PREVENTIVO, ING_CORRECTIVO): solo lectura clínica
+          // ADMIN y roles de mantenimiento (ING_PREVENTIVO, ING_CORRECTIVO)
           const esAdminSistema = sesionActiva.rol === "ADMIN";
-          const iniciales = { "ADMIN": "AD", "JEFE_AREA": "JA", "ING_PREVENTIVO": "IP", "ING_CORRECTIVO": "IC" };
+          const iniciales = { "ADMIN": "AD", "ING_PREVENTIVO": "IP", "ING_CORRECTIVO": "IC" };
           avatar.className = "w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-xs border border-amber-500/40";
           avatar.innerText = iniciales[sesionActiva.rol] || "US";
 
@@ -1334,6 +1740,8 @@
         if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
         if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
         if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
+        if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
+        if (tabBtnDataset) tabBtnDataset.classList.add("hidden");
 
         const mainContent = document.getElementById("main-content");
         if (mainContent) {
@@ -1374,8 +1782,8 @@
         pill.innerText = "Admin Biomédico";
         iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología:</strong> Crea y administra hojas de vida y equipos UCI.</span>
-          <span class="inline-flex items-center gap-1 text-amber-300">✏️ <strong>Control Total:</strong> Soft Edit, Soft Delete y Restauración en telemetría.</span>
+          <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología & Predicción:</strong> Acceso completo a modelos predictivos y dataset.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">✏️ <strong>Edición Directa:</strong> Modifica parámetros físicos de equipos en Neon.</span>
           <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable e inicializa BD.</span>
         `;
       } else if (sesionActiva.rol === "Servicio") {
@@ -1390,7 +1798,6 @@
       } else {
         const etiquetas = {
           "ADMIN": "Administrador del Sistema",
-          "JEFE_AREA": "Jefe de Área",
           "ING_PREVENTIVO": "Ing. Mantenimiento Preventivo",
           "ING_CORRECTIVO": "Ing. Mantenimiento Correctivo"
         };
@@ -1398,12 +1805,13 @@
         pill.innerText = etiquetas[sesionActiva.rol] || sesionActiva.rol;
         iconBox.className = "p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20";
         descList.innerHTML = sesionActiva.rol === "ADMIN" ? `
-          <span class="inline-flex items-center gap-1 text-amber-300">🔐 <strong>Seguridad y Accesos:</strong> Consulta ingresos y desbloquea cuentas bloqueadas.</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta el registro inmutable de eventos.</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> Sin acceso a funciones clínicas ni biomédicas.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">🔐 <strong>Seguridad & Accesos:</strong> Consulta ingresos y desbloquea usuarios.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">🔬 <strong>Predicción & Datasets:</strong> Acceso a análisis predictivo y edición técnica.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">📑 <strong>Auditoría:</strong> Consulta de trazabilidad inmutable.</span>
         ` : `
-          <span class="inline-flex items-center gap-1 text-amber-300">🛠️ <strong>Mantenimiento:</strong> Consulta de equipos, pacientes y telemetría.</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> No puede modificar datos clínicos ni biomédicos.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300">🛠️ <strong>Ingeniería & Predicción:</strong> Análisis predictivo de fallas y telemetría de equipos.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300">📊 <strong>Base de Datos:</strong> Edición y corrección de parámetros técnicos en Neon.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Clínico:</strong> Solo lectura de pacientes y encuentros.</span>
         `;
       }
     }
@@ -2421,6 +2829,912 @@
     }
 
     // ==========================================
+    // ESTADO DEL EQUIPO & TELEMETRÍA TÉCNICA (NEON POSTGRESQL)
+    // ==========================================
+
+    function seleccionarFamiliaEquipo(tipo) {
+      cacheFamiliaSeleccionada = tipo;
+      cacheEquipoSeleccionadoId = null;
+
+      const familias = ['ventiladores', 'monitores', 'bombas-volumetricas', 'bombas-jeringa', 'rotativos'];
+      const nombres = {
+        'ventiladores': 'Ventiladores Mecánicos',
+        'monitores': 'Monitores de Signos Vitales',
+        'bombas-volumetricas': 'Bombas Volumétricas',
+        'bombas-jeringa': 'Bombas de Jeringa',
+        'rotativos': 'Equipos Compartidos Rotativos'
+      };
+
+      familias.forEach(f => {
+        const pill = document.getElementById(`pill-fam-${f}`);
+        if (!pill) return;
+        if (f === tipo) {
+          pill.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white shadow-md shadow-cyan-600/20 transition flex items-center gap-2";
+        } else {
+          pill.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-2";
+        }
+      });
+
+      const titParque = document.getElementById("titulo-parque-activo");
+      if (titParque) titParque.innerText = nombres[tipo] || tipo;
+      const titChart = document.getElementById("chart-equipo-titulo");
+      if (titChart) titChart.innerText = `Telemetría Técnica: ${nombres[tipo] || tipo}`;
+
+      cargarEstadoEquipos(tipo);
+    }
+
+    async function cargarEstadoEquipos(tipo = cacheFamiliaSeleccionada) {
+      try {
+        const res = await fetch("/api/equipos-estado", { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        cacheEquiposEstado = data;
+
+        // Actualizar contadores de las familias
+        const conteos = data.conteo_por_familia || {};
+        for (const [k, v] of Object.entries(conteos)) {
+          const badge = document.getElementById(`badge-count-${k}`);
+          if (badge) badge.innerText = v;
+        }
+
+        const unidades = (data.equipos || []).filter(e => e.tipo === tipo);
+        const conteoParque = document.getElementById("conteo-unidades-parque");
+        if (conteoParque) conteoParque.innerText = unidades.length;
+
+        // Selector de unidad
+        const select = document.getElementById("select-equipo-especifico");
+        if (select) {
+          select.innerHTML = unidades.map(u => `
+            <option value="${u.id_equipo}">${u.id_equipo} ${u.cama ? '(' + u.cama + ')' : ''}</option>
+          `).join("");
+
+          if (unidades.length > 0) {
+            if (!cacheEquipoSeleccionadoId || !unidades.some(u => u.id_equipo === cacheEquipoSeleccionadoId)) {
+              cacheEquipoSeleccionadoId = unidades[0].id_equipo;
+            }
+            select.value = cacheEquipoSeleccionadoId;
+          }
+        }
+
+        const equipoActivo = unidades.find(u => u.id_equipo === cacheEquipoSeleccionadoId) || unidades[0];
+        renderizarVariablesFisicasEquipo(equipoActivo);
+        renderizarGridUnidadesParque(unidades);
+
+        if (equipoActivo) {
+          cargarHistorialEquipo(tipo, equipoActivo.id_equipo);
+        }
+      } catch (err) {
+        console.error("Error al cargar estado de equipos:", err);
+      }
+    }
+
+    function seleccionarEquipoEspecifico(equipoId) {
+      cacheEquipoSeleccionadoId = equipoId;
+      if (!cacheEquiposEstado) return;
+      const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === cacheFamiliaSeleccionada);
+      const equipoActivo = unidades.find(u => u.id_equipo === equipoId);
+      if (equipoActivo) {
+        renderizarVariablesFisicasEquipo(equipoActivo);
+        cargarHistorialEquipo(cacheFamiliaSeleccionada, equipoId);
+      }
+    }
+
+    function renderizarVariablesFisicasEquipo(equipo) {
+      const container = document.getElementById("grid-variables-equipo");
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (!equipo) {
+        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-2">Sin información operativa para esta unidad.</div>`;
+        return;
+      }
+
+      const badgeEstado = document.getElementById("badge-estado-operativo-equipo");
+      if (badgeEstado) {
+        const tieneFalla = equipo.falla_actual === 1;
+        badgeEstado.className = tieneFalla 
+          ? "px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-950 text-rose-300 border border-rose-800 animate-pulse"
+          : "px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800";
+        badgeEstado.innerText = tieneFalla ? "⚠️ Falla Activa" : "✓ Nominal / Operativo";
+      }
+
+      const cards = [];
+
+      cards.push({
+        label: "Horas de Uso Total",
+        valor: `${Number(equipo.horas_uso || 0).toLocaleString()} h`,
+        sub: `${equipo.fallas_previas || 0} fallas previas`,
+        color: "text-white"
+      });
+
+      const dias = equipo.dias_mtto || 0;
+      cards.push({
+        label: "Días Desde Mtto",
+        valor: `${dias} d`,
+        sub: dias > 200 ? "Mantenimiento próximo" : "Dentro de intervalo",
+        color: dias > 200 ? "text-amber-400" : "text-white"
+      });
+
+      const vars = equipo.variables || {};
+      for (const [k, v] of Object.entries(vars)) {
+        let color = "text-cyan-300";
+        let sub = "Telemetría nominal";
+        if (k.includes("Vibración") && v > 75) { color = "text-rose-400"; sub = "⚠️ Alerta vibración"; }
+        if (k.includes("Temperatura") && v > 45) { color = "text-rose-400"; sub = "⚠️ Alta temperatura"; }
+        if (k.includes("Fugas") && v > 1.0) { color = "text-amber-400"; sub = "⚠️ Fuga detectada"; }
+        if (k.includes("Oclusión") && v > 35) { color = "text-rose-400"; sub = "⚠️ Desviación oclusión"; }
+        if (k.includes("Ruido") && v > 28) { color = "text-amber-400"; sub = "⚠️ Ruido excesivo"; }
+
+        cards.push({
+          label: k,
+          valor: typeof v === "number" ? v.toFixed(1) : v,
+          sub: sub,
+          color: color
+        });
+      }
+
+      cards.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-sm flex flex-col justify-between";
+        div.innerHTML = `
+          <div class="text-[11px] font-medium text-slate-400 truncate mb-1" title="${c.label}">${c.label}</div>
+          <div>
+            <div class="text-xl font-bold font-mono ${c.color}">${c.valor}</div>
+            <div class="text-[10px] text-slate-500 truncate mt-0.5">${c.sub}</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderizarGridUnidadesParque(unidades) {
+      const container = document.getElementById("grid-unidades-parque");
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (!unidades || unidades.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-4 text-center">No hay unidades en esta categoría.</div>`;
+        return;
+      }
+
+      unidades.forEach(u => {
+        const esSeleccionado = u.id_equipo === cacheEquipoSeleccionadoId;
+        const conFalla = u.falla_actual === 1;
+        const card = document.createElement("div");
+        card.className = `p-3.5 rounded-2xl border transition cursor-pointer flex flex-col justify-between ${
+          esSeleccionado 
+            ? 'bg-slate-850 border-cyan-500 shadow-md shadow-cyan-500/10' 
+            : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+        }`;
+        card.onclick = () => seleccionarEquipoEspecifico(u.id_equipo);
+
+        let badgeStatus = conFalla
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Falla</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">Operativo</span>`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
+              <span class="font-bold font-mono text-white text-xs">${u.id_equipo}</span>
+              ${badgeStatus}
+            </div>
+            <div class="space-y-1 text-xs text-slate-400">
+              <div class="flex justify-between">
+                <span>Cama:</span>
+                <span class="text-slate-200 font-mono">${u.cama || 'Inventario'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Horas:</span>
+                <span class="text-slate-200 font-mono">${Number(u.horas_uso || 0).toLocaleString()} h</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Días Mtto:</span>
+                <span class="text-slate-200 font-mono">${u.dias_mtto || 0} d</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
+            <span class="text-cyan-400 font-medium">Ver telemetría &rarr;</span>
+            <span class="text-slate-500 font-mono">${u.prediccion ? u.prediccion.probabilidad_falla + '% riesgo' : ''}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function cargarHistorialEquipo(tipo, equipoId) {
+      if (!equipoId) return;
+      try {
+        const res = await fetch(`/api/equipos-historial/${tipo}/${encodeURIComponent(equipoId)}`, { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const puntos = data.puntos || [];
+
+        const ctx = document.getElementById("equipoTelemetriaChart").getContext("2d");
+        if (chartEquipoInstance) {
+          chartEquipoInstance.destroy();
+        }
+
+        const labels = puntos.map((p, idx) => `R-${p.id_registro}`);
+        const sampleVars = puntos.length > 0 ? (puntos[0].variables || {}) : {};
+        const varKeys = Object.keys(sampleVars);
+        const colores = ['#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+        const datasets = varKeys.map((k, idx) => ({
+          label: k,
+          data: puntos.map(p => (p.variables && p.variables[k] !== undefined) ? p.variables[k] : 0),
+          borderColor: colores[idx % colores.length],
+          backgroundColor: `${colores[idx % colores.length]}15`,
+          borderWidth: 2,
+          tension: 0.35,
+          fill: idx === 0,
+          pointRadius: 2.5
+        }));
+
+        chartEquipoInstance = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } } }
+            },
+            scales: {
+              x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
+              y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+            }
+          }
+        });
+
+      } catch (err) {
+        console.error("Error al cargar historial de equipo:", err);
+      }
+    }
+
+    async function inyectarTelemetriaEquipo() {
+      if (!cacheEquipoSeleccionadoId) {
+        showToast("Seleccione un equipo para inyectar telemetría", "warning");
+        return;
+      }
+      try {
+        const btn = document.getElementById("btn-inyectar-telemetria");
+        if (btn) btn.disabled = true;
+
+        const res = await fetch("/api/equipos-telemetria-simular", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            tipo: cacheFamiliaSeleccionada,
+            equipo_id: cacheEquipoSeleccionadoId
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Telemetría inyectada para ${data.equipo_id}: ${data.mensaje}`, data.falla_actual ? "warning" : "success");
+          await cargarEstadoEquipos(cacheFamiliaSeleccionada);
+          if (data.prediccion && data.prediccion.probabilidad_falla > 70) {
+            showToast(`⚠️ Alerta Predictiva: Probabilidad de falla del ${data.prediccion.probabilidad_falla}%`, "error");
+          }
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error de red: ${err.message}`, "error");
+      } finally {
+        const btn = document.getElementById("btn-inyectar-telemetria");
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    // ==========================================
+    // PREDICCIÓN DE EQUIPOS (SIMULADOR Y MATRIZ)
+    // ==========================================
+
+    function actualizarCamposSimuladorPredictivo(tipo) {
+      const container = document.getElementById("calc-parametros-dinamicos");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const camposPorTipo = {
+        'ventiladores': [
+          { id: 'sim-presion', label: 'Presión Neumática (psi):', default: 51.5, step: 0.1 },
+          { id: 'sim-vibracion', label: 'Vibración Turbina (Hz):', default: 62.0, step: 0.5 },
+          { id: 'sim-temperatura', label: 'Temperatura Bloque (°C):', default: 41.2, step: 0.1 },
+          { id: 'sim-fugas', label: 'Fugas de Aire (L/min):', default: 0.4, step: 0.1 }
+        ],
+        'monitores': [
+          { id: 'sim-ciclos-bat', label: 'Ciclos Descarga Batería:', default: 280, step: 1 },
+          { id: 'sim-ecg-errores', label: 'Errores Módulo ECG:', default: 1, step: 1 },
+          { id: 'sim-ruido-spo2', label: 'Ruido Señal SpO2 (dB):', default: 18.5, step: 0.1 }
+        ],
+        'bombas-volumetricas': [
+          { id: 'sim-vib-motor', label: 'Vibración Motor (rpm):', default: 1450, step: 10 },
+          { id: 'sim-desv-presion', label: 'Desviación Presión (mmHg):', default: 22.0, step: 0.5 },
+          { id: 'sim-alarma-burbuja', label: 'Alarma Burbuja:', default: 1, step: 1 }
+        ],
+        'bombas-jeringa': [
+          { id: 'sim-error-paso', label: 'Error Paso Motor (mm):', default: 0.045, step: 0.005 },
+          { id: 'sim-resistencia', label: 'Resistencia Émbolo (N):', default: 7.5, step: 0.5 }
+        ]
+      };
+
+      const campos = camposPorTipo[tipo] || [];
+      campos.forEach(c => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <label class="block text-xs text-slate-400 mb-1">${c.label}</label>
+          <input type="number" id="${c.id}" value="${c.default}" step="${c.step}" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function ejecutarCalculoPrediccion() {
+      const tipo = document.getElementById("calc-tipo-equipo").value;
+      const equipoId = document.getElementById("calc-id-equipo").value || "SIM-001";
+      const horasUso = parseFloat(document.getElementById("calc-horas-uso").value) || 0;
+      const diasMtto = parseInt(document.getElementById("calc-dias-mtto").value) || 0;
+      const fallasPrevias = parseInt(document.getElementById("calc-fallas-previas").value) || 0;
+
+      const payload = {
+        tipo: tipo,
+        datos: {
+          ID_Equipo: equipoId,
+          Horas_Uso_Total: horasUso,
+          Dias_Desde_Ultimo_Mtto: diasMtto,
+          Numero_Fallas_Previas: fallasPrevias
+        }
+      };
+
+      if (tipo === "ventiladores") {
+        payload.datos.Presion_Neumatica_psi = parseFloat(document.getElementById("sim-presion")?.value || 50);
+        payload.datos.Nivel_Vibracion_Turbina_Hz = parseFloat(document.getElementById("sim-vibracion")?.value || 55);
+        payload.datos.Temperatura_Bloque_C = parseFloat(document.getElementById("sim-temperatura")?.value || 38);
+        payload.datos.Fugas_Aire_Lmin = parseFloat(document.getElementById("sim-fugas")?.value || 0.2);
+      } else if (tipo === "monitores") {
+        payload.datos.Ciclos_Descarga_Bateria = parseInt(document.getElementById("sim-ciclos-bat")?.value || 250);
+        payload.datos.Errores_Modulo_ECG = parseInt(document.getElementById("sim-ecg-errores")?.value || 0);
+        payload.datos.Ruido_Senal_SpO2_dB = parseFloat(document.getElementById("sim-ruido-spo2")?.value || 15);
+      } else if (tipo === "bombas-volumetricas") {
+        payload.datos.Nivel_Vibracion_Motor_rpm = parseFloat(document.getElementById("sim-vib-motor")?.value || 1400);
+        payload.datos.Desviacion_Presion_Oclusion_mmHg = parseFloat(document.getElementById("sim-desv-presion")?.value || 20);
+        payload.datos.Frecuencia_Alarma_Burbuja = parseInt(document.getElementById("sim-alarma-burbuja")?.value || 0);
+      } else if (tipo === "bombas-jeringa") {
+        payload.datos.Error_Paso_Motor_Micro_mm = parseFloat(document.getElementById("sim-error-paso")?.value || 0.04);
+        payload.datos.Resistencia_Embolo_N = parseFloat(document.getElementById("sim-resistencia")?.value || 6);
+      }
+
+      try {
+        const res = await fetch("/api/equipos-prediccion", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          showToast("Error al calcular predicción", "error");
+          return;
+        }
+
+        const data = await res.json();
+
+        const probElem = document.getElementById("calc-res-probabilidad");
+        const barraElem = document.getElementById("calc-res-barra");
+        const badgeElem = document.getElementById("calc-res-badge-riesgo");
+        const factoresElem = document.getElementById("calc-res-factores");
+        const accionElem = document.getElementById("calc-res-accion");
+
+        const prob = data.probabilidad_falla;
+        probElem.innerText = `${prob}%`;
+        barraElem.style.width = `${prob}%`;
+
+        let colorBarra = "bg-emerald-500";
+        let badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
+        if (data.nivel_riesgo === "MEDIO") {
+          colorBarra = "bg-amber-500";
+          badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
+        } else if (data.nivel_riesgo === "CRITICO") {
+          colorBarra = "bg-rose-500";
+          badgeClass = "bg-rose-950 text-rose-300 border-rose-800 animate-pulse";
+        }
+        barraElem.className = `${colorBarra} h-3 rounded-full transition-all duration-500`;
+        badgeElem.className = `px-2.5 py-0.5 rounded-full text-xs font-bold border ${badgeClass}`;
+        badgeElem.innerText = `Riesgo ${data.nivel_riesgo}`;
+
+        factoresElem.innerHTML = "";
+        const factores = data.factores_riesgo || [];
+        if (factores.length === 0) {
+          factoresElem.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-800 text-slate-300 border border-slate-700">✓ Parámetros dentro de norma</span>`;
+        } else {
+          factores.forEach(f => {
+            const span = document.createElement("span");
+            span.className = "px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-950/80 text-amber-300 border border-amber-800";
+            span.innerText = `⚠️ ${f}`;
+            factoresElem.appendChild(span);
+          });
+        }
+
+        accionElem.innerHTML = `<strong>${data.accion_recomendada}</strong>`;
+
+      } catch (err) {
+        showToast(`Error al predecir: ${err.message}`, "error");
+      }
+    }
+
+    async function cargarPrediccionResumen() {
+      try {
+        const res = await fetch("/api/equipos-prediccion-resumen", { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        cachePrediccionResumen = data;
+
+        document.getElementById("pred-kpi-confiabilidad").innerText = `${data.confiabilidad_global_pct}%`;
+        document.getElementById("pred-kpi-criticos").innerText = data.criticos;
+        document.getElementById("pred-kpi-preventivos").innerText = data.preventivos;
+        document.getElementById("pred-kpi-total").innerText = data.total_analizados;
+
+        filtrarMatrizPredictiva();
+      } catch (err) {
+        console.error("Error al cargar predicción resumen:", err);
+      }
+    }
+
+    function filtrarMatrizPredictiva() {
+      if (!cachePrediccionResumen) return;
+      const famFiltro = document.getElementById("filtro-pred-familia")?.value || "todos";
+      const riesgoFiltro = document.getElementById("filtro-pred-riesgo")?.value || "todos";
+
+      let lista = cachePrediccionResumen.equipos_priorizados || [];
+
+      if (famFiltro !== "todos") {
+        lista = lista.filter(e => e.tipo === famFiltro);
+      }
+      if (riesgoFiltro !== "todos") {
+        lista = lista.filter(e => e.nivel_riesgo === riesgoFiltro);
+      }
+
+      const tbody = document.getElementById("tabla-prediccion-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No se encontraron equipos bajo estos criterios.</td></tr>`;
+        return;
+      }
+
+      lista.slice(0, 50).forEach(eq => {
+        let badgeRiesgo = "bg-emerald-950 text-emerald-300 border-emerald-800";
+        if (eq.nivel_riesgo === "MEDIO") badgeRiesgo = "bg-amber-950 text-amber-300 border-amber-800";
+        if (eq.nivel_riesgo === "CRITICO") badgeRiesgo = "bg-rose-950 text-rose-300 border-rose-800";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/40 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-mono font-bold text-white">${eq.id_equipo}</td>
+          <td class="py-3 px-3 text-slate-300">${eq.tipo_nombre}</td>
+          <td class="py-3 px-3 text-slate-400 font-mono">${eq.cama || 'N/A'}</td>
+          <td class="py-3 px-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold ${eq.probabilidad_falla > 70 ? 'text-rose-400' : (eq.probabilidad_falla > 35 ? 'text-amber-400' : 'text-emerald-400')}">${eq.probabilidad_falla}%</span>
+              <div class="w-16 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div class="h-1.5 ${eq.probabilidad_falla > 70 ? 'bg-rose-500' : (eq.probabilidad_falla > 35 ? 'bg-amber-500' : 'bg-emerald-500')}" style="width: ${eq.probabilidad_falla}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeRiesgo}">
+              ${eq.nivel_riesgo}
+            </span>
+          </td>
+          <td class="py-3 px-3 max-w-xs truncate text-[11px] text-slate-300" title="${(eq.factores_riesgo || []).join(', ')}">
+            ${(eq.factores_riesgo || []).join(', ') || 'Sin anomalías'}
+          </td>
+          <td class="py-3 px-3 text-[11px] text-slate-300 max-w-xs truncate" title="${eq.accion_recomendada}">
+            ${eq.accion_recomendada}
+          </td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="irAEquipoEnDataset('${eq.tipo}', '${eq.id_equipo}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-[11px] transition">
+              Ver Dataset
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function irAEquipoEnDataset(tipo, equipoId) {
+      cacheDatasetTipo = tipo;
+      cacheDatasetBusqueda = equipoId;
+      const inp = document.getElementById("dataset-busqueda-input");
+      if (inp) inp.value = equipoId;
+      cambiarTab("dataset");
+      cambiarFamiliaDataset(tipo);
+    }
+
+    // ==========================================
+    // BASE DE DATOS DE EQUIPOS (DATASET NEON & EXCEL EDITABLE)
+    // ==========================================
+
+    function cambiarFamiliaDataset(tipo) {
+      cacheDatasetTipo = tipo;
+      cacheDatasetPage = 1;
+
+      const familias = ['ventiladores', 'monitores', 'bombas-volumetricas', 'bombas-jeringa', 'rotativos'];
+      familias.forEach(f => {
+        const pill = document.getElementById(`pill-ds-${f}`);
+        if (!pill) return;
+        if (f === tipo) {
+          pill.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-600 text-white shadow transition";
+        } else {
+          pill.className = "px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition";
+        }
+      });
+
+      cargarDataset(tipo, 1);
+    }
+
+    async function cargarDataset(tipo = cacheDatasetTipo, page = cacheDatasetPage) {
+      cacheDatasetTipo = tipo;
+      cacheDatasetPage = page;
+
+      const tbody = document.getElementById("tabla-dataset-body");
+      const thead = document.getElementById("tabla-dataset-head");
+      if (!tbody || !thead) return;
+
+      tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-slate-400 font-mono text-xs">Cargando registros desde Neon PostgreSQL...</td></tr>`;
+
+      try {
+        const url = `/api/equipos-dataset/${tipo}?page=${page}&limit=${cacheDatasetLimit}&falla=${cacheDatasetFiltroFalla}&q=${encodeURIComponent(cacheDatasetBusqueda)}`;
+        const res = await fetch(url, { headers: getAuthHeaders() });
+
+        if (!res.ok) {
+          const err = await res.json();
+          tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">${err.detail || 'Error al cargar dataset'}</td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+        cacheDatasetTotal = data.total || 0;
+        cacheDatasetRows = data.rows || [];
+        const cols = data.columnas || [];
+
+        // Renderizar Headers
+        thead.innerHTML = "";
+        const trHead = document.createElement("tr");
+        cols.forEach(c => {
+          const th = document.createElement("th");
+          th.className = "py-3 px-3 whitespace-nowrap";
+          th.innerText = c.replace(/_/g, " ");
+          trHead.appendChild(th);
+        });
+        const thAccion = document.createElement("th");
+        thAccion.className = "py-3 px-3 text-right whitespace-nowrap";
+        thAccion.innerText = "Acciones";
+        trHead.appendChild(thAccion);
+        thead.appendChild(trHead);
+
+        // Renderizar Filas
+        tbody.innerHTML = "";
+        if (cacheDatasetRows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" class="py-8 text-center text-slate-500 font-mono text-xs">No se encontraron registros en ${data.tabla} con los filtros aplicados.</td></tr>`;
+        } else {
+          cacheDatasetRows.forEach(row => {
+            const tr = document.createElement("tr");
+            const tieneFalla = row["Falla_Actual"] === 1;
+            tr.className = `hover:bg-slate-800/50 transition ${tieneFalla ? 'bg-rose-950/20' : ''}`;
+
+            const idReg = row["ID_Registro"] || row["ID_Equipo_Rotativo"];
+
+            cols.forEach(col => {
+              const td = document.createElement("td");
+              td.className = "py-2.5 px-3 whitespace-nowrap";
+              const val = row[col];
+
+              if (col === "Falla_Actual") {
+                td.innerHTML = val === 1 
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">1 (Falla)</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">0 (OK)</span>`;
+              } else if (col === "ID_Equipo" || col === "ID_Equipo_Rotativo") {
+                td.innerHTML = `<span class="font-bold text-white">${val}</span>`;
+              } else if (typeof val === "number") {
+                td.innerText = Number.isInteger(val) ? val : val.toFixed(2);
+              } else {
+                td.innerText = val !== null && val !== undefined ? val : "-";
+              }
+              tr.appendChild(td);
+            });
+
+            // Columna de Acciones: Editar y Eliminar
+            const tdAcc = document.createElement("td");
+            tdAcc.className = "py-2.5 px-3 text-right whitespace-nowrap";
+            tdAcc.innerHTML = `
+              <button onclick="abrirModalEditarRegistroDataset('${tipo}', '${idReg}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-[11px] font-semibold transition mr-1">
+                ✏️ Editar
+              </button>
+              <button onclick="eliminarRegistroDataset('${tipo}', '${idReg}')" class="px-2.5 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-semibold transition">
+                🗑️
+              </button>
+            `;
+            tr.appendChild(tdAcc);
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Actualizar controles de paginación
+        const total = cacheDatasetTotal;
+        const inicio = total === 0 ? 0 : (page - 1) * cacheDatasetLimit + 1;
+        const fin = Math.min(page * cacheDatasetLimit, total);
+        const totalPags = Math.ceil(total / cacheDatasetLimit) || 1;
+
+        document.getElementById("dataset-pag-inicio").innerText = inicio;
+        document.getElementById("dataset-pag-fin").innerText = fin;
+        document.getElementById("dataset-total-regs").innerText = total;
+        document.getElementById("dataset-pag-actual").innerText = `Página ${page} de ${totalPags}`;
+
+        const btnPrev = document.getElementById("btn-ds-pag-prev");
+        const btnNext = document.getElementById("btn-ds-pag-next");
+        if (btnPrev) btnPrev.disabled = page <= 1;
+        if (btnNext) btnNext.disabled = page >= totalPags;
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">Error de conexión: ${err.message}</td></tr>`;
+      }
+    }
+
+    function manejarBusquedaDataset(e) {
+      if (e.key === "Enter" || e.keyCode === 13) {
+        cacheDatasetBusqueda = document.getElementById("dataset-busqueda-input").value.trim();
+        cargarDataset(cacheDatasetTipo, 1);
+      }
+    }
+
+    function aplicarFiltrosDataset() {
+      cacheDatasetFiltroFalla = document.getElementById("dataset-filtro-falla").value;
+      cacheDatasetBusqueda = document.getElementById("dataset-busqueda-input").value.trim();
+      cargarDataset(cacheDatasetTipo, 1);
+    }
+
+    function cambiarLimiteDataset(val) {
+      cacheDatasetLimit = parseInt(val) || 25;
+      cargarDataset(cacheDatasetTipo, 1);
+    }
+
+    function cambiarPaginaDataset(delta) {
+      const nuevaPag = cacheDatasetPage + delta;
+      if (nuevaPag >= 1) {
+        cargarDataset(cacheDatasetTipo, nuevaPag);
+      }
+    }
+
+    function abrirModalEditarRegistroDataset(tipo, idRegistro) {
+      const row = cacheDatasetRows.find(r => (r["ID_Registro"] == idRegistro || r["ID_Equipo_Rotativo"] == idRegistro));
+      if (!row) {
+        showToast("No se encontró el registro seleccionado en caché", "error");
+        return;
+      }
+
+      document.getElementById("ds-modal-titulo").innerText = `Editar Registro #${idRegistro} (${tipo})`;
+      document.getElementById("ds-form-id").value = idRegistro;
+      document.getElementById("ds-form-tipo").value = tipo;
+
+      const container = document.getElementById("ds-form-campos-dinamicos");
+      container.innerHTML = "";
+
+      const cols = Object.keys(row);
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+
+      cols.forEach(col => {
+        const val = row[col];
+        const div = document.createElement("div");
+
+        if (col === "ID_Registro") {
+          div.innerHTML = `
+            <label class="block text-slate-400 font-semibold mb-1">${col}:</label>
+            <input type="text" value="${val}" readonly class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-slate-400 font-mono">
+          `;
+        } else if (col === "Falla_Actual") {
+          div.innerHTML = `
+            <label class="block text-slate-300 font-semibold mb-1">${col} (0: Normal / 1: Falla):</label>
+            <select name="${col}" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
+              <option value="0" ${val === 0 ? 'selected' : ''}>0 - Operativo Sin Falla</option>
+              <option value="1" ${val === 1 ? 'selected' : ''}>1 - Con Falla Activa</option>
+            </select>
+          `;
+        } else {
+          const esNum = typeof val === "number";
+          div.innerHTML = `
+            <label class="block text-slate-300 font-semibold mb-1">${col.replace(/_/g, " ")}:</label>
+            <input type="${esNum ? 'number' : 'text'}" ${esNum ? 'step="any"' : ''} name="${col}" value="${val !== null && val !== undefined ? val : ''}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
+          `;
+        }
+        grid.appendChild(div);
+      });
+
+      container.appendChild(grid);
+      abrirModal("modal-editar-dataset");
+    }
+
+    function abrirModalNuevoRegistroDataset() {
+      const tipo = cacheDatasetTipo;
+      document.getElementById("ds-modal-titulo").innerText = `Nuevo Registro en ${tipo}`;
+      document.getElementById("ds-form-id").value = "";
+      document.getElementById("ds-form-tipo").value = tipo;
+
+      const container = document.getElementById("ds-form-campos-dinamicos");
+      container.innerHTML = "";
+
+      const plantillas = {
+        'ventiladores': [
+          { name: "ID_Equipo", label: "ID Equipo", default: "VEN-031" },
+          { name: "Cama_Asignada", label: "Cama Asignada", default: "Cama 31" },
+          { name: "Horas_Uso_Total", label: "Horas Uso Total", type: "number", default: "3500" },
+          { name: "Dias_Desde_Ultimo_Mtto", label: "Días Desde Mtto", type: "number", default: "150" },
+          { name: "Numero_Fallas_Previas", label: "Fallas Previas", type: "number", default: "1" },
+          { name: "Presion_Neumatica_psi", label: "Presión Neumática (psi)", type: "number", step: "0.1", default: "50.0" },
+          { name: "Nivel_Vibracion_Turbina_Hz", label: "Vibración Turbina (Hz)", type: "number", step: "0.1", default: "55.0" },
+          { name: "Temperatura_Bloque_C", label: "Temperatura Bloque (°C)", type: "number", step: "0.1", default: "38.5" },
+          { name: "Fugas_Aire_Lmin", label: "Fugas de Aire (L/min)", type: "number", step: "0.1", default: "0.3" },
+          { name: "Falla_Actual", label: "Falla Actual", type: "select", options: [["0", "0 - Sin Falla"], ["1", "1 - Con Falla"]] }
+        ],
+        'monitores': [
+          { name: "ID_Equipo", label: "ID Equipo", default: "MON-031" },
+          { name: "Cama_Asignada", label: "Cama Asignada", default: "Cama 31" },
+          { name: "Horas_Uso_Total", label: "Horas Uso Total", type: "number", default: "3200" },
+          { name: "Dias_Desde_Ultimo_Mtto", label: "Días Desde Mtto", type: "number", default: "120" },
+          { name: "Numero_Fallas_Previas", label: "Fallas Previas", type: "number", default: "1" },
+          { name: "Ciclos_Descarga_Bateria", label: "Ciclos Batería", type: "number", default: "250" },
+          { name: "Errores_Modulo_ECG", label: "Errores ECG", type: "number", default: "0" },
+          { name: "Ruido_Senal_SpO2_dB", label: "Ruido SpO2 (dB)", type: "number", step: "0.1", default: "15.0" },
+          { name: "Falla_Actual", label: "Falla Actual", type: "select", options: [["0", "0 - Sin Falla"], ["1", "1 - Con Falla"]] }
+        ],
+        'bombas-volumetricas': [
+          { name: "ID_Equipo", label: "ID Equipo", default: "BOM-031" },
+          { name: "Cama_Asignada", label: "Cama Asignada", default: "Cama 31" },
+          { name: "Horas_Uso_Total", label: "Horas Uso Total", type: "number", default: "3100" },
+          { name: "Dias_Desde_Ultimo_Mtto", label: "Días Desde Mtto", type: "number", default: "140" },
+          { name: "Numero_Fallas_Previas", label: "Fallas Previas", type: "number", default: "1" },
+          { name: "Nivel_Vibracion_Motor_rpm", label: "Vibración Motor (rpm)", type: "number", step: "1", default: "1450" },
+          { name: "Desviacion_Presion_Oclusion_mmHg", label: "Desviación Oclusión (mmHg)", type: "number", step: "0.1", default: "20.0" },
+          { name: "Frecuencia_Alarma_Burbuja", label: "Alarma Burbuja", type: "number", default: "0" },
+          { name: "Falla_Actual", label: "Falla Actual", type: "select", options: [["0", "0 - Sin Falla"], ["1", "1 - Con Falla"]] }
+        ],
+        'bombas-jeringa': [
+          { name: "ID_Equipo", label: "ID Equipo", default: "JER-031" },
+          { name: "Cama_Asignada", label: "Cama Asignada", default: "Cama 31" },
+          { name: "Horas_Uso_Total", label: "Horas Uso Total", type: "number", default: "2900" },
+          { name: "Dias_Desde_Ultimo_Mtto", label: "Días Desde Mtto", type: "number", default: "110" },
+          { name: "Numero_Fallas_Previas", label: "Fallas Previas", type: "number", default: "0" },
+          { name: "Error_Paso_Motor_Micro_mm", label: "Error Paso Motor (mm)", type: "number", step: "0.001", default: "0.040" },
+          { name: "Resistencia_Embolo_N", label: "Resistencia Émbolo (N)", type: "number", step: "0.1", default: "6.5" },
+          { name: "Falla_Actual", label: "Falla Actual", type: "select", options: [["0", "0 - Sin Falla"], ["1", "1 - Con Falla"]] }
+        ],
+        'rotativos': [
+          { name: "ID_Equipo_Rotativo", label: "ID Equipo Rotativo", default: "ROT-018" },
+          { name: "Tipo_Tecnologia", label: "Tipo Tecnología", default: "Desfibrilador Bifásico" },
+          { name: "Ubicacion_Estrategica", label: "Ubicación", default: "Piso 3 - UCI Adultos" },
+          { name: "Estado_Operativo", label: "Estado Operativo", default: "Disponible" },
+          { name: "Fecha_Ultimo_Mtto", label: "Fecha Último Mtto", default: "2024-03-01" },
+          { name: "Horas_Uso_Estimado", label: "Horas Uso Estimado", type: "number", default: "450" }
+        ]
+      };
+
+      const campos = plantillas[tipo] || [];
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+
+      campos.forEach(c => {
+        const div = document.createElement("div");
+        if (c.type === "select") {
+          div.innerHTML = `
+            <label class="block text-slate-300 font-semibold mb-1">${c.label}:</label>
+            <select name="${c.name}" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
+              ${c.options.map(([val, txt]) => `<option value="${val}">${txt}</option>`).join("")}
+            </select>
+          `;
+        } else {
+          div.innerHTML = `
+            <label class="block text-slate-300 font-semibold mb-1">${c.label}:</label>
+            <input type="${c.type || 'text'}" ${c.step ? 'step="' + c.step + '"' : ''} name="${c.name}" value="${c.default || ''}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
+          `;
+        }
+        grid.appendChild(div);
+      });
+
+      container.appendChild(grid);
+      abrirModal("modal-editar-dataset");
+    }
+
+    async function guardarRegistroDataset(e) {
+      e.preventDefault();
+      const idRegistro = document.getElementById("ds-form-id").value;
+      const tipo = document.getElementById("ds-form-tipo").value;
+      const form = document.getElementById("form-dataset-registro");
+
+      const formData = new FormData(form);
+      const payload = {};
+      formData.forEach((val, key) => {
+        if (key === "ID_Registro") return;
+        const num = Number(val);
+        payload[key] = (!isNaN(num) && val.trim() !== "") ? num : val;
+      });
+
+      const submitBtn = document.getElementById("btn-submit-ds-registro");
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const url = idRegistro 
+          ? `/api/equipos-dataset/${tipo}/${idRegistro}`
+          : `/api/equipos-dataset/${tipo}`;
+        const method = idRegistro ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method: method,
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || "Registro guardado exitosamente en Neon PostgreSQL", "success");
+          cerrarModal("modal-editar-dataset");
+          cargarDataset(tipo, cacheDatasetPage);
+          cargarEstadoEquipos(tipo);
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error de red: ${err.message}`, "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    async function eliminarRegistroDataset(tipo, idRegistro) {
+      if (!confirm(`¿Confirmas la eliminación del registro #${idRegistro} en la tabla ${tipo} de Neon PostgreSQL?\n\nEsta acción modificará la base de datos de entrenamiento.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/equipos-dataset/${tipo}/${idRegistro}`, {
+          method: "DELETE",
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || `Registro #${idRegistro} eliminado`, "success");
+          cargarDataset(tipo, cacheDatasetPage);
+          cargarEstadoEquipos(tipo);
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error de red: ${err.message}`, "error");
+      }
+    }
+
+    function descargarDatasetCSV() {
+      if (!cacheDatasetRows || cacheDatasetRows.length === 0) {
+        showToast("No hay registros en la vista actual para exportar", "warning");
+        return;
+      }
+      const cols = Object.keys(cacheDatasetRows[0]);
+      const header = cols.join(",");
+      const lines = cacheDatasetRows.map(r => cols.map(c => JSON.stringify(r[c] !== null && r[c] !== undefined ? r[c] : "")).join(","));
+      const csvContent = "data:text/csv;charset=utf-8," + [header, ...lines].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `dataset_${cacheDatasetTipo}_p${cacheDatasetPage}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Descarga de CSV iniciada", "info");
+    }
+
+    // ==========================================
     // INICIALIZACIÓN GENERAL
     // ==========================================
 
@@ -2434,18 +3748,23 @@
         cargarObservaciones(),
         cargarAuditoria(),
         cargarSeguridad(),
-        cargarMonitoreoCamas()
+        cargarMonitoreoCamas(),
+        cargarEstadoEquipos(cacheFamiliaSeleccionada)
       ]);
+      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO");
+      if (esRolTecnico) {
+        cargarPrediccionResumen();
+      }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
       inicializarGrafico();
+      actualizarCamposSimuladorPredictivo("ventiladores");
       
       const savedSession = sessionStorage.getItem("salud_predictiva_session");
       if (savedSession) {
         try {
           const parsed = JSON.parse(savedSession);
-          // Sesiones antiguas guardaban la contraseña: se invalidan de inmediato.
           if (!parsed.token || (parsed.expiresAt && Date.now() >= parsed.expiresAt)) {
             sessionStorage.removeItem("salud_predictiva_session");
             sesionActiva = null;
@@ -2473,6 +3792,7 @@
           cargarEstadisticas();
           cargarMonitoreoCamas();
           cargarObservaciones();
+          cargarEstadoEquipos(cacheFamiliaSeleccionada);
         }
       }, 8000);
     });
