@@ -500,12 +500,21 @@ class SimularTelemetriaRequest(BaseModel):
 
 def verify_user_credentials(
     x_session_token: Optional[str] = Header(default=None, description="Token de sesión"),
+    authorization: Optional[str] = Header(default=None, description="Bearer token"),
     x_user_email: Optional[str] = Header(default=None, description="Correo del usuario (compatibilidad)"),
     x_user_password: Optional[str] = Header(default=None, description="Contraseña (compatibilidad)"),
     conn = Depends(get_db)
 ):
-    if x_session_token:
-        user_id = decode_session_token(x_session_token)
+    token = x_session_token
+    if not token and authorization:
+        parts = authorization.split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+        elif len(parts) == 1:
+            token = parts[0]
+
+    if token:
+        user_id = decode_session_token(token)
         return get_user_by_id(conn, user_id)
 
     if not x_user_email or not x_user_password:
@@ -551,7 +560,7 @@ class RolSistema(str, Enum):
     ING_CORRECTIVO = "ING_CORRECTIVO"
 
 # Roles con permisos de administración
-ADMIN_ROLES = {RolSistema.ADMIN.value, RolSistema.ADMIN_BIOMEDICO.value}
+ADMIN_ROLES = {RolSistema.ADMIN.value, RolSistema.ADMIN_BIOMEDICO.value, "Administrador"}
 
 # Roles con acceso a Predicción de Equipos (Admin Biomédico, Administrador, Ingeniero Correctivo e Ingeniero Preventivo)
 PREDICCION_ROLES = {
@@ -559,6 +568,9 @@ PREDICCION_ROLES = {
     RolSistema.ADMIN.value,
     RolSistema.ING_PREVENTIVO.value,
     RolSistema.ING_CORRECTIVO.value,
+    "Ingeniero Preventivo",
+    "Ingeniero Correctivo",
+    "Administrador",
 }
 
 # Roles con acceso a Base de Datos de Equipos (Dataset y Edición)
@@ -567,6 +579,9 @@ DATASET_ROLES = {
     RolSistema.ADMIN.value,
     RolSistema.ING_PREVENTIVO.value,
     RolSistema.ING_CORRECTIVO.value,
+    "Ingeniero Preventivo",
+    "Ingeniero Correctivo",
+    "Administrador",
 }
 
 def require_roles(allowed_roles: List[str]):
@@ -1015,8 +1030,9 @@ def crear_observacion(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Permite al Servicio IoT, Médico o Administrador Biomédico registrar una nueva medición telemétrica."""
-    if user["rol_nombre"] not in ["Medico", "Servicio", "Admin Biomedico"]:
+    """Permite al Servicio IoT, Médico, Administrador Biomédico e Ingenieros registrar una nueva medición telemétrica de equipo."""
+    roles_obs = {"Medico", "Servicio", "Admin Biomedico", "ADMIN", "ING_PREVENTIVO", "ING_CORRECTIVO", "Ingeniero Preventivo", "Ingeniero Correctivo", "Administrador"}
+    if user["rol_nombre"] not in roles_obs:
         raise HTTPException(status_code=403, detail="No tiene permisos para registrar observaciones telemétricas.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -1058,7 +1074,7 @@ def soft_edit_observation(
     user: dict = Depends(verify_user_credentials), 
     conn = Depends(get_db)
 ):
-    """Los médicos solo pueden modificar sus propios registros clínicos."""
+    """Permite a Admin Biomédico, Administradores, Ingenieros o al autor editar la medición técnica."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s AND is_deleted = FALSE", (obs_id,))
     obs = cursor.fetchone()
@@ -1067,14 +1083,12 @@ def soft_edit_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada o eliminada")
 
-    es_admin = user["rol_nombre"] == "Admin Biomedico"
-    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
+    es_admin = user["rol_nombre"] in {"Admin Biomedico", "ADMIN", "Administrador", "ING_PREVENTIVO", "ING_CORRECTIVO"}
+    es_medico_autor = obs["created_by"] == user["id"]
 
     if not (es_admin or es_medico_autor):
         cursor.close()
-        if user["rol_nombre"] == "Medico":
-            raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede editar sus propios registros clínicos.")
-        raise HTTPException(status_code=403, detail="Rol sin permisos para editar registros clínicos.")
+        raise HTTPException(status_code=403, detail="Rol sin permisos para editar esta medición.")
 
     new_version = obs["version"] + 1
     cursor.execute("""
@@ -1098,7 +1112,7 @@ def soft_delete_observation(
     user: dict = Depends(verify_user_credentials), 
     conn = Depends(get_db)
 ):
-    """Permite al Admin Biomédico o Médico autor eliminar registros clínicos."""
+    """Permite al Admin Biomédico, Administrador o autor eliminar mediciones."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s AND is_deleted = FALSE", (obs_id,))
     obs = cursor.fetchone()
@@ -1107,14 +1121,12 @@ def soft_delete_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada o ya eliminada")
 
-    es_admin = user["rol_nombre"] == "Admin Biomedico"
-    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
+    es_admin = user["rol_nombre"] in {"Admin Biomedico", "ADMIN", "Administrador", "ING_PREVENTIVO", "ING_CORRECTIVO"}
+    es_medico_autor = obs["created_by"] == user["id"]
 
     if not (es_admin or es_medico_autor):
         cursor.close()
-        if user["rol_nombre"] == "Medico":
-            raise HTTPException(status_code=403, detail="Restricción de autoría: Un médico solo puede eliminar sus propios registros clínicos.")
-        raise HTTPException(status_code=403, detail="Rol sin permisos para eliminar registros clínicos.")
+        raise HTTPException(status_code=403, detail="Rol sin permisos para eliminar esta medición.")
 
     cursor.execute("UPDATE observaciones SET is_deleted = TRUE WHERE id = %s", (obs_id,))
     cursor.execute("""
@@ -1132,7 +1144,7 @@ def restore_observation(
     user: dict = Depends(verify_user_credentials), 
     conn = Depends(get_db)
 ):
-    """Permite al Admin Biomédico o Médico autor restaurar un registro clínico."""
+    """Permite al Admin Biomédico, Administrador o autor restaurar un registro técnico."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("SELECT * FROM observaciones WHERE id = %s", (obs_id,))
     obs = cursor.fetchone()
@@ -1141,14 +1153,12 @@ def restore_observation(
         cursor.close()
         raise HTTPException(status_code=404, detail="Observación no encontrada")
 
-    es_admin = user["rol_nombre"] == "Admin Biomedico"
-    es_medico_autor = user["rol_nombre"] == "Medico" and obs["created_by"] == user["id"]
+    es_admin = user["rol_nombre"] in {"Admin Biomedico", "ADMIN", "Administrador", "ING_PREVENTIVO", "ING_CORRECTIVO"}
+    es_medico_autor = obs["created_by"] == user["id"]
 
     if not (es_admin or es_medico_autor):
         cursor.close()
-        if user["rol_nombre"] == "Medico":
-            raise HTTPException(status_code=403, detail="Acceso denegado: Restauración clínica reservada al médico autor de este registro.")
-        raise HTTPException(status_code=403, detail="Acceso denegado: No tiene permisos para restaurar registros.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: No tiene permisos para restaurar este registro.")
 
     cursor.execute("UPDATE observaciones SET is_deleted = FALSE WHERE id = %s", (obs_id,))
     cursor.execute("""
@@ -1544,7 +1554,7 @@ def get_dashboard_stats(conn = Depends(get_db)):
 
 @app.post("/simulate-telemetry", tags=["Simulador IoT"])
 def simulate_telemetry_packet(
-    data: SimularTelemetriaRequest,
+    data: Optional[SimularTelemetriaRequest] = None,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
@@ -1557,7 +1567,7 @@ def simulate_telemetry_packet(
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
-    encuentro_id = data.encuentro_id
+    encuentro_id = data.encuentro_id if data else None
     if not encuentro_id:
         cursor.execute("SELECT id FROM encuentros WHERE estado = 'in-progress' AND is_deleted = FALSE ORDER BY id ASC LIMIT 1")
         row = cursor.fetchone()
@@ -1569,32 +1579,81 @@ def simulate_telemetry_packet(
 
     telemetry_scenarios = [
         {
-            "parametro": "Saturación de Oxígeno (SpO2)",
-            "codigo_loinc": "59408-5",
-            "valor": round(random.uniform(92.0, 99.5), 1),
-            "unidad": "%",
-            "alerta": None
+            "parametro": "Presión Neumática (psi)",
+            "codigo_loinc": "Presion_Neumatica_psi",
+            "valor": round(random.uniform(46.0, 64.0), 1),
+            "unidad": "psi",
+            "alerta": "Alerta: Presión neumática fluctuante" if random.random() > 0.75 else None
         },
         {
-            "parametro": "Frecuencia Cardíaca (ECG)",
-            "codigo_loinc": "8867-4",
-            "valor": round(random.uniform(68.0, 115.0), 0),
-            "unidad": "lpm",
-            "alerta": None
+            "parametro": "Nivel Vibración Turbina (Hz)",
+            "codigo_loinc": "Nivel_Vibracion_Turbina_Hz",
+            "valor": round(random.uniform(62.0, 85.0), 1),
+            "unidad": "Hz",
+            "alerta": "Alerta Predictiva: Vibración de turbina elevada (>80 Hz)" if random.random() > 0.7 else None
         },
         {
-            "parametro": "Presión Vía Aérea Pico (Pik)",
-            "codigo_loinc": "19992-7",
-            "valor": round(random.uniform(20.0, 36.0), 1),
-            "unidad": "cmH2O",
-            "alerta": "Alerta: Presión inspiratoria alta" if random.random() > 0.7 else None
+            "parametro": "Temperatura Bloque (°C)",
+            "codigo_loinc": "Temperatura_Bloque_C",
+            "valor": round(random.uniform(38.0, 52.0), 1),
+            "unidad": "°C",
+            "alerta": "Alerta: Temperatura de bloque sobre umbral de seguridad (>49 °C)" if random.random() > 0.7 else None
         },
         {
-            "parametro": "Temperatura Turbina Ventilador",
-            "codigo_loinc": "8310-5",
-            "valor": round(random.uniform(37.5, 42.5), 1),
-            "unidad": "Cel",
-            "alerta": "Alerta Predictiva: Temperatura por encima del umbral seguro de turbina" if random.random() > 0.5 else None
+            "parametro": "Fugas de Aire (L/min)",
+            "codigo_loinc": "Fugas_Aire_Lmin",
+            "valor": round(random.uniform(0.2, 3.8), 2),
+            "unidad": "L/min",
+            "alerta": "Alerta: Pérdida de estanqueidad neumática (>3.0 L/min)" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Ciclos Descarga Batería",
+            "codigo_loinc": "Ciclos_Descarga_Bateria",
+            "valor": round(random.uniform(150, 560), 0),
+            "unidad": "ciclos",
+            "alerta": "Alerta Predictiva: Batería degradada (>500 ciclos)" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Errores Módulo ECG",
+            "codigo_loinc": "Errores_Modulo_ECG",
+            "valor": round(random.uniform(0, 12), 0),
+            "unidad": "eventos",
+            "alerta": "Alerta: Pérdida de integridad de señal en módulo ECG" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Ruido Señal SpO2 (dB)",
+            "codigo_loinc": "Ruido_Senal_SpO2_dB",
+            "valor": round(random.uniform(6.0, 26.0), 1),
+            "unidad": "dB",
+            "alerta": "Alerta: Ruido óptico excesivo en sensor fotopletismografía (>22 dB)" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Nivel Vibración Motor (rpm)",
+            "codigo_loinc": "Nivel_Vibracion_Motor_rpm",
+            "valor": round(random.uniform(2950, 3600), 0),
+            "unidad": "rpm",
+            "alerta": "Alerta Predictiva: Vibración fuera de rango en rotor peristáltico" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Desviación Presión Oclusión (mmHg)",
+            "codigo_loinc": "Desviacion_Presion_Oclusion_mmHg",
+            "valor": round(random.uniform(2.0, 34.0), 1),
+            "unidad": "mmHg",
+            "alerta": "Alerta: Descalibración de sensor de oclusión en línea" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Error Paso Motor Micrométrico (mm)",
+            "codigo_loinc": "Error_Paso_Motor_Micro_mm",
+            "valor": round(random.uniform(0.01, 0.22), 3),
+            "unidad": "mm",
+            "alerta": "Alerta: Holgura crítica en husillo micrométrico (>0.15 mm)" if random.random() > 0.7 else None
+        },
+        {
+            "parametro": "Resistencia Émbolo (N)",
+            "codigo_loinc": "Resistencia_Embolo_N",
+            "valor": round(random.uniform(10.0, 30.0), 1),
+            "unidad": "N",
+            "alerta": "Alerta: Resistencia mecánica anómala en émbolo propulsor" if random.random() > 0.7 else None
         }
     ]
 
@@ -1945,9 +2004,10 @@ def calcular_prediccion_equipo(tipo: str, item: dict) -> dict:
 def get_equipos_dataset(
     tipo: str,
     search: Optional[str] = None,
+    q: Optional[str] = None,
     equipo_id: Optional[str] = None,
-    falla: Optional[int] = None,
-    cama: Optional[int] = None,
+    falla: Optional[str] = None,
+    cama: Optional[str] = None,
     page: int = 1,
     limit: int = 50,
     user: dict = Depends(verify_user_credentials),
@@ -1965,14 +2025,15 @@ def get_equipos_dataset(
     where_clauses = []
     params = []
 
-    if search:
-        s = f"%{search.strip()}%"
+    search_term = (search or q or "").strip()
+    if search_term:
+        s = f"%{search_term}%"
         if tipo_key == "rotativos":
             where_clauses.append('("ID_Equipo_Rotativo" ILIKE %s OR "Tipo_Tecnologia" ILIKE %s OR "Ubicacion_Estrategica" ILIKE %s)')
             params.extend([s, s, s])
         else:
-            where_clauses.append('("ID_Registro" ILIKE %s OR "ID_Equipo" ILIKE %s)')
-            params.extend([s, s])
+            where_clauses.append('(CAST("ID_Registro" AS TEXT) ILIKE %s OR "ID_Equipo" ILIKE %s OR CAST("Cama_Asignada" AS TEXT) ILIKE %s)')
+            params.extend([s, s, s])
 
     if equipo_id:
         if tipo_key == "rotativos":
@@ -1982,13 +2043,17 @@ def get_equipos_dataset(
             where_clauses.append('"ID_Equipo" ILIKE %s')
             params.append(f"%{equipo_id.strip()}%")
 
-    if falla is not None and tipo_key != "rotativos":
-        where_clauses.append('"Falla_Actual" = %s')
-        params.append(falla)
+    if falla is not None and str(falla).strip().lower() not in ["todos", "", "none", "null"] and tipo_key != "rotativos":
+        try:
+            falla_int = int(falla)
+            where_clauses.append('"Falla_Actual" = %s')
+            params.append(falla_int)
+        except ValueError:
+            pass
 
-    if cama is not None and tipo_key != "rotativos":
-        where_clauses.append('"Cama_Asignada" = %s')
-        params.append(cama)
+    if cama is not None and str(cama).strip().lower() not in ["todos", "", "none", "null"] and tipo_key != "rotativos":
+        where_clauses.append('CAST("Cama_Asignada" AS TEXT) ILIKE %s')
+        params.append(f"%{str(cama).strip()}%")
 
     where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
@@ -2015,13 +2080,16 @@ def get_equipos_dataset(
         return {
             "tipo": tipo_key,
             "nombre": cfg["name"],
+            "tabla": table_name,
             "total": total_rows,
             "page": page,
             "limit": limit,
             "total_pages": (total_rows + limit - 1) // limit if total_rows > 0 else 1,
             "columns": cfg["columns"],
+            "columnas": cfg["columns"],
             "pk": pk_col,
-            "items": rows
+            "items": rows,
+            "rows": rows
         }
     except Exception as e:
         cursor.close()

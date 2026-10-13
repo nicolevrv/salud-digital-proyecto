@@ -747,20 +747,42 @@
     <!-- TAB 4: TELEMETRÍA, OBSERVACIONES & SOFT DELETE -->
     <!-- ========================================================================= -->
     <section id="tab-observaciones" class="tab-content hidden space-y-6">
+      <!-- Gráfico de Telemetría Técnica de Equipos en Tiempo Real -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">📈</span>
+              Telemetría de Variables Físicas de Equipos en Tiempo Real
+            </h3>
+            <p class="text-xs text-slate-400">Monitoreo de Presión Neumática (psi), Nivel de Vibración (Hz/rpm) y Temperatura (°C) según dataset Neon</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-simular-iot-telemetria" onclick="intentarSimulacionTelemetria()" class="px-3 py-1.5 rounded-xl bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow">
+              <span>⚡ Simular Señal IoT de Equipo</span>
+            </button>
+          </div>
+        </div>
+        <div class="h-56 w-full">
+          <canvas id="telemetriaChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabla de Mediciones de Telemetría -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
-            <h3 class="text-base font-bold text-white">Registros Telemétricos & Control Clínico</h3>
-            <p class="text-xs text-slate-400">Soft Edit (versionamiento), Soft Delete por autor y Restauración clínica reservada al médico autor</p>
+            <h3 class="text-base font-bold text-white">Registros Telemétricos Técnicos de Equipos Biomédicos</h3>
+            <p class="text-xs text-slate-400">Soft Edit (versionamiento trazable), Soft Delete y Restauración en Neon PostgreSQL</p>
           </div>
           <div class="flex items-center gap-3">
             <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
               <input type="checkbox" id="check-incluir-eliminados" onchange="cargarObservaciones()" class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0">
               <span>Incluir eliminados (Soft-Deleted)</span>
             </label>
-            <button id="btn-nueva-obs-header" onclick="abrirModalNuevaObservacion()" class="hidden px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
+            <button id="btn-nueva-obs-header" onclick="abrirModalNuevaObservacion()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <span>+ Nueva Medición</span>
+              <span>+ Nueva Medición de Equipo</span>
             </button>
           </div>
         </div>
@@ -770,12 +792,12 @@
             <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
               <tr>
                 <th class="py-3 px-3">ID</th>
-                <th class="py-3 px-3">Paciente / Cama</th>
-                <th class="py-3 px-3">Parámetro LOINC</th>
+                <th class="py-3 px-3">Equipo / Cama</th>
+                <th class="py-3 px-3">Variable Técnica (Neon)</th>
                 <th class="py-3 px-3">Valor / Unidad</th>
-                <th class="py-3 px-3">Alerta Predictiva</th>
+                <th class="py-3 px-3">Alerta Técnica / Estado</th>
                 <th class="py-3 px-3">Versión</th>
-                <th class="py-3 px-3">Autor</th>
+                <th class="py-3 px-3">Registrado Por</th>
                 <th class="py-3 px-3">Estado</th>
                 <th class="py-3 px-3 text-right">Acciones</th>
               </tr>
@@ -1225,41 +1247,66 @@
 
   <!-- Modal Nueva Obs Manual -->
   <div id="modal-nueva-obs" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-sm">Registrar Nueva Observación</h4>
-        <button onclick="cerrarModal('modal-nueva-obs')" class="text-slate-400 hover:text-white">&times;</button>
-      </div>
-      <form onsubmit="guardarNuevaObservacion(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Encuentro Activo:</label>
-          <select id="nueva-obs-encuentro-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white"></select>
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <span class="p-1 rounded bg-cyan-500/20 text-cyan-400">⚡</span>
+            Registrar Nueva Medición Técnica de Equipo
+          </h4>
+          <p class="text-[11px] text-slate-400">Variables operativas y de estado físico del equipo (Base de datos Neon)</p>
+        </div>
+        <button onclick="cerrarModal('modal-nueva-obs')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <form onsubmit="guardarNuevaObservacion(event)" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Equipo Biomédico / Encuentro UCI:</label>
+          <select id="nueva-obs-encuentro-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"></select>
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Parámetro Clínico (LOINC):</label>
-          <select id="nueva-obs-parametro" onchange="actualizarUnidadLoinc(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
-            <option value="Saturación de Oxígeno (SpO2)|59408-5|%">SpO2 - Saturación de Oxígeno (59408-5)</option>
-            <option value="Frecuencia Cardíaca|8867-4|lpm">Frecuencia Cardíaca (8867-4)</option>
-            <option value="Presión Vía Aérea Pico (Pik)|19992-7|cmH2O">Presión Vía Aérea Pico (19992-7)</option>
-            <option value="Temperatura Turbina Ventilador|8310-5|Cel">Temperatura Turbina Ventilador (8310-5)</option>
+          <label class="block text-slate-300 font-semibold mb-1">Variable Técnica del Equipo (Neon DB):</label>
+          <select id="nueva-obs-parametro" onchange="actualizarVariableEquipo(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            <optgroup label="🫁 Ventiladores Mecánicos (Neon DB)">
+              <option value="Presión Neumática (psi)|Presion_Neumatica_psi|psi|52.0|Presión nominal estable en rango de operación">Presión Neumática (psi) — [45 - 60 psi]</option>
+              <option value="Nivel Vibración Turbina (Hz)|Nivel_Vibracion_Turbina_Hz|Hz|72.0|Vibración dinámica en rango seguro">Nivel Vibración Turbina (Hz) — [&lt; 75 Hz]</option>
+              <option value="Temperatura Bloque (°C)|Temperatura_Bloque_C|°C|42.5|Temperatura operativa nominal">Temperatura Bloque (°C) — [&lt; 49 °C]</option>
+              <option value="Fugas de Aire (L/min)|Fugas_Aire_Lmin|L/min|1.20|Estanqueidad del circuito dentro de tolerancia">Fugas de Aire (L/min) — [&lt; 3.0 L/min]</option>
+              <option value="Horas de Uso Total|Horas_Uso_Total|h|5200|Horas operativas acumuladas del ventilador">Horas de Uso Total (h)</option>
+            </optgroup>
+            <optgroup label="📈 Monitores de Signos Vitales (Neon DB)">
+              <option value="Ciclos Descarga Batería|Ciclos_Descarga_Bateria|ciclos|320|Ciclos de vida útil de batería dentro de norma">Ciclos Descarga Batería (ciclos) — [&lt; 500]</option>
+              <option value="Errores Módulo ECG|Errores_Modulo_ECG|eventos|2|Tasa de error admisible en amplificador ECG">Errores Módulo ECG (eventos) — [&lt; 8 eventos]</option>
+              <option value="Ruido Señal SpO2 (dB)|Ruido_Senal_SpO2_dB|dB|14.0|Relación señal/ruido nominal en fotopletismografía">Ruido Señal SpO2 (dB) — [&lt; 22 dB]</option>
+              <option value="Horas de Uso Total|Horas_Uso_Total|h|4800|Horas operativas del monitor">Horas de Uso Total (h)</option>
+            </optgroup>
+            <optgroup label="💉 Bombas de Infusión Volumétrica (Neon DB)">
+              <option value="Nivel Vibración Motor (rpm)|Nivel_Vibracion_Motor_rpm|rpm|3100|Régimen de giro peristáltico balanceado">Nivel Vibración Motor (rpm) — [&lt; 3300 rpm]</option>
+              <option value="Desviación Presión Oclusión (mmHg)|Desviacion_Presion_Oclusion_mmHg|mmHg|12.0|Sensor de oclusión en línea calibrado">Desviación Presión Oclusión (mmHg) — [&lt; 25 mmHg]</option>
+              <option value="Frecuencia Alarma Burbuja|Frecuencia_Alarma_Burbuja|alarmas|1|Sensor ultrasónico sin falsas alarmas">Frecuencia Alarma Burbuja (alarmas) — [&lt; 6 alarmas]</option>
+            </optgroup>
+            <optgroup label="🩺 Bombas de Infusión a Jeringa (Neon DB)">
+              <option value="Error Paso Motor Micrométrico (mm)|Error_Paso_Motor_Micro_mm|mm|0.05|Tolerancia de avance del husillo nominal">Error Paso Motor Micrométrico (mm) — [&lt; 0.15 mm]</option>
+              <option value="Resistencia Émbolo (N)|Resistencia_Embolo_N|N|15.0|Fuerza de fricción en jeringa nominal">Resistencia Émbolo (N) — [&lt; 24 N]</option>
+              <option value="Horas de Uso Total|Horas_Uso_Total|h|3600|Horas acumuladas de dosificación">Horas de Uso Total (h)</option>
+            </optgroup>
           </select>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Valor Medido:</label>
-            <input type="number" step="0.1" id="nueva-obs-valor" required placeholder="98" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            <label class="block text-slate-300 font-semibold mb-1">Valor Medido:</label>
+            <input type="number" step="0.01" id="nueva-obs-valor" required placeholder="52.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Unidad:</label>
-            <input type="text" id="nueva-obs-unidad" value="%" readonly class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-slate-400">
+            <label class="block text-slate-300 font-semibold mb-1">Unidad Técnica:</label>
+            <input type="text" id="nueva-obs-unidad" value="psi" readonly class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-slate-400 text-xs">
           </div>
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Alerta Predictiva:</label>
-          <input type="text" id="nueva-obs-alerta" placeholder="ej: Alerta: Desaturación en curso" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          <label class="block text-slate-300 font-semibold mb-1">Alerta Técnica / Diagnóstico del Equipo:</label>
+          <input type="text" id="nueva-obs-alerta" placeholder="ej: Presión nominal estable en rango de operación" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="cerrarModal('modal-nueva-obs')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="button" onclick="cerrarModal('modal-nueva-obs')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelar</button>
           <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Registrar Medición</button>
         </div>
       </form>
@@ -1608,7 +1655,7 @@
       const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
       const tabBtnSeguridad = document.getElementById("tab-btn-seguridad");
 
-      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO");
+      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDataset) tabBtnDataset.classList.toggle("hidden", !esRolTecnico);
@@ -1700,7 +1747,7 @@
           if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
           if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
           if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
-          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.remove("hidden");
           if (btnSimularIot) btnSimularIot.classList.add("hidden");
 
           if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
@@ -2036,14 +2083,23 @@
             ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`
             : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
 
-          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
-          const esMedicoAutor = sesionActiva && sesionActiva.rol === "Medico" && sesionActiva.id === o.created_by;
+          const esAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
+          const esMedicoAutor = sesionActiva && (sesionActiva.rol === "Medico" || sesionActiva.rol === "Admin Biomedico") && sesionActiva.id === o.created_by;
           const puedeModificar = esAdmin || esMedicoAutor;
+
+          const eqCodigo = o.equipo_codigo || (o.tipo_equipo ? o.tipo_equipo : ('EQ-' + o.encuentro_id));
+          const camaTxt = o.cama_uci ? `Cama ${o.cama_uci}` : 'UCI';
 
           tr.innerHTML = `
             <td class="py-2.5 px-3 font-mono text-slate-400">#${o.id}</td>
-            <td class="py-2.5 px-3 font-semibold text-white">${o.paciente_nombre || 'Encuentro #' + o.encuentro_id} <span class="block text-[11px] text-slate-400">${o.cama_uci || ''}</span></td>
-            <td class="py-2.5 px-3"><span class="text-cyan-300 font-medium">${o.parametro}</span><span class="block font-mono text-[10px] text-slate-500">LOINC: ${o.codigo_loinc}</span></td>
+            <td class="py-2.5 px-3 font-semibold text-white">
+              <span class="text-cyan-400 font-bold">${eqCodigo}</span>
+              <span class="block text-[11px] text-slate-400">${camaTxt} &bull; ${o.paciente_nombre || ('Encuentro #' + o.encuentro_id)}</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="text-cyan-300 font-semibold">${o.parametro}</span>
+              <span class="block font-mono text-[10px] text-slate-500">${o.codigo_loinc}</span>
+            </td>
             <td class="py-2.5 px-3 font-mono font-bold text-white text-sm">${o.valor} <span class="text-xs font-normal text-slate-400">${o.unidad}</span></td>
             <td class="py-2.5 px-3">${badgeAlerta}</td>
             <td class="py-2.5 px-3 font-mono text-purple-400 font-semibold">v${o.version}</td>
@@ -2054,11 +2110,11 @@
                 ${puedeModificar ? `
                   <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1">✏️ Editar</button>
                   <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]">🗑️ Borrar</button>
-                ` : `<span class="text-[11px] text-slate-500">Protegido por autor</span>`}
+                ` : `<span class="text-[11px] text-slate-500">Solo lectura</span>`}
               ` : `
                 ${puedeModificar ? `
                   <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">🔄 Restaurar</button>
-                ` : `<span class="text-[10px] text-slate-500">Restauración reservada a autor / admin</span>`}
+                ` : `<span class="text-[10px] text-slate-500">Restauración reservada</span>`}
               `}
             </td>
           `;
@@ -2693,36 +2749,69 @@
       }
     }
 
-    // Modal Nueva Obs (Médico / Admin Biomédico)
+    // Modal Nueva Obs (Admin Biomédico, ADMIN, Ingenieros y Médico)
     function abrirModalNuevaObservacion() {
       if (!sesionActiva) {
-        showToast("Debes iniciar sesión para registrar mediciones clínicas.", "warning");
+        showToast("Debes iniciar sesión para registrar mediciones técnicas.", "warning");
         abrirModal("modal-login");
         return;
       }
-      if (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico") {
-        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no puede registrar mediciones clínicas manuales. Las señales IoT se transmiten por sensor/simulación.`, "error");
+      const rolesPermitidos = ["Admin Biomedico", "ADMIN", "Administrador", "ING_PREVENTIVO", "ING_CORRECTIVO", "Ingeniero Preventivo", "Ingeniero Correctivo", "Medico"];
+      if (!rolesPermitidos.includes(sesionActiva.rol)) {
+        showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no puede registrar mediciones técnicas manuales.`, "error");
         return;
       }
       const selectEnc = document.getElementById("nueva-obs-encuentro-id");
-      selectEnc.innerHTML = cacheEncuentros.map(e => `<option value="${e.id}">Encuentro #${e.id} - ${e.paciente_nombre} (${e.cama_uci})</option>`).join("");
+      if (cacheEncuentros && cacheEncuentros.length > 0) {
+        selectEnc.innerHTML = cacheEncuentros.map(e => `
+          <option value="${e.id}">[${e.equipo_codigo || 'EQ-' + e.id}] ${e.tipo_equipo || 'Equipo Biomédico'} - Cama ${e.cama_uci || 'UCI'} (Encuentro #${e.id})</option>
+        `).join("");
+      } else {
+        selectEnc.innerHTML = `<option value="1">Equipo Biomédico UCI Principal (Encuentro #1)</option>`;
+      }
+
+      // Inicializar campos con la primera opción seleccionada si están vacíos
+      const sel = document.getElementById("nueva-obs-parametro");
+      if (sel) {
+        actualizarVariableEquipo(sel.value);
+      }
       abrirModal("modal-nueva-obs");
     }
 
-    function actualizarUnidadLoinc(val) {
+    function actualizarVariableEquipo(val) {
+      if (!val) return;
       const parts = val.split("|");
-      document.getElementById("nueva-obs-unidad").value = parts[2];
+      if (parts.length >= 3) {
+        document.getElementById("nueva-obs-unidad").value = parts[2];
+        const valInput = document.getElementById("nueva-obs-valor");
+        if (parts[3] && (!valInput.value || valInput.value === "98" || valInput.value === "52.0")) {
+          valInput.value = parts[3];
+        }
+        const alertInput = document.getElementById("nueva-obs-alerta");
+        if (parts[4]) {
+          alertInput.placeholder = parts[4];
+          if (!alertInput.value) {
+            alertInput.value = parts[4];
+          }
+        }
+      }
+    }
+
+    function actualizarUnidadLoinc(val) {
+      actualizarVariableEquipo(val);
     }
 
     async function guardarNuevaObservacion(e) {
       e.preventDefault();
-      if (!sesionActiva || (sesionActiva.rol !== "Medico" && sesionActiva.rol !== "Admin Biomedico")) {
-        showToast("Acceso denegado: Solo los médicos o el Administrador Biomédico pueden registrar mediciones clínicas.", "error");
+      const rolesPermitidos = ["Admin Biomedico", "ADMIN", "Administrador", "ING_PREVENTIVO", "ING_CORRECTIVO", "Ingeniero Preventivo", "Ingeniero Correctivo", "Medico"];
+      if (!sesionActiva || !rolesPermitidos.includes(sesionActiva.rol)) {
+        showToast("Acceso denegado: Solo el personal biomédico, ingenieros y médicos pueden registrar mediciones de equipo.", "error");
         return;
       }
       const rawParam = document.getElementById("nueva-obs-parametro").value.split("|");
+      const encId = parseInt(document.getElementById("nueva-obs-encuentro-id").value) || 1;
       const payload = {
-        encuentro_id: parseInt(document.getElementById("nueva-obs-encuentro-id").value),
+        encuentro_id: encId,
         parametro: rawParam[0],
         codigo_loinc: rawParam[1],
         unidad: rawParam[2],
@@ -2737,12 +2826,14 @@
         });
         const data = await res.json();
         if (res.ok) {
-          showToast("Observación registrada", "success");
+          showToast("Medición técnica de equipo registrada con éxito", "success");
           cerrarModal("modal-nueva-obs");
           actualizarGraficoConDato(payload.parametro, payload.valor);
           cargarObservaciones();
         } else {
-          showToast(data.detail, "error");
+          let msg = data.detail;
+          if (Array.isArray(msg)) msg = msg.map(m => m.msg || JSON.stringify(m)).join(", ");
+          showToast(msg || "Error al registrar medición", "error");
         }
       } catch (err) {
         showToast(err.message, "error");
@@ -2754,7 +2845,9 @@
     // ==========================================
 
     function inicializarGrafico() {
-      const ctx = document.getElementById("telemetriaChart").getContext("2d");
+      const el = document.getElementById("telemetriaChart");
+      if (!el) return;
+      const ctx = el.getContext("2d");
       const labels = ["-30s", "-25s", "-20s", "-15s", "-10s", "-5s", "Ahora"];
       
       chartInstance = new Chart(ctx, {
@@ -2763,8 +2856,8 @@
           labels: labels,
           datasets: [
             {
-              label: 'SpO2 (%)',
-              data: [98, 97, 98, 99, 97, 98, 98],
+              label: 'Presión Neumática (psi)',
+              data: [51.5, 52.0, 51.8, 52.4, 51.9, 52.1, 52.0],
               borderColor: '#06b6d4',
               backgroundColor: 'rgba(6, 182, 212, 0.1)',
               borderWidth: 2,
@@ -2773,17 +2866,17 @@
               yAxisID: 'y'
             },
             {
-              label: 'Frecuencia Cardíaca (lpm)',
-              data: [72, 75, 74, 76, 75, 78, 74],
+              label: 'Vibración Turbina/Motor (Hz)',
+              data: [71.2, 72.0, 71.8, 73.0, 72.4, 72.8, 72.1],
               borderColor: '#10b981',
               borderWidth: 2,
               tension: 0.3,
               fill: false,
-              yAxisID: 'y1'
+              yAxisID: 'y'
             },
             {
-              label: 'Presión Pico Vía Aérea (cmH2O)',
-              data: [22, 23, 22, 24, 23, 25, 23],
+              label: 'Temperatura Bloque (°C)',
+              data: [41.5, 42.0, 42.2, 42.5, 42.1, 42.8, 42.3],
               borderColor: '#f59e0b',
               borderWidth: 2,
               borderDash: [4, 4],
@@ -2802,8 +2895,7 @@
           },
           scales: {
             x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
-            y: { type: 'linear', position: 'left', min: 0, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#06b6d4', font: { size: 10 } } },
-            y1: { type: 'linear', position: 'right', min: 40, max: 150, grid: { drawOnChartArea: false }, ticks: { color: '#10b981', font: { size: 10 } } }
+            y: { type: 'linear', position: 'left', min: 0, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#06b6d4', font: { size: 10 } } }
           }
         }
       });
@@ -2815,13 +2907,14 @@
       chartInstance.data.labels.shift();
       chartInstance.data.labels.push(now);
 
-      if (param.includes("SpO2")) {
+      const pLower = (param || "").toLowerCase();
+      if (pLower.includes("presion") || pLower.includes("presión")) {
         chartInstance.data.datasets[0].data.shift();
         chartInstance.data.datasets[0].data.push(valor);
-      } else if (param.includes("Frecuencia Cardíaca")) {
+      } else if (pLower.includes("vibracion") || pLower.includes("vibración") || pLower.includes("motor") || pLower.includes("turbina")) {
         chartInstance.data.datasets[1].data.shift();
         chartInstance.data.datasets[1].data.push(valor);
-      } else if (param.includes("Presión")) {
+      } else {
         chartInstance.data.datasets[2].data.shift();
         chartInstance.data.datasets[2].data.push(valor);
       }
@@ -3387,19 +3480,25 @@
       tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-slate-400 font-mono text-xs">Cargando registros desde Neon PostgreSQL...</td></tr>`;
 
       try {
-        const url = `/api/equipos-dataset/${tipo}?page=${page}&limit=${cacheDatasetLimit}&falla=${cacheDatasetFiltroFalla}&q=${encodeURIComponent(cacheDatasetBusqueda)}`;
+        const url = `/api/equipos-dataset/${tipo}?page=${page}&limit=${cacheDatasetLimit}&falla=${cacheDatasetFiltroFalla}&q=${encodeURIComponent(cacheDatasetBusqueda)}&search=${encodeURIComponent(cacheDatasetBusqueda)}`;
         const res = await fetch(url, { headers: getAuthHeaders() });
 
         if (!res.ok) {
           const err = await res.json();
-          tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">${err.detail || 'Error al cargar dataset'}</td></tr>`;
+          let errDetail = err.detail || 'Error al cargar dataset';
+          if (Array.isArray(errDetail)) {
+            errDetail = errDetail.map(e => e.msg || JSON.stringify(e)).join(', ');
+          } else if (typeof errDetail === 'object') {
+            errDetail = JSON.stringify(errDetail);
+          }
+          tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">${errDetail}</td></tr>`;
           return;
         }
 
         const data = await res.json();
         cacheDatasetTotal = data.total || 0;
-        cacheDatasetRows = data.rows || [];
-        const cols = data.columnas || [];
+        cacheDatasetRows = data.rows || data.items || [];
+        const cols = data.columnas || data.columns || [];
 
         // Renderizar Headers
         thead.innerHTML = "";
@@ -3758,9 +3857,22 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      inicializarGrafico();
-      actualizarCamposSimuladorPredictivo("ventiladores");
-      
+      // 1. Siempre abrir modal de login al iniciar para permitir selección o autenticación
+      abrirModalLogin();
+      checkHealthStatus();
+
+      try {
+        inicializarGrafico();
+      } catch (e) {
+        console.warn("Grafico telemetria:", e);
+      }
+
+      try {
+        actualizarCamposSimuladorPredictivo("ventiladores");
+      } catch (e) {
+        console.warn("Simulador predictivo:", e);
+      }
+
       const savedSession = sessionStorage.getItem("salud_predictiva_session");
       if (savedSession) {
         try {
@@ -3779,10 +3891,7 @@
 
       actualizarInterfazPerfil();
 
-      if (!sesionActiva) {
-        abrirModalLogin();
-        checkHealthStatus();
-      } else {
+      if (sesionActiva) {
         cargarTodoElDashboard();
       }
 
