@@ -2327,6 +2327,122 @@ def get_equipos_estado_completo(
             sum(1 for r in bje_rows if r["prediccion"]["nivel_riesgo"] in {"Medio", "Alto", "Crítico"})
         )
 
+        all_equipos = []
+        for r in vent_rows:
+            cama_val = r.get("Cama_Asignada")
+            falla_val = r.get("Falla_Actual", 0)
+            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
+            all_equipos.append({
+                "id_equipo": r["ID_Equipo"],
+                "tipo": "ventiladores",
+                "tipo_nombre": "Ventilador Mecánico",
+                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
+                "cama_asignada": cama_val,
+                "estado_uso": estado_uso,
+                "falla_actual": falla_val,
+                "horas_uso": r.get("Horas_Uso_Total", 0),
+                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
+                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
+                "variables": {
+                    "Presión Neumática (psi)": r.get("Presion_Neumatica_psi"),
+                    "Vibración Turbina (Hz)": r.get("Nivel_Vibracion_Turbina_Hz"),
+                    "Temperatura Bloque (°C)": r.get("Temperatura_Bloque_C"),
+                    "Fugas de Aire (L/min)": r.get("Fugas_Aire_Lmin")
+                },
+                "prediccion": r.get("prediccion")
+            })
+
+        for r in mon_rows:
+            cama_val = r.get("Cama_Asignada")
+            falla_val = r.get("Falla_Actual", 0)
+            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
+            all_equipos.append({
+                "id_equipo": r["ID_Equipo"],
+                "tipo": "monitores",
+                "tipo_nombre": "Monitor de Signos Vitales",
+                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
+                "cama_asignada": cama_val,
+                "estado_uso": estado_uso,
+                "falla_actual": falla_val,
+                "horas_uso": r.get("Horas_Uso_Total", 0),
+                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
+                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
+                "variables": {
+                    "Ciclos Descarga Batería": r.get("Ciclos_Descarga_Bateria"),
+                    "Errores Módulo ECG": r.get("Errores_Modulo_ECG"),
+                    "Ruido Señal SpO2 (dB)": r.get("Ruido_Senal_SpO2_dB")
+                },
+                "prediccion": r.get("prediccion")
+            })
+
+        for r in bvo_rows:
+            cama_val = r.get("Cama_Asignada")
+            falla_val = r.get("Falla_Actual", 0)
+            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
+            all_equipos.append({
+                "id_equipo": r["ID_Equipo"],
+                "tipo": "bombas-volumetricas",
+                "tipo_nombre": "Bomba de Infusión Volumétrica",
+                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
+                "cama_asignada": cama_val,
+                "estado_uso": estado_uso,
+                "falla_actual": falla_val,
+                "horas_uso": r.get("Horas_Uso_Total", 0),
+                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
+                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
+                "variables": {
+                    "Vibración Motor (rpm)": r.get("Nivel_Vibracion_Motor_rpm"),
+                    "Desviación Presión Oclusión (mmHg)": r.get("Desviacion_Presion_Oclusion_mmHg"),
+                    "Frecuencia Alarma Burbuja": r.get("Frecuencia_Alarma_Burbuja")
+                },
+                "prediccion": r.get("prediccion")
+            })
+
+        for r in bje_rows:
+            cama_val = r.get("Cama_Asignada")
+            falla_val = r.get("Falla_Actual", 0)
+            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
+            all_equipos.append({
+                "id_equipo": r["ID_Equipo"],
+                "tipo": "bombas-jeringa",
+                "tipo_nombre": "Bomba de Infusión a Jeringa",
+                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
+                "cama_asignada": cama_val,
+                "estado_uso": estado_uso,
+                "falla_actual": falla_val,
+                "horas_uso": r.get("Horas_Uso_Total", 0),
+                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
+                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
+                "variables": {
+                    "Error Paso Motor (mm)": r.get("Error_Paso_Motor_Micro_mm"),
+                    "Resistencia Émbolo (N)": r.get("Resistencia_Embolo_N")
+                },
+                "prediccion": r.get("prediccion")
+            })
+
+        for r in rot_rows:
+            est_op = r.get("Estado_Operativo", "Operativo")
+            con_falla = 1 if est_op.lower() in ["falla", "en mantenimiento", "fuera de servicio"] else 0
+            estado_uso = "En Uso" if est_op.lower() in ["en uso", "operativo", "en servicio"] else ("En Falla" if con_falla else "Disponible")
+            all_equipos.append({
+                "id_equipo": r["ID_Equipo_Rotativo"],
+                "tipo": "rotativos",
+                "tipo_nombre": r.get("Tipo_Tecnologia", "Equipo Rotativo"),
+                "cama": r.get("Ubicacion_Estrategica", "Rotativo UCI"),
+                "cama_asignada": None,
+                "estado_uso": estado_uso,
+                "falla_actual": con_falla,
+                "horas_uso": r.get("Horas_Uso_Estimado", 0),
+                "dias_mtto": 0,
+                "fallas_previas": 0,
+                "variables": {
+                    "Tecnología": r.get("Tipo_Tecnologia"),
+                    "Ubicación": r.get("Ubicacion_Estrategica"),
+                    "Estado Operativo": est_op
+                },
+                "prediccion": None
+            })
+
         return {
             "resumen": {
                 "total_equipos": total_activos,
@@ -2338,6 +2454,14 @@ def get_equipos_estado_completo(
                 "bombas_jer_count": len(bje_rows),
                 "rotativos_count": len(rot_rows)
             },
+            "conteo_por_familia": {
+                "ventiladores": len(vent_rows),
+                "monitores": len(mon_rows),
+                "bombas-volumetricas": len(bvo_rows),
+                "bombas-jeringa": len(bje_rows),
+                "rotativos": len(rot_rows)
+            },
+            "equipos": all_equipos,
             "ventiladores": vent_rows,
             "monitores": mon_rows,
             "bombas_volumetricas": bvo_rows,
@@ -2380,6 +2504,18 @@ def get_equipo_historial(
             if c not in {"ID_Registro", "ID_Equipo", "Cama_Asignada"}:
                 series[c] = [r.get(c) for r in rows]
 
+        puntos = []
+        for r in rows:
+            vars_dict = {
+                c: r.get(c) for c in cfg["columns"] 
+                if c not in {"ID_Registro", "ID_Equipo", "Cama_Asignada", "Falla_Actual"}
+            }
+            puntos.append({
+                "id_registro": r.get("ID_Registro") or r.get("ID_Equipo_Rotativo"),
+                "falla_actual": r.get("Falla_Actual", 0),
+                "variables": vars_dict
+            })
+
         return {
             "tipo": tipo_key,
             "equipo_id": equipo_id,
@@ -2387,6 +2523,7 @@ def get_equipo_historial(
             "total_muestras": len(rows),
             "labels": labels,
             "series": series,
+            "puntos": puntos,
             "ultimo_registro": rows[-1],
             "prediccion_actual": calcular_prediccion_equipo(tipo_key, rows[-1])
         }

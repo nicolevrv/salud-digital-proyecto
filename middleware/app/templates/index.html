@@ -2951,7 +2951,32 @@
       const titParque = document.getElementById("titulo-parque-activo");
       if (titParque) titParque.innerText = nombres[tipo] || tipo;
       const titChart = document.getElementById("chart-equipo-titulo");
-      if (titChart) titChart.innerText = `Telemetría Técnica: ${nombres[tipo] || tipo}`;
+      if (titChart) titChart.innerText = `Curvas de Telemetría Técnica: ${nombres[tipo] || tipo}`;
+
+      // Renderizado inmediato si ya existen datos en caché local
+      if (cacheEquiposEstado && cacheEquiposEstado.equipos) {
+        const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === tipo);
+        const conteoParque = document.getElementById("conteo-unidades-parque");
+        if (conteoParque) conteoParque.innerText = unidades.length;
+
+        const select = document.getElementById("select-equipo-especifico");
+        if (select) {
+          select.innerHTML = unidades.map(u => `
+            <option value="${u.id_equipo}">${u.id_equipo} • ${u.estado_uso || (u.falla_actual === 1 ? 'En Falla' : 'Activo')} ${u.cama ? '(' + u.cama + ')' : ''}</option>
+          `).join("");
+
+          if (unidades.length > 0) {
+            cacheEquipoSeleccionadoId = unidades[0].id_equipo;
+            select.value = cacheEquipoSeleccionadoId;
+          }
+        }
+        const equipoActivo = unidades[0];
+        renderizarVariablesFisicasEquipo(equipoActivo);
+        renderizarGridUnidadesParque(unidades);
+        if (equipoActivo) {
+          cargarHistorialEquipo(tipo, equipoActivo.id_equipo);
+        }
+      }
 
       cargarEstadoEquipos(tipo);
     }
@@ -2977,15 +3002,18 @@
         // Selector de unidad
         const select = document.getElementById("select-equipo-especifico");
         if (select) {
-          select.innerHTML = unidades.map(u => `
-            <option value="${u.id_equipo}">${u.id_equipo} ${u.cama ? '(' + u.cama + ')' : ''}</option>
-          `).join("");
-
           if (unidades.length > 0) {
+            select.innerHTML = unidades.map(u => `
+              <option value="${u.id_equipo}">${u.id_equipo} • ${u.estado_uso || (u.falla_actual === 1 ? 'En Falla' : 'Activo')} ${u.cama ? '(' + u.cama + ')' : ''}</option>
+            `).join("");
+
             if (!cacheEquipoSeleccionadoId || !unidades.some(u => u.id_equipo === cacheEquipoSeleccionadoId)) {
               cacheEquipoSeleccionadoId = unidades[0].id_equipo;
             }
             select.value = cacheEquipoSeleccionadoId;
+          } else {
+            select.innerHTML = '<option value="">Sin unidades registradas</option>';
+            cacheEquipoSeleccionadoId = null;
           }
         }
 
@@ -3003,11 +3031,16 @@
 
     function seleccionarEquipoEspecifico(equipoId) {
       cacheEquipoSeleccionadoId = equipoId;
+      const select = document.getElementById("select-equipo-especifico");
+      if (select && select.value !== equipoId) {
+        select.value = equipoId;
+      }
       if (!cacheEquiposEstado) return;
       const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === cacheFamiliaSeleccionada);
       const equipoActivo = unidades.find(u => u.id_equipo === equipoId);
       if (equipoActivo) {
         renderizarVariablesFisicasEquipo(equipoActivo);
+        renderizarGridUnidadesParque(unidades);
         cargarHistorialEquipo(cacheFamiliaSeleccionada, equipoId);
       }
     }
@@ -3022,16 +3055,31 @@
         return;
       }
 
+      const tieneFalla = equipo.falla_actual === 1;
+      const enUso = equipo.estado_uso === "En Uso";
+
       const badgeEstado = document.getElementById("badge-estado-operativo-equipo");
       if (badgeEstado) {
-        const tieneFalla = equipo.falla_actual === 1;
-        badgeEstado.className = tieneFalla 
-          ? "px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-950 text-rose-300 border border-rose-800 animate-pulse"
-          : "px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800";
-        badgeEstado.innerText = tieneFalla ? "⚠️ Falla Activa" : "✓ Nominal / Operativo";
+        if (tieneFalla) {
+          badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-950 text-rose-300 border border-rose-800 animate-pulse";
+          badgeEstado.innerText = "⚠️ En Falla Crítica";
+        } else if (enUso) {
+          badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800";
+          badgeEstado.innerText = `🟢 Activo en Uso ${equipo.cama ? '(' + equipo.cama + ')' : ''}`;
+        } else {
+          badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-800";
+          badgeEstado.innerText = "✓ Disponible / Operativo";
+        }
       }
 
       const cards = [];
+
+      cards.push({
+        label: "Estado Operativo",
+        valor: tieneFalla ? "En Falla" : (equipo.estado_uso || "Activo en Uso"),
+        sub: equipo.cama ? `Ubicación: ${equipo.cama}` : "Disponible / Sala",
+        color: tieneFalla ? "text-rose-400" : (enUso ? "text-emerald-400" : "text-cyan-400")
+      });
 
       cards.push({
         label: "Horas de Uso Total",
@@ -3093,17 +3141,21 @@
       unidades.forEach(u => {
         const esSeleccionado = u.id_equipo === cacheEquipoSeleccionadoId;
         const conFalla = u.falla_actual === 1;
+        const enUso = u.estado_uso === "En Uso";
         const card = document.createElement("div");
-        card.className = `p-3.5 rounded-2xl border transition cursor-pointer flex flex-col justify-between ${
+        card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
           esSeleccionado 
-            ? 'bg-slate-850 border-cyan-500 shadow-md shadow-cyan-500/10' 
+            ? 'bg-slate-800 border-2 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400' 
             : 'bg-slate-900 border-slate-800 hover:border-slate-700'
         }`;
         card.onclick = () => seleccionarEquipoEspecifico(u.id_equipo);
 
         let badgeStatus = conFalla
-          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Falla</span>`
-          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">Operativo</span>`;
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">⚠️ En Falla</span>`
+          : (enUso
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">🟢 En Uso</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">✓ Disponible</span>`
+            );
 
         card.innerHTML = `
           <div>
@@ -3113,8 +3165,12 @@
             </div>
             <div class="space-y-1 text-xs text-slate-400">
               <div class="flex justify-between">
-                <span>Cama:</span>
-                <span class="text-slate-200 font-mono">${u.cama || 'Inventario'}</span>
+                <span>Estado:</span>
+                <span class="${conFalla ? 'text-rose-400 font-bold' : (enUso ? 'text-emerald-400 font-semibold' : 'text-cyan-400 font-semibold')}">${u.estado_uso || (conFalla ? 'En Falla' : 'Operativo')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Ubicación:</span>
+                <span class="text-slate-200 font-mono">${u.cama || 'Disponible'}</span>
               </div>
               <div class="flex justify-between">
                 <span>Horas:</span>
@@ -3127,7 +3183,7 @@
             </div>
           </div>
           <div class="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-            <span class="text-cyan-400 font-medium">Ver telemetría &rarr;</span>
+            <span class="${esSeleccionado ? 'text-cyan-300 font-bold' : 'text-cyan-400 font-medium'}">${esSeleccionado ? '● Monitoreando' : 'Ver telemetría &rarr;'}</span>
             <span class="text-slate-500 font-mono">${u.prediccion ? u.prediccion.probabilidad_falla + '% riesgo' : ''}</span>
           </div>
         `;
