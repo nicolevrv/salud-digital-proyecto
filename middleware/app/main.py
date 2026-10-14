@@ -1759,245 +1759,292 @@ def initialize_database(
         raise HTTPException(status_code=500, detail=f"Error al inicializar la base de datos: {str(e)}")
 
 # ==========================================
-# 6. ESTADO DE EQUIPOS, PREDICCIÓN Y DATASET BIOMÉDICO (NEON)
+# 6. ESTADO DE EQUIPOS, PREDICCIÓN Y DATASET BIOMÉDICO (NEON DATASET_EVENTOS)
 # ==========================================
 
-EQUIPOS_TABLE_MAP = {
-    "ventiladores": {
-        "table": "ventiladores_mecanicos",
-        "pk": "ID_Registro",
-        "name": "Ventiladores Mecánicos",
-        "equipo_prefix": "VEN",
-        "columns": [
-            "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-            "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Presion_Neumatica_psi",
-            "Nivel_Vibracion_Turbina_Hz", "Temperatura_Bloque_C", "Fugas_Aire_Lmin", "Falla_Actual"
-        ]
-    },
-    "monitores": {
-        "table": "monitores_signos_vitales",
-        "pk": "ID_Registro",
-        "name": "Monitores de Signos Vitales",
-        "equipo_prefix": "MON",
-        "columns": [
-            "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-            "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Ciclos_Descarga_Bateria",
-            "Errores_Modulo_ECG", "Ruido_Senal_SpO2_dB", "Falla_Actual"
-        ]
-    },
+FAMILIAS_DATASET_MAP = {
     "bombas-volumetricas": {
-        "table": "bombas_volumetricas",
-        "pk": "ID_Registro",
-        "name": "Bombas de Infusión Volumétrica",
-        "equipo_prefix": "BVO",
-        "columns": [
-            "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-            "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Nivel_Vibracion_Motor_rpm",
-            "Desviacion_Presion_Oclusion_mmHg", "Frecuencia_Alarma_Burbuja", "Falla_Actual"
-        ]
+        "nombre": "Bombas Volumétricas",
+        "tipo_db": "Bomba de Infusión Volumétrica",
+        "slug": "bombas-volumetricas",
+        "prefijo": "BVOL",
+        "icon": "💧",
+        "riesgo_defecto": "IIB"
     },
     "bombas-jeringa": {
-        "table": "bombas_jeringa",
-        "pk": "ID_Registro",
-        "name": "Bombas de Infusión a Jeringa",
-        "equipo_prefix": "BJE",
-        "columns": [
-            "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-            "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Error_Paso_Motor_Micro_mm",
-            "Resistencia_Embolo_N", "Falla_Actual"
-        ]
+        "nombre": "Bombas de Jeringa",
+        "tipo_db": "Bomba de Infusión a Jeringa",
+        "slug": "bombas-jeringa",
+        "prefijo": "BJER",
+        "icon": "💉",
+        "riesgo_defecto": "IIB"
     },
-    "rotativos": {
-        "table": "equipos_compartidos_inventario",
-        "pk": "ID_Equipo_Rotativo",
-        "name": "Equipos Rotativos y Soporte UCI",
-        "equipo_prefix": "ROT",
-        "columns": [
-            "ID_Equipo_Rotativo", "Tipo_Tecnologia", "Ubicacion_Estrategica",
-            "Estado_Operativo", "Fecha_Ultimo_Mtto", "Horas_Uso_Estimado"
-        ]
+    "ventiladores": {
+        "nombre": "Ventiladores Mecánicos",
+        "tipo_db": "Ventilador Mecánico",
+        "slug": "ventiladores",
+        "prefijo": "VENT",
+        "icon": "🫁",
+        "riesgo_defecto": "III"
+    },
+    "monitores": {
+        "nombre": "Monitores de Signos Vitales",
+        "tipo_db": "Monitor Multiparámetro",
+        "slug": "monitores",
+        "prefijo": "MON",
+        "icon": "📈",
+        "riesgo_defecto": "IIB"
+    },
+    "desfibriladores": {
+        "nombre": "Desfibriladores Bifásicos",
+        "tipo_db": "Desfibrilador Bifásico",
+        "slug": "desfibriladores",
+        "prefijo": "DEF",
+        "icon": "⚡",
+        "riesgo_defecto": "III"
+    },
+    "crrt": {
+        "nombre": "Máquinas CRRT",
+        "tipo_db": "Máquina CRRT",
+        "slug": "crrt",
+        "prefijo": "CRRT",
+        "icon": "🩸",
+        "riesgo_defecto": "III"
+    },
+    "ecg": {
+        "nombre": "Electrocardiógrafos 12D",
+        "tipo_db": "Electrocardiógrafo 12 Derivaciones",
+        "slug": "ecg",
+        "prefijo": "ECG",
+        "icon": "📊",
+        "riesgo_defecto": "IIA"
+    },
+    "poct": {
+        "nombre": "Analizadores de Gases POCT",
+        "tipo_db": "Analizador de Gases (POCT)",
+        "slug": "poct",
+        "prefijo": "POCT",
+        "icon": "🧪",
+        "riesgo_defecto": "IIA"
+    },
+    "ecografos": {
+        "nombre": "Ecógrafos Portátiles Doppler",
+        "tipo_db": "Ecógrafo Portátil Doppler",
+        "slug": "ecografos",
+        "prefijo": "ECO",
+        "icon": "🔊",
+        "riesgo_defecto": "IIA"
+    },
+    "rayos-x": {
+        "nombre": "Equipos de Rayos X Portátiles",
+        "tipo_db": "Equipo de Rayos X Portátil",
+        "slug": "rayos-x",
+        "prefijo": "RX",
+        "icon": "☢️",
+        "riesgo_defecto": "IIB"
     }
 }
 
-class PredictRequest(BaseModel):
-    tipo: str
-    equipo_id: Optional[str] = None
-    horas_uso: Optional[float] = None
-    dias_mtto: Optional[int] = None
-    fallas_previas: Optional[int] = None
-    variables: Optional[dict] = None
+DATASET_COLUMNS = [
+    "id",
+    "ID_Equipo",
+    "Tipo_Equipo",
+    "Clasificacion_Riesgo",
+    "Fecha_Reporte",
+    "Edad_Equipo_Meses",
+    "Meses_Desde_Ultimo_Mtto",
+    "Fallas_Acumuladas",
+    "MTBF_Promedio_Dias",
+    "Variable_Target_Falla",
+    "Descripcion_Evento"
+]
 
-class SimularTelemetriaEquipoRequest(BaseModel):
-    tipo: str
+def obtener_slug_tipo(tipo_str: str) -> str:
+    if not tipo_str:
+        return "bombas-volumetricas"
+    t_lower = tipo_str.lower()
+    for slug, cfg in FAMILIAS_DATASET_MAP.items():
+        if slug in t_lower or cfg["tipo_db"].lower() in t_lower or cfg["prefijo"].lower() in t_lower:
+            return slug
+    if "jeringa" in t_lower:
+        return "bombas-jeringa"
+    if "volum" in t_lower:
+        return "bombas-volumetricas"
+    if "vent" in t_lower:
+        return "ventiladores"
+    if "monit" in t_lower:
+        return "monitores"
+    if "desfib" in t_lower:
+        return "desfibriladores"
+    if "crrt" in t_lower:
+        return "crrt"
+    if "ecg" in t_lower or "cardio" in t_lower:
+        return "ecg"
+    if "poct" in t_lower or "gases" in t_lower:
+        return "poct"
+    if "eco" in t_lower or "ultrason" in t_lower:
+        return "ecografos"
+    if "rx" in t_lower or "rayos" in t_lower:
+        return "rayos-x"
+    return "ventiladores"
+
+class DatasetRecordUpdate(BaseModel):
+    Meses_Desde_Ultimo_Mtto: Optional[float] = None
+    Fallas_Acumuladas: Optional[int] = None
+    MTBF_Promedio_Dias: Optional[float] = None
+    Variable_Target_Falla: Optional[float] = None
+    Descripcion_Evento: Optional[str] = None
+    Edad_Equipo_Meses: Optional[float] = None
+    Clasificacion_Riesgo: Optional[str] = None
+
+class DatasetRecordCreate(BaseModel):
+    ID_Equipo: str
+    Tipo_Equipo: Optional[str] = None
+    Clasificacion_Riesgo: Optional[str] = "IIB"
+    Fecha_Reporte: Optional[str] = None
+    Edad_Equipo_Meses: Optional[float] = 40.0
+    Meses_Desde_Ultimo_Mtto: Optional[float] = 1.0
+    Fallas_Acumuladas: Optional[int] = 0
+    MTBF_Promedio_Dias: Optional[float] = 500.0
+    Variable_Target_Falla: Optional[float] = 0.0
+    Descripcion_Evento: Optional[str] = "Operación Normal"
+
+class MantenimientoEjecutarRequest(BaseModel):
     equipo_id: str
-    cama_asignada: Optional[int] = 1
-    variables: Optional[dict] = None
+    tipo_mantenimiento: Optional[str] = "Preventivo"
+    observaciones: Optional[str] = "Mantenimiento Preventivo Ejecutado (Calibración e Inspección Funcional)"
 
-def calcular_prediccion_equipo(tipo: str, item: dict) -> dict:
-    """Motor predictivo analítico de fallas entrenado sobre los patrones de telemetría de equipos biomédicos en Neon."""
-    tipo_key = tipo.lower()
-    score = 10.0
+class PredictDatasetRequest(BaseModel):
+    equipo_id: Optional[str] = None
+    tipo: Optional[str] = None
+    meses_desde_ultimo_mtto: Optional[float] = None
+    fallas_acumuladas: Optional[int] = None
+    mtbf_promedio_dias: Optional[float] = None
+    edad_equipo_meses: Optional[float] = None
+    clasificacion_riesgo: Optional[str] = None
+    guardar_en_bd: Optional[bool] = False
+    variable_target_falla: Optional[float] = None
+    descripcion_evento: Optional[str] = None
+
+def calcular_prediccion_equipo(item: dict) -> dict:
+    """Motor predictivo calibrado sobre las fallas y mantenimiento de dataset_eventos en Neon."""
+    tipo_equipo = item.get("Tipo_Equipo") or ""
+    slug = obtener_slug_tipo(tipo_equipo)
+    
+    meses_mtto = float(item.get("Meses_Desde_Ultimo_Mtto") or 0.0)
+    fallas_acum = int(item.get("Fallas_Acumuladas") or 0)
+    mtbf = float(item.get("MTBF_Promedio_Dias") or 0.0)
+    edad = float(item.get("Edad_Equipo_Meses") or 0.0)
+    riesgo = item.get("Clasificacion_Riesgo") or "IIB"
+    falla_target = item.get("Variable_Target_Falla")
+    evento = str(item.get("Descripcion_Evento") or "")
+
+    score = 8.0
     anomalias = []
-    falla_actual = int(item.get("Falla_Actual") or 0)
-    if falla_actual == 1:
-        score += 45.0
-        anomalias.append("Falla activa registrada en el sistema de telemetría")
-
-    horas = float(item.get("Horas_Uso_Total") or 0)
-    dias = float(item.get("Dias_Desde_Ultimo_Mtto") or 0)
-    fallas_previas = int(item.get("Numero_Fallas_Previas") or 0)
-    score += min(fallas_previas * 4, 16)
-
     diagnostico_partes = []
 
-    if tipo_key in {"ventiladores", "ventiladores_mecanicos"}:
-        vib = float(item.get("Nivel_Vibracion_Turbina_Hz") or 0)
-        temp = float(item.get("Temperatura_Bloque_C") or 0)
-        fugas = float(item.get("Fugas_Aire_Lmin") or 0)
-        presion = float(item.get("Presion_Neumatica_psi") or 0)
+    # 1. Factor de Degradación por Mantenimiento Vencido
+    if meses_mtto >= 9.0:
+        score += 42.0
+        anomalias.append(f"Mantenimiento preventivo crítico vencido ({meses_mtto:.1f} meses)")
+        diagnostico_partes.append("sobrepasó el límite máximo admisible de servicio preventivo")
+    elif meses_mtto >= 6.0:
+        score += 26.0
+        anomalias.append(f"Mantenimiento preventivo requerido ({meses_mtto:.1f} meses sin mtto)")
+        diagnostico_partes.append("intervalo de calibración e inspección superado")
+    elif meses_mtto >= 4.0:
+        score += 12.0
+    elif meses_mtto <= 1.0:
+        score -= 4.0
 
-        if vib > 82:
-            score += 26
-            anomalias.append(f"Vibración turbina crítica ({vib:.1f} Hz, umbral seguro < 75 Hz)")
-            diagnostico_partes.append("desgaste severo en rodamientos de turbina")
-        elif vib > 76:
-            score += 15
-            anomalias.append(f"Vibración turbina elevada ({vib:.1f} Hz)")
-            diagnostico_partes.append("desbalance dinámico de turbina")
+    # 2. Factor MTBF (Confiabilidad y Frecuencia de Fallos)
+    if mtbf > 0:
+        if mtbf < 180.0:
+            score += 30.0
+            anomalias.append(f"MTBF crítico ({mtbf:.1f} días, degradación acelerada)")
+            diagnostico_partes.append("tiempo medio entre fallas críticamente bajo")
+        elif mtbf < 350.0:
+            score += 18.0
+            anomalias.append(f"Baja confiabilidad MTBF ({mtbf:.1f} días)")
+        elif mtbf < 600.0:
+            score += 8.0
+        elif mtbf > 1000.0:
+            score -= 8.0
 
-        if temp > 49:
-            score += 22
-            anomalias.append(f"Sobrecalentamiento de bloque ({temp:.1f} °C, máx seguro 46 °C)")
-            diagnostico_partes.append("deficiencia en disipación térmica del motor")
-        elif temp > 46.5:
-            score += 12
-            anomalias.append(f"Temperatura bloque alta ({temp:.1f} °C)")
+    # 3. Factor de Fallas Previas Acumuladas
+    if fallas_acum >= 12:
+        score += 22.0
+        anomalias.append(f"Historial severo de fallas previas ({fallas_acum} fallas)")
+        diagnostico_partes.append("desgaste estructural recurrente por múltiples fallas")
+    elif fallas_acum >= 6:
+        score += 14.0
+        anomalias.append(f"Frecuencia moderada de fallas acumuladas ({fallas_acum} fallas)")
+    elif fallas_acum >= 2:
+        score += 6.0
 
-        if fugas > 1.5:
-            score += 24
-            anomalias.append(f"Fugas de aire críticas ({fugas:.2f} L/min, umbral < 1.0 L/min)")
-            diagnostico_partes.append("pérdida de hermeticidad en diafragma o válvula exhalatoria")
-        elif fugas > 1.0:
-            score += 12
-            anomalias.append(f"Fugas de aire en circuito ({fugas:.2f} L/min)")
+    # 4. Envejecimiento del Equipo
+    if edad > 100.0:
+        score += 12.0
+        anomalias.append(f"Equipo en fase de obsolescencia ({edad:.1f} meses de servicio)")
+    elif edad > 60.0:
+        score += 6.0
 
-        if presion < 46.0 or presion > 54.0:
-            score += 10
-            anomalias.append(f"Desviación presión neumática ({presion:.1f} psi, rango óptimo 48-52 psi)")
+    # 5. Clasificación de Riesgo
+    if riesgo == "III":
+        score += 8.0
+    elif riesgo == "IIB":
+        score += 4.0
 
-        if dias > 260:
-            score += 20
-            anomalias.append(f"Intervalo de mantenimiento preventivo superado ({int(dias)} días)")
-        elif dias > 180:
-            score += 10
-
-        if horas > 16000:
-            score += 10
-
-    elif tipo_key in {"monitores", "monitores_signos_vitales"}:
-        ruido = float(item.get("Ruido_Senal_SpO2_dB") or 0)
-        ecg_err = int(item.get("Errores_Modulo_ECG") or 0)
-        ciclos = int(item.get("Ciclos_Descarga_Bateria") or 0)
-
-        if ruido > 31.0:
-            score += 28
-            anomalias.append(f"Ruido excesivo en canal SpO2 ({ruido:.1f} dB, umbral < 28 dB)")
-            diagnostico_partes.append("degradación óptica de fotodiodo o cable de paciente")
-        elif ruido > 28.5:
-            score += 14
-            anomalias.append(f"Ruido moderado en canal SpO2 ({ruido:.1f} dB)")
-
-        if ecg_err >= 4:
-            score += 25
-            anomalias.append(f"Múltiples fallos módulo ECG ({ecg_err} errores)")
-            diagnostico_partes.append("inestabilidad en placa de procesamiento analógico ECG")
-        elif ecg_err >= 2:
-            score += 12
-            anomalias.append(f"Alertas esporádicas en canal ECG ({ecg_err} errores)")
-
-        if ciclos > 500:
-            score += 20
-            anomalias.append(f"Degradación química de batería ({ciclos} ciclos descarga)")
-            diagnostico_partes.append("batería de backup cerca del final de su vida útil")
-        elif ciclos > 380:
-            score += 10
-
-        if dias > 250:
-            score += 18
-            anomalias.append(f"Intervalo de calibración superado ({int(dias)} días)")
-
-    elif tipo_key in {"bombas-volumetricas", "bombas_volumetricas"}:
-        vib_rpm = float(item.get("Nivel_Vibracion_Motor_rpm") or 0)
-        oclusion = float(item.get("Desviacion_Presion_Oclusion_mmHg") or 0)
-        burbuja = int(item.get("Frecuencia_Alarma_Burbuja") or 0)
-
-        if oclusion > 40.0:
-            score += 30
-            anomalias.append(f"Desviación presión oclusión elevada ({oclusion:.1f} mmHg, seguro < 32 mmHg)")
-            diagnostico_partes.append("sensor de presión oclusión descalibrado o mecanismo peristáltico fatigado")
-        elif oclusion > 32.0:
-            score += 15
-            anomalias.append(f"Presión oclusión en límite superior ({oclusion:.1f} mmHg)")
-
-        if vib_rpm > 1780:
-            score += 25
-            anomalias.append(f"Vibración motor peristáltico anómala ({vib_rpm:.0f} rpm)")
-            diagnostico_partes.append("desgaste mecánico en rotor peristáltico")
-        elif vib_rpm > 1650:
-            score += 12
-
-        if burbuja >= 4:
-            score += 20
-            anomalias.append(f"Falsas alarmas de burbuja ({burbuja} eventos)")
-            diagnostico_partes.append("sensor ultrasónico de aire en línea descalibrado")
-
-        if dias > 240:
-            score += 18
-
-    elif tipo_key in {"bombas-jeringa", "bombas_jeringa"}:
-        paso_err = float(item.get("Error_Paso_Motor_Micro_mm") or 0)
-        embolo_res = float(item.get("Resistencia_Embolo_N") or 0)
-
-        if paso_err > 0.09:
-            score += 32
-            anomalias.append(f"Error paso motor crítico ({paso_err:.3f} mm, tolerancia < 0.07 mm)")
-            diagnostico_partes.append("pérdida de pasos en husillo de microinfusión")
-        elif paso_err > 0.07:
-            score += 16
-            anomalias.append(f"Error paso motor leve ({paso_err:.3f} mm)")
-
-        if embolo_res > 13.0:
-            score += 30
-            anomalias.append(f"Resistencia mecánica del émbolo elevada ({embolo_res:.1f} N, seguro < 10.5 N)")
-            diagnostico_partes.append("fricción excesiva en corredera o sensor de fuerza atascado")
-        elif embolo_res > 10.5:
-            score += 15
-
-        if dias > 230:
-            score += 18
+    # 6. Falla activa confirmada o target en 1
+    es_falla_activa = (falla_target == 1.0) or ("normal" not in evento.lower() and "sin dato" not in evento.lower())
+    if es_falla_activa:
+        score += 48.0
+        anomalias.append(f"Evento de falla activa registrado: {evento}")
+        diagnostico_partes.append(evento)
 
     prob = max(5.0, min(99.0, score))
-    if prob >= 75.0 or falla_actual == 1:
+
+    # Diagnóstico específico por tecnología
+    if slug in ["bombas-volumetricas", "bombas-jeringa"]:
+        diagnostico_falla_posible = "Riesgo de oclusión constante, fallo en sensor ultrasónico de burbujas o bloqueo en motor paso a paso."
+    elif slug == "ventiladores":
+        diagnostico_falla_posible = "Riesgo de pérdida de presión en turbina/compresor, obstrucción en válvula exhalatoria o sobrecalentamiento de bloque."
+    elif slug in ["monitores", "ecg"]:
+        diagnostico_falla_posible = "Riesgo de agotamiento de batería de backup, fallo de comunicación en módulo SpO2 o ruido en amplificador ECG."
+    elif slug == "crrt":
+        diagnostico_falla_posible = "Riesgo de fuga en circuito de dializado, fallo en bomba de heparina o error en balanza de ultrafiltración."
+    elif slug == "desfibriladores":
+        diagnostico_falla_posible = "Riesgo en módulo de marcapasos transcutáneo, lectura de impedancia en paletas o capacitor de descarga."
+    elif slug == "rayos-x":
+        diagnostico_falla_posible = "Riesgo de sobrecalentamiento térmico en tubo de rayos X o descalibración del colimador."
+    elif slug == "ecografos":
+        diagnostico_falla_posible = "Riesgo de artefacto acústico por transductor piezoeléctrico dañado o fallo en conector de sonda."
+    else:
+        diagnostico_falla_posible = "Riesgo de fallo en electrodos de sensado o bomba peristáltica interna."
+
+    if prob >= 70.0 or es_falla_activa:
         nivel = "Crítico"
-        accion = "Retirar de uso en cama UCI. Programar Mantenimiento Correctivo inmediato."
+        accion = "Intervención técnica inmediata requerida. Retirar temporalmente de atención y ejecutar Mantenimiento Correctivo."
     elif prob >= 50.0:
         nivel = "Alto"
-        accion = "Programar intervención técnica prioritaria dentro de las próximas 48 horas."
+        accion = "Programar Mantenimiento Preventivo prioritario y calibración metrológica en menos de 7 días."
     elif prob >= 30.0:
         nivel = "Medio"
-        accion = "Programar inspección y calibración metrológica en Mantenimiento Preventivo."
+        accion = "Programar inspección rutinaria de rutina y revisión funcional en el próximo ciclo de mantenimiento."
     else:
         nivel = "Bajo"
-        accion = "Equipo en parámetros de funcionamiento seguro. Continuar monitoreo habitual."
+        accion = "Equipo en parámetros de funcionamiento seguro. Continuar monitoreo y uso nominal."
 
-    diag_text = ("; ".join(diagnostico_partes).capitalize() + ".") if diagnostico_partes else "Sin anomalías mecánicas detectadas."
+    diag_text = ("; ".join(diagnostico_partes).capitalize() + ".") if diagnostico_partes else diagnostico_falla_posible
+
     return {
         "probabilidad_falla": round(prob, 1),
         "nivel_riesgo": nivel,
         "diagnostico": diag_text,
         "anomalias": anomalias,
         "accion_recomendada": accion,
-        "falla_actual": falla_actual
+        "falla_actual": 1 if es_falla_activa else 0,
+        "evento_reciente": evento
     }
 
 @app.get("/api/equipos-dataset/{tipo}", tags=["Dataset de Equipos"])
@@ -2007,232 +2054,246 @@ def get_equipos_dataset(
     q: Optional[str] = None,
     equipo_id: Optional[str] = None,
     falla: Optional[str] = None,
-    cama: Optional[str] = None,
+    riesgo: Optional[str] = None,
     page: int = 1,
     limit: int = 50,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    tipo_key = tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail=f"Tipo de equipo '{tipo}' no reconocido.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table_name = cfg["table"]
-    cols_sql = ", ".join(f'"{c}"' for c in cfg["columns"])
-    pk_col = cfg["pk"]
-
-    where_clauses = []
-    params = []
-
-    search_term = (search or q or "").strip()
-    if search_term:
-        s = f"%{search_term}%"
-        if tipo_key == "rotativos":
-            where_clauses.append('("ID_Equipo_Rotativo" ILIKE %s OR "Tipo_Tecnologia" ILIKE %s OR "Ubicacion_Estrategica" ILIKE %s)')
-            params.extend([s, s, s])
-        else:
-            where_clauses.append('(CAST("ID_Registro" AS TEXT) ILIKE %s OR "ID_Equipo" ILIKE %s OR CAST("Cama_Asignada" AS TEXT) ILIKE %s)')
-            params.extend([s, s, s])
-
-    if equipo_id:
-        if tipo_key == "rotativos":
-            where_clauses.append('"ID_Equipo_Rotativo" ILIKE %s')
-            params.append(f"%{equipo_id.strip()}%")
-        else:
-            where_clauses.append('"ID_Equipo" ILIKE %s')
-            params.append(f"%{equipo_id.strip()}%")
-
-    if falla is not None and str(falla).strip().lower() not in ["todos", "", "none", "null"] and tipo_key != "rotativos":
-        try:
-            falla_int = int(falla)
-            where_clauses.append('"Falla_Actual" = %s')
-            params.append(falla_int)
-        except ValueError:
-            pass
-
-    if cama is not None and str(cama).strip().lower() not in ["todos", "", "none", "null"] and tipo_key != "rotativos":
-        where_clauses.append('CAST("Cama_Asignada" AS TEXT) ILIKE %s')
-        params.append(f"%{str(cama).strip()}%")
-
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-
-    page = max(1, page)
-    limit = max(1, min(limit, 200))
-    offset = (page - 1) * limit
-
+    """Consulta paginada del dataset técnico de mantenimientos y fallas de Neon PostgreSQL (dataset_eventos)."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        count_query = f'SELECT count(*) as total FROM "{table_name}" {where_sql}'
-        cursor.execute(count_query, params)
-        total_rows = cursor.fetchone()["total"]
+        where_clauses = []
+        params = []
 
-        data_query = f'SELECT {cols_sql} FROM "{table_name}" {where_sql} ORDER BY "{pk_col}" ASC LIMIT %s OFFSET %s'
-        cursor.execute(data_query, params + [limit, offset])
+        tipo_key = tipo.lower()
+        if tipo_key not in ["todos", "todas", "all", ""]:
+            if tipo_key in FAMILIAS_DATASET_MAP:
+                cfg = FAMILIAS_DATASET_MAP[tipo_key]
+                where_clauses.append('"Tipo_Equipo" = %s')
+                params.append(cfg["tipo_db"])
+            else:
+                where_clauses.append('("Tipo_Equipo" ILIKE %s OR "ID_Equipo" ILIKE %s)')
+                params.extend([f"%{tipo_key}%", f"%{tipo_key}%"])
+
+        search_term = (search or q or "").strip()
+        if search_term:
+            s = f"%{search_term}%"
+            where_clauses.append('("ID_Equipo" ILIKE %s OR "Descripcion_Evento" ILIKE %s OR "Tipo_Equipo" ILIKE %s OR CAST(id AS TEXT) ILIKE %s)')
+            params.extend([s, s, s, s])
+
+        if equipo_id:
+            where_clauses.append('"ID_Equipo" = %s')
+            params.append(equipo_id.strip())
+
+        if falla is not None and str(falla).strip().lower() not in ["todos", "all", "", "none"]:
+            falla_clean = str(falla).strip().lower()
+            if falla_clean in ["1", "falla", "true"]:
+                where_clauses.append('"Variable_Target_Falla" = 1')
+            elif falla_clean in ["0", "normal", "false"]:
+                where_clauses.append('"Variable_Target_Falla" = 0')
+            elif falla_clean in ["null", "incompleta", "pendiente"]:
+                where_clauses.append('"Variable_Target_Falla" IS NULL')
+
+        if riesgo and riesgo.strip().lower() not in ["todos", "all", ""]:
+            where_clauses.append('"Clasificacion_Riesgo" = %s')
+            params.append(riesgo.strip().upper())
+
+        where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+
+        # Total count
+        count_sql = f'SELECT COUNT(*) as total FROM dataset_eventos {where_sql}'
+        cursor.execute(count_sql, params)
+        total = cursor.fetchone()["total"]
+
+        # Pagination
+        offset = max(0, (page - 1) * limit)
+        cols_sql = ', '.join(f'"{c}"' for c in DATASET_COLUMNS)
+        data_sql = f'SELECT {cols_sql} FROM dataset_eventos {where_sql} ORDER BY "Fecha_Reporte" DESC, id DESC LIMIT %s OFFSET %s'
+        cursor.execute(data_sql, params + [limit, offset])
         rows = cursor.fetchall()
         cursor.close()
 
+        # Format dates
         for r in rows:
-            for k, v in r.items():
-                if isinstance(v, datetime):
-                    r[k] = v.strftime("%Y-%m-%d %H:%M:%S")
+            if isinstance(r.get("Fecha_Reporte"), datetime):
+                r["Fecha_Reporte"] = r["Fecha_Reporte"].strftime("%Y-%m-%d")
 
         return {
-            "tipo": tipo_key,
-            "nombre": cfg["name"],
-            "tabla": table_name,
-            "total": total_rows,
+            "total": total,
             "page": page,
             "limit": limit,
-            "total_pages": (total_rows + limit - 1) // limit if total_rows > 0 else 1,
-            "columns": cfg["columns"],
-            "columnas": cfg["columns"],
-            "pk": pk_col,
-            "items": rows,
+            "tabla": "dataset_eventos",
+            "columnas": DATASET_COLUMNS,
             "rows": rows
         }
     except Exception as e:
         cursor.close()
-        raise HTTPException(status_code=500, detail=f"Error consultando dataset: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error consultando dataset_eventos: {str(e)}")
 
-@app.put("/api/equipos-dataset/{tipo}/{registro_id}", tags=["Dataset de Equipos"])
+@app.put("/api/equipos-dataset/{registro_id}", tags=["Dataset de Equipos"])
 def update_equipo_record(
-    tipo: str,
-    registro_id: str,
-    payload: dict,
+    registro_id: int,
+    data: DatasetRecordUpdate,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
+    """Edita un registro del dataset de mantenimientos y fallas en Neon PostgreSQL."""
     if user["rol_nombre"] not in DATASET_ROLES:
-        raise HTTPException(status_code=403, detail="Acceso denegado: solo personal biomédico y técnico puede editar el dataset.")
-
-    tipo_key = tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail="Tipo de equipo no reconocido.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table_name = cfg["table"]
-    pk_col = cfg["pk"]
-    allowed_cols = set(cfg["columns"])
-
-    update_items = []
-    params = []
-    for k, v in payload.items():
-        if k in allowed_cols and k != pk_col:
-            update_items.append(f'"{k}" = %s')
-            params.append(v)
-
-    if not update_items:
-        raise HTTPException(status_code=400, detail="No se suministraron campos válidos para actualizar.")
-
-    params.append(registro_id)
-    update_sql = f'UPDATE "{table_name}" SET {", ".join(update_items)} WHERE "{pk_col}" = %s'
+        raise HTTPException(status_code=403, detail="Acceso denegado: solo personal biomédico y técnico puede editar registros.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute(update_sql, params)
-        if cursor.rowcount == 0:
+        cursor.execute('SELECT * FROM dataset_eventos WHERE id = %s', (registro_id,))
+        existente = cursor.fetchone()
+        if not existente:
             cursor.close()
-            raise HTTPException(status_code=404, detail=f"Registro '{registro_id}' no encontrado.")
-        conn.commit()
+            raise HTTPException(status_code=404, detail=f"Registro #{registro_id} no encontrado en dataset_eventos.")
 
-        # Registrar auditoría
-        cursor.execute("""
+        updates = []
+        params = []
+        if data.Meses_Desde_Ultimo_Mtto is not None:
+            updates.append('"Meses_Desde_Ultimo_Mtto" = %s')
+            params.append(data.Meses_Desde_Ultimo_Mtto)
+        if data.Fallas_Acumuladas is not None:
+            updates.append('"Fallas_Acumuladas" = %s')
+            params.append(data.Fallas_Acumuladas)
+        if data.MTBF_Promedio_Dias is not None:
+            updates.append('"MTBF_Promedio_Dias" = %s')
+            params.append(data.MTBF_Promedio_Dias)
+        if data.Variable_Target_Falla is not None:
+            updates.append('"Variable_Target_Falla" = %s')
+            params.append(data.Variable_Target_Falla)
+        if data.Descripcion_Evento is not None:
+            updates.append('"Descripcion_Evento" = %s')
+            params.append(data.Descripcion_Evento.strip())
+        if data.Edad_Equipo_Meses is not None:
+            updates.append('"Edad_Equipo_Meses" = %s')
+            params.append(data.Edad_Equipo_Meses)
+        if data.Clasificacion_Riesgo is not None:
+            updates.append('"Clasificacion_Riesgo" = %s')
+            params.append(data.Clasificacion_Riesgo.strip())
+
+        if not updates:
+            cursor.close()
+            return {"status": "success", "message": "Sin cambios requeridos.", "registro_id": registro_id}
+
+        params.append(registro_id)
+        update_sql = f'UPDATE dataset_eventos SET {", ".join(updates)} WHERE id = %s RETURNING *'
+        cursor.execute(update_sql, params)
+        updated_row = cursor.fetchone()
+
+        cursor.execute('''
             INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
             VALUES (%s, %s, %s, %s)
-        """, (user["id"], f"EDITAR_REGISTRO_DATASET: {registro_id} en {table_name}", table_name, None))
+        ''', (user["id"], f"EDITAR_REGISTRO_DATASET: ID {registro_id} ({existente.get('ID_Equipo')})", "dataset_eventos", registro_id))
         conn.commit()
         cursor.close()
 
+        if isinstance(updated_row.get("Fecha_Reporte"), datetime):
+            updated_row["Fecha_Reporte"] = updated_row["Fecha_Reporte"].strftime("%Y-%m-%d")
+
         return {
             "status": "success",
-            "message": f"Registro '{registro_id}' actualizado correctamente en Neon PostgreSQL.",
-            "registro_id": registro_id
+            "message": f"Registro #{registro_id} de {existente.get('ID_Equipo')} actualizado correctamente en Neon.",
+            "data": updated_row
         }
     except HTTPException:
+        conn.rollback()
         raise
     except Exception as e:
         conn.rollback()
         cursor.close()
-        raise HTTPException(status_code=500, detail=f"Error actualizando registro: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error actualizando registro en dataset_eventos: {str(e)}")
 
-@app.post("/api/equipos-dataset/{tipo}", tags=["Dataset de Equipos"])
+@app.post("/api/equipos-dataset", tags=["Dataset de Equipos"])
 def create_equipo_record(
-    tipo: str,
-    payload: dict,
+    data: DatasetRecordCreate,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
+    """Inserta un nuevo registro de reporte, mantenimiento o falla en dataset_eventos."""
     if user["rol_nombre"] not in DATASET_ROLES:
         raise HTTPException(status_code=403, detail="Acceso denegado: solo personal biomédico y técnico puede insertar registros.")
 
-    tipo_key = tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail="Tipo de equipo no reconocido.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table_name = cfg["table"]
-    allowed_cols = cfg["columns"]
-    pk_col = cfg["pk"]
-
-    if pk_col not in payload or not payload[pk_col]:
-        cursor = conn.cursor()
-        cursor.execute(f'SELECT count(*) FROM "{table_name}"')
-        c = cursor.fetchone()[0] + 1
-        prefix = "REG-" if pk_col == "ID_Registro" else "ROT-"
-        payload[pk_col] = f"{prefix}{c:05d}"
-        cursor.close()
-
-    cols_to_insert = [c for c in allowed_cols if c in payload]
-    values_to_insert = [payload[c] for c in cols_to_insert]
-
-    cols_sql = ", ".join(f'"{c}"' for c in cols_to_insert)
-    placeholders = ", ".join(["%s"] * len(cols_to_insert))
-    insert_sql = f'INSERT INTO "{table_name}" ({cols_sql}) VALUES ({placeholders})'
-
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute(insert_sql, values_to_insert)
+        fecha = datetime.strptime(data.Fecha_Reporte, "%Y-%m-%d") if data.Fecha_Reporte else datetime.now()
+        tipo_eq = data.Tipo_Equipo
+        if not tipo_eq:
+            slug = obtener_slug_tipo(data.ID_Equipo)
+            tipo_eq = FAMILIAS_DATASET_MAP.get(slug, {}).get("tipo_db", "Bomba de Infusión Volumétrica")
+
+        cursor.execute('''
+            INSERT INTO dataset_eventos (
+                "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
+                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        ''', (
+            data.ID_Equipo.strip(),
+            tipo_eq,
+            data.Clasificacion_Riesgo or "IIB",
+            fecha,
+            data.Edad_Equipo_Meses or 40.0,
+            data.Meses_Desde_Ultimo_Mtto or 1.0,
+            data.Fallas_Acumuladas or 0,
+            data.MTBF_Promedio_Dias or 500.0,
+            data.Variable_Target_Falla,
+            data.Descripcion_Evento or "Operación Normal"
+        ))
+        new_id = cursor.fetchone()["id"]
+
+        cursor.execute('''
+            INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+            VALUES (%s, %s, %s, %s)
+        ''', (user["id"], f"CREAR_REGISTRO_DATASET: ID {new_id} ({data.ID_Equipo})", "dataset_eventos", new_id))
         conn.commit()
         cursor.close()
+
         return {
             "status": "success",
-            "message": "Registro agregado exitosamente al dataset.",
-            "registro_id": payload[pk_col]
+            "message": f"Registro #{new_id} agregado exitosamente a dataset_eventos.",
+            "registro_id": new_id
         }
     except Exception as e:
         conn.rollback()
         cursor.close()
-        raise HTTPException(status_code=500, detail=f"Error creando registro: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creando registro en dataset_eventos: {str(e)}")
 
-@app.delete("/api/equipos-dataset/{tipo}/{registro_id}", tags=["Dataset de Equipos"])
+@app.delete("/api/equipos-dataset/{registro_id}", tags=["Dataset de Equipos"])
 def delete_equipo_record(
-    tipo: str,
-    registro_id: str,
+    registro_id: int,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
+    """Elimina un registro específico de dataset_eventos."""
     if user["rol_nombre"] not in DATASET_ROLES:
         raise HTTPException(status_code=403, detail="Acceso denegado para eliminar registros.")
 
-    tipo_key = tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail="Tipo de equipo no reconocido.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table_name = cfg["table"]
-    pk_col = cfg["pk"]
-
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute(f'DELETE FROM "{table_name}" WHERE "{pk_col}" = %s', (registro_id,))
-        if cursor.rowcount == 0:
+        cursor.execute('SELECT "ID_Equipo" FROM dataset_eventos WHERE id = %s', (registro_id,))
+        r = cursor.fetchone()
+        if not r:
             cursor.close()
-            raise HTTPException(status_code=404, detail="Registro no encontrado.")
+            raise HTTPException(status_code=404, detail=f"Registro #{registro_id} no encontrado.")
+
+        cursor.execute('DELETE FROM dataset_eventos WHERE id = %s', (registro_id,))
+        cursor.execute('''
+            INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+            VALUES (%s, %s, %s, %s)
+        ''', (user["id"], f"ELIMINAR_REGISTRO_DATASET: ID {registro_id} ({r['ID_Equipo']})", "dataset_eventos", registro_id))
         conn.commit()
         cursor.close()
-        return {"status": "success", "message": f"Registro '{registro_id}' eliminado exitosamente."}
+
+        return {
+            "status": "success",
+            "message": f"Registro #{registro_id} eliminado exitosamente de dataset_eventos."
+        }
     except HTTPException:
+        conn.rollback()
         raise
     except Exception as e:
         conn.rollback()
@@ -2243,230 +2304,71 @@ def delete_equipo_record(
 def get_equipos_estado_completo(
     conn = Depends(get_db)
 ):
-    """Retorna el estado operativo consolidado y telemetría de todos los equipos biomédicos en UCI."""
+    """Retorna el estado operativo consolidado de los 232 equipos biomédicos desde dataset_eventos."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        # 1. Ventiladores
         cursor.execute('''
             SELECT DISTINCT ON ("ID_Equipo") 
-                "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-                "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Presion_Neumatica_psi",
-                "Nivel_Vibracion_Turbina_Hz", "Temperatura_Bloque_C", "Fugas_Aire_Lmin", "Falla_Actual"
-            FROM ventiladores_mecanicos
-            ORDER BY "ID_Equipo", "ID_Registro" DESC
+                id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
+                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+            FROM dataset_eventos
+            ORDER BY "ID_Equipo", "Fecha_Reporte" DESC
         ''')
-        vent_rows = cursor.fetchall()
-
-        # 2. Monitores
-        cursor.execute('''
-            SELECT DISTINCT ON ("ID_Equipo") 
-                "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-                "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Ciclos_Descarga_Bateria",
-                "Errores_Modulo_ECG", "Ruido_Senal_SpO2_dB", "Falla_Actual"
-            FROM monitores_signos_vitales
-            ORDER BY "ID_Equipo", "ID_Registro" DESC
-        ''')
-        mon_rows = cursor.fetchall()
-
-        # 3. Bombas Volumétricas
-        cursor.execute('''
-            SELECT DISTINCT ON ("ID_Equipo") 
-                "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-                "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Nivel_Vibracion_Motor_rpm",
-                "Desviacion_Presion_Oclusion_mmHg", "Frecuencia_Alarma_Burbuja", "Falla_Actual"
-            FROM bombas_volumetricas
-            ORDER BY "ID_Equipo", "ID_Registro" DESC
-        ''')
-        bvo_rows = cursor.fetchall()
-
-        # 4. Bombas a Jeringa
-        cursor.execute('''
-            SELECT DISTINCT ON ("ID_Equipo") 
-                "ID_Registro", "ID_Equipo", "Cama_Asignada", "Horas_Uso_Total",
-                "Dias_Desde_Ultimo_Mtto", "Numero_Fallas_Previas", "Error_Paso_Motor_Micro_mm",
-                "Resistencia_Embolo_N", "Falla_Actual"
-            FROM bombas_jeringa
-            ORDER BY "ID_Equipo", "ID_Registro" DESC
-        ''')
-        bje_rows = cursor.fetchall()
-
-        # 5. Rotativos
-        cursor.execute('''
-            SELECT "ID_Equipo_Rotativo", "Tipo_Tecnologia", "Ubicacion_Estrategica", "Estado_Operativo", "Fecha_Ultimo_Mtto", "Horas_Uso_Estimado"
-            FROM equipos_compartidos_inventario
-            ORDER BY "ID_Equipo_Rotativo" ASC
-        ''')
-        rot_rows = cursor.fetchall()
-        for r in rot_rows:
-            if isinstance(r.get("Fecha_Ultimo_Mtto"), datetime):
-                r["Fecha_Ultimo_Mtto"] = r["Fecha_Ultimo_Mtto"].strftime("%Y-%m-%d")
-
+        rows = cursor.fetchall()
         cursor.close()
 
-        # Enriquecer con predicciones rápidas
-        for r in vent_rows:
-            r["prediccion"] = calcular_prediccion_equipo("ventiladores", r)
-        for r in mon_rows:
-            r["prediccion"] = calcular_prediccion_equipo("monitores", r)
-        for r in bvo_rows:
-            r["prediccion"] = calcular_prediccion_equipo("bombas-volumetricas", r)
-        for r in bje_rows:
-            r["prediccion"] = calcular_prediccion_equipo("bombas-jeringa", r)
-
-        total_activos = len(vent_rows) + len(mon_rows) + len(bvo_rows) + len(bje_rows) + len(rot_rows)
-        fallas_count = (
-            sum(1 for r in vent_rows if r["Falla_Actual"] == 1) +
-            sum(1 for r in mon_rows if r["Falla_Actual"] == 1) +
-            sum(1 for r in bvo_rows if r["Falla_Actual"] == 1) +
-            sum(1 for r in bje_rows if r["Falla_Actual"] == 1)
-        )
-        alertas_preventivas = (
-            sum(1 for r in vent_rows if r["prediccion"]["nivel_riesgo"] in {"Medio", "Alto", "Crítico"}) +
-            sum(1 for r in mon_rows if r["prediccion"]["nivel_riesgo"] in {"Medio", "Alto", "Crítico"}) +
-            sum(1 for r in bvo_rows if r["prediccion"]["nivel_riesgo"] in {"Medio", "Alto", "Crítico"}) +
-            sum(1 for r in bje_rows if r["prediccion"]["nivel_riesgo"] in {"Medio", "Alto", "Crítico"})
-        )
-
+        conteo_por_familia = {slug: 0 for slug in FAMILIAS_DATASET_MAP.keys()}
         all_equipos = []
-        for r in vent_rows:
-            cama_val = r.get("Cama_Asignada")
-            falla_val = r.get("Falla_Actual", 0)
-            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
+        fallas_count = 0
+        alertas_preventivas = 0
+
+        for r in rows:
+            tipo_db = r["Tipo_Equipo"]
+            slug = obtener_slug_tipo(tipo_db)
+            conteo_por_familia[slug] = conteo_por_familia.get(slug, 0) + 1
+
+            pred = calcular_prediccion_equipo(r)
+            es_falla = (r.get("Variable_Target_Falla") == 1.0) or (pred["falla_actual"] == 1)
+            if es_falla:
+                fallas_count += 1
+                estado_operativo = "En Falla"
+            elif pred["nivel_riesgo"] in ["Crítico", "Alto"]:
+                alertas_preventivas += 1
+                estado_operativo = "Requiere Mtto"
+            else:
+                estado_operativo = "Operativo Normal"
+
+            fecha_str = r["Fecha_Reporte"].strftime("%Y-%m-%d") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
+
             all_equipos.append({
+                "id_registro": r["id"],
                 "id_equipo": r["ID_Equipo"],
-                "tipo": "ventiladores",
-                "tipo_nombre": "Ventilador Mecánico",
-                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
-                "cama_asignada": cama_val,
-                "estado_uso": estado_uso,
-                "falla_actual": falla_val,
-                "horas_uso": r.get("Horas_Uso_Total", 0),
-                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
-                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
-                "variables": {
-                    "Presión Neumática (psi)": r.get("Presion_Neumatica_psi"),
-                    "Vibración Turbina (Hz)": r.get("Nivel_Vibracion_Turbina_Hz"),
-                    "Temperatura Bloque (°C)": r.get("Temperatura_Bloque_C"),
-                    "Fugas de Aire (L/min)": r.get("Fugas_Aire_Lmin")
-                },
-                "prediccion": r.get("prediccion")
+                "tipo": slug,
+                "tipo_nombre": tipo_db,
+                "clasificacion_riesgo": r.get("Clasificacion_Riesgo") or "IIB",
+                "fecha_reporte": fecha_str,
+                "edad_meses": r.get("Edad_Equipo_Meses") or 0.0,
+                "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
+                "fallas_acum": r.get("Fallas_Acumuladas") or 0,
+                "mtbf_dias": r.get("MTBF_Promedio_Dias") or 0.0,
+                "target_falla": r.get("Variable_Target_Falla"),
+                "evento": r.get("Descripcion_Evento") or "Operación Normal",
+                "estado_operativo": estado_operativo,
+                "prediccion": pred
             })
 
-        for r in mon_rows:
-            cama_val = r.get("Cama_Asignada")
-            falla_val = r.get("Falla_Actual", 0)
-            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
-            all_equipos.append({
-                "id_equipo": r["ID_Equipo"],
-                "tipo": "monitores",
-                "tipo_nombre": "Monitor de Signos Vitales",
-                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
-                "cama_asignada": cama_val,
-                "estado_uso": estado_uso,
-                "falla_actual": falla_val,
-                "horas_uso": r.get("Horas_Uso_Total", 0),
-                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
-                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
-                "variables": {
-                    "Ciclos Descarga Batería": r.get("Ciclos_Descarga_Bateria"),
-                    "Errores Módulo ECG": r.get("Errores_Modulo_ECG"),
-                    "Ruido Señal SpO2 (dB)": r.get("Ruido_Senal_SpO2_dB")
-                },
-                "prediccion": r.get("prediccion")
-            })
-
-        for r in bvo_rows:
-            cama_val = r.get("Cama_Asignada")
-            falla_val = r.get("Falla_Actual", 0)
-            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
-            all_equipos.append({
-                "id_equipo": r["ID_Equipo"],
-                "tipo": "bombas-volumetricas",
-                "tipo_nombre": "Bomba de Infusión Volumétrica",
-                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
-                "cama_asignada": cama_val,
-                "estado_uso": estado_uso,
-                "falla_actual": falla_val,
-                "horas_uso": r.get("Horas_Uso_Total", 0),
-                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
-                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
-                "variables": {
-                    "Vibración Motor (rpm)": r.get("Nivel_Vibracion_Motor_rpm"),
-                    "Desviación Presión Oclusión (mmHg)": r.get("Desviacion_Presion_Oclusion_mmHg"),
-                    "Frecuencia Alarma Burbuja": r.get("Frecuencia_Alarma_Burbuja")
-                },
-                "prediccion": r.get("prediccion")
-            })
-
-        for r in bje_rows:
-            cama_val = r.get("Cama_Asignada")
-            falla_val = r.get("Falla_Actual", 0)
-            estado_uso = "En Falla" if falla_val == 1 else ("En Uso" if cama_val else "Disponible")
-            all_equipos.append({
-                "id_equipo": r["ID_Equipo"],
-                "tipo": "bombas-jeringa",
-                "tipo_nombre": "Bomba de Infusión a Jeringa",
-                "cama": f"Cama {cama_val}" if cama_val else "Inventario UCI",
-                "cama_asignada": cama_val,
-                "estado_uso": estado_uso,
-                "falla_actual": falla_val,
-                "horas_uso": r.get("Horas_Uso_Total", 0),
-                "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto", 0),
-                "fallas_previas": r.get("Numero_Fallas_Previas", 0),
-                "variables": {
-                    "Error Paso Motor (mm)": r.get("Error_Paso_Motor_Micro_mm"),
-                    "Resistencia Émbolo (N)": r.get("Resistencia_Embolo_N")
-                },
-                "prediccion": r.get("prediccion")
-            })
-
-        for r in rot_rows:
-            est_op = r.get("Estado_Operativo", "Operativo")
-            con_falla = 1 if est_op.lower() in ["falla", "en mantenimiento", "fuera de servicio"] else 0
-            estado_uso = "En Uso" if est_op.lower() in ["en uso", "operativo", "en servicio"] else ("En Falla" if con_falla else "Disponible")
-            all_equipos.append({
-                "id_equipo": r["ID_Equipo_Rotativo"],
-                "tipo": "rotativos",
-                "tipo_nombre": r.get("Tipo_Tecnologia", "Equipo Rotativo"),
-                "cama": r.get("Ubicacion_Estrategica", "Rotativo UCI"),
-                "cama_asignada": None,
-                "estado_uso": estado_uso,
-                "falla_actual": con_falla,
-                "horas_uso": r.get("Horas_Uso_Estimado", 0),
-                "dias_mtto": 0,
-                "fallas_previas": 0,
-                "variables": {
-                    "Tecnología": r.get("Tipo_Tecnologia"),
-                    "Ubicación": r.get("Ubicacion_Estrategica"),
-                    "Estado Operativo": est_op
-                },
-                "prediccion": None
-            })
+        all_equipos.sort(key=lambda x: (x["prediccion"]["falla_actual"], x["prediccion"]["probabilidad_falla"]), reverse=True)
 
         return {
             "resumen": {
-                "total_equipos": total_activos,
+                "total_equipos": len(rows),
                 "fallas_activas": fallas_count,
                 "alertas_riesgo": alertas_preventivas,
-                "ventiladores_count": len(vent_rows),
-                "monitores_count": len(mon_rows),
-                "bombas_vol_count": len(bvo_rows),
-                "bombas_jer_count": len(bje_rows),
-                "rotativos_count": len(rot_rows)
+                "familias_count": len(FAMILIAS_DATASET_MAP)
             },
-            "conteo_por_familia": {
-                "ventiladores": len(vent_rows),
-                "monitores": len(mon_rows),
-                "bombas-volumetricas": len(bvo_rows),
-                "bombas-jeringa": len(bje_rows),
-                "rotativos": len(rot_rows)
-            },
-            "equipos": all_equipos,
-            "ventiladores": vent_rows,
-            "monitores": mon_rows,
-            "bombas_volumetricas": bvo_rows,
-            "bombas_jeringa": bje_rows,
-            "rotativos": rot_rows
+            "conteo_por_familia": conteo_por_familia,
+            "equipos": all_equipos
         }
     except Exception as e:
         cursor.close()
@@ -2478,54 +2380,67 @@ def get_equipo_historial(
     equipo_id: str,
     conn = Depends(get_db)
 ):
-    """Retorna las mediciones históricas de un equipo específico para trazar curvas en Chart.js."""
-    tipo_key = tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail="Tipo de equipo no reconocido.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table_name = cfg["table"]
-    cols_sql = ", ".join(f'"{c}"' for c in cfg["columns"])
-    pk_col = cfg["pk"]
-
+    """Retorna la bitácora histórica completa de mantenimientos, eventos y curvas MTBF de un equipo en dataset_eventos."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        query = f'SELECT {cols_sql} FROM "{table_name}" WHERE "ID_Equipo" = %s ORDER BY "{pk_col}" ASC'
-        cursor.execute(query, (equipo_id.strip(),))
+        cursor.execute('''
+            SELECT id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
+                   "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
+                   "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+            FROM dataset_eventos
+            WHERE "ID_Equipo" = %s
+            ORDER BY "Fecha_Reporte" ASC, id ASC
+        ''', (equipo_id.strip(),))
         rows = cursor.fetchall()
         cursor.close()
 
         if not rows:
             raise HTTPException(status_code=404, detail=f"No se encontraron registros para el equipo {equipo_id}")
 
-        labels = [r["ID_Registro"] for r in rows]
-        series = {}
-        for c in cfg["columns"]:
-            if c not in {"ID_Registro", "ID_Equipo", "Cama_Asignada"}:
-                series[c] = [r.get(c) for r in rows]
-
+        labels = []
         puntos = []
+        series_mtbf = []
+        series_mtto = []
+        series_fallas = []
+
         for r in rows:
-            vars_dict = {
-                c: r.get(c) for c in cfg["columns"] 
-                if c not in {"ID_Registro", "ID_Equipo", "Cama_Asignada", "Falla_Actual"}
-            }
+            f_str = r["Fecha_Reporte"].strftime("%Y-%m") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
+            labels.append(f_str)
+            series_mtbf.append(float(r.get("MTBF_Promedio_Dias") or 0.0))
+            series_mtto.append(float(r.get("Meses_Desde_Ultimo_Mtto") or 0.0))
+            series_fallas.append(int(r.get("Fallas_Acumuladas") or 0))
+
             puntos.append({
-                "id_registro": r.get("ID_Registro") or r.get("ID_Equipo_Rotativo"),
-                "falla_actual": r.get("Falla_Actual", 0),
-                "variables": vars_dict
+                "id": r["id"],
+                "fecha": f_str,
+                "edad_meses": r.get("Edad_Equipo_Meses"),
+                "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto"),
+                "fallas_acum": r.get("Fallas_Acumuladas"),
+                "mtbf_dias": r.get("MTBF_Promedio_Dias"),
+                "target_falla": r.get("Variable_Target_Falla"),
+                "evento": r.get("Descripcion_Evento")
             })
 
+        ultimo = rows[-1]
+        if isinstance(ultimo.get("Fecha_Reporte"), datetime):
+            ultimo["Fecha_Reporte"] = ultimo["Fecha_Reporte"].strftime("%Y-%m-%d")
+
+        pred = calcular_prediccion_equipo(ultimo)
+
         return {
-            "tipo": tipo_key,
             "equipo_id": equipo_id,
-            "cama_asignada": rows[-1].get("Cama_Asignada"),
+            "tipo_nombre": ultimo.get("Tipo_Equipo"),
+            "clasificacion_riesgo": ultimo.get("Clasificacion_Riesgo"),
             "total_muestras": len(rows),
             "labels": labels,
-            "series": series,
+            "series": {
+                "MTBF_Promedio_Dias": series_mtbf,
+                "Meses_Desde_Ultimo_Mtto": series_mtto,
+                "Fallas_Acumuladas": series_fallas
+            },
             "puntos": puntos,
-            "ultimo_registro": rows[-1],
-            "prediccion_actual": calcular_prediccion_equipo(tipo_key, rows[-1])
+            "ultimo_registro": ultimo,
+            "prediccion_actual": pred
         }
     except HTTPException:
         raise
@@ -2535,55 +2450,188 @@ def get_equipo_historial(
 
 @app.post("/api/equipos-prediccion", tags=["Predicción de Equipos"])
 def predict_equipo_failure(
-    req: PredictRequest,
+    req: PredictDatasetRequest,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Ejecuta el modelo predictivo de falla para un equipo o parámetros personalizados."""
+    """Calcula el riesgo predictivo sobre variables reales del equipo y permite simular o persistir cambios en Neon."""
     if user["rol_nombre"] not in PREDICCION_ROLES:
         raise HTTPException(
             status_code=403,
             detail="Acceso denegado: El módulo de Predicción de Equipos está reservado al Administrador Biomédico y a los Ingenieros de Mantenimiento."
         )
 
-    tipo_key = req.tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP:
-        raise HTTPException(status_code=404, detail=f"Tipo de equipo '{req.tipo}' no reconocido.")
-
     item_data = {}
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     if req.equipo_id:
-        cfg = EQUIPOS_TABLE_MAP[tipo_key]
-        table_name = cfg["table"]
-        cols_sql = ", ".join(f'"{c}"' for c in cfg["columns"])
-        pk_col = cfg["pk"]
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute(f'SELECT {cols_sql} FROM "{table_name}" WHERE "ID_Equipo" = %s ORDER BY "{pk_col}" DESC LIMIT 1', (req.equipo_id.strip(),))
+        cursor.execute('''
+            SELECT * FROM dataset_eventos
+            WHERE "ID_Equipo" = %s
+            ORDER BY "Fecha_Reporte" DESC, id DESC
+            LIMIT 1
+        ''', (req.equipo_id.strip(),))
         row = cursor.fetchone()
-        cursor.close()
         if row:
             item_data = dict(row)
 
-    if req.horas_uso is not None:
-        item_data["Horas_Uso_Total"] = req.horas_uso
-    if req.dias_mtto is not None:
-        item_data["Dias_Desde_Ultimo_Mtto"] = req.dias_mtto
-    if req.fallas_previas is not None:
-        item_data["Numero_Fallas_Previas"] = req.fallas_previas
-    if req.variables and isinstance(req.variables, dict):
-        item_data.update(req.variables)
+    if req.tipo:
+        item_data["Tipo_Equipo"] = req.tipo
+    if req.meses_desde_ultimo_mtto is not None:
+        item_data["Meses_Desde_Ultimo_Mtto"] = req.meses_desde_ultimo_mtto
+    if req.fallas_acumuladas is not None:
+        item_data["Fallas_Acumuladas"] = req.fallas_acumuladas
+    if req.mtbf_promedio_dias is not None:
+        item_data["MTBF_Promedio_Dias"] = req.mtbf_promedio_dias
+    if req.edad_equipo_meses is not None:
+        item_data["Edad_Equipo_Meses"] = req.edad_equipo_meses
+    if req.clasificacion_riesgo is not None:
+        item_data["Clasificacion_Riesgo"] = req.clasificacion_riesgo
+    if req.variable_target_falla is not None:
+        item_data["Variable_Target_Falla"] = req.variable_target_falla
+    if req.descripcion_evento:
+        item_data["Descripcion_Evento"] = req.descripcion_evento
 
-    pred = calcular_prediccion_equipo(tipo_key, item_data)
-    pred["tipo"] = tipo_key
-    pred["equipo_id"] = req.equipo_id
-    pred["parametros_analizados"] = item_data
+    pred = calcular_prediccion_equipo(item_data)
+    pred["equipo_id"] = req.equipo_id or item_data.get("ID_Equipo")
+    pred["parametros_analizados"] = {
+        "Meses_Desde_Ultimo_Mtto": item_data.get("Meses_Desde_Ultimo_Mtto"),
+        "Fallas_Acumuladas": item_data.get("Fallas_Acumuladas"),
+        "MTBF_Promedio_Dias": item_data.get("MTBF_Promedio_Dias"),
+        "Edad_Equipo_Meses": item_data.get("Edad_Equipo_Meses"),
+        "Clasificacion_Riesgo": item_data.get("Clasificacion_Riesgo"),
+        "Variable_Target_Falla": item_data.get("Variable_Target_Falla")
+    }
+
+    # Opción de persistir la predicción/ajuste en Neon para la ventana evaluada
+    if req.guardar_en_bd and req.equipo_id and item_data.get("id"):
+        try:
+            target_val = 1.0 if pred["probabilidad_falla"] >= 70.0 else 0.0
+            if req.variable_target_falla is not None:
+                target_val = req.variable_target_falla
+            desc_val = req.descripcion_evento or (pred["diagnostico"] if target_val == 1.0 else "Operación Normal (Pronóstico Estable)")
+
+            cursor.execute('''
+                UPDATE dataset_eventos SET
+                    "Meses_Desde_Ultimo_Mtto" = %s,
+                    "Fallas_Acumuladas" = %s,
+                    "MTBF_Promedio_Dias" = %s,
+                    "Variable_Target_Falla" = %s,
+                    "Descripcion_Evento" = %s
+                WHERE id = %s
+            ''', (
+                item_data.get("Meses_Desde_Ultimo_Mtto"),
+                item_data.get("Fallas_Acumuladas"),
+                item_data.get("MTBF_Promedio_Dias"),
+                target_val,
+                desc_val,
+                item_data.get("id")
+            ))
+            cursor.execute('''
+                INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+                VALUES (%s, %s, %s, %s)
+            ''', (user["id"], f"GUARDAR_PREDICCION_BD: Equipo {req.equipo_id} (Riesgo {pred['nivel_riesgo']} - {pred['probabilidad_falla']}%)", "dataset_eventos", item_data.get("id")))
+            conn.commit()
+            pred["guardado_en_bd"] = True
+            pred["mensaje_bd"] = f"Ajuste predictivo y estado guardados en Neon para {req.equipo_id}."
+        except Exception as e:
+            conn.rollback()
+            pred["guardado_en_bd"] = False
+            pred["mensaje_bd"] = f"No se pudo persistir en BD: {str(e)}"
+
+    cursor.close()
     return pred
+
+@app.post("/api/equipos-mantenimiento-ejecutar", tags=["Predicción de Equipos"])
+def registrar_mantenimiento_preventivo(
+    data: MantenimientoEjecutarRequest,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Registra la ejecución de un mantenimiento preventivo en Neon, reseteando Meses_Desde_Ultimo_Mtto a 0.0."""
+    if user["rol_nombre"] not in PREDICCION_ROLES:
+        raise HTTPException(status_code=403, detail="Acceso denegado: solo personal de ingeniería y biomédica puede registrar mantenimientos.")
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute('''
+            SELECT * FROM dataset_eventos
+            WHERE "ID_Equipo" = %s
+            ORDER BY "Fecha_Reporte" DESC, id DESC
+            LIMIT 1
+        ''', (data.equipo_id.strip(),))
+        prev = cursor.fetchone()
+
+        if not prev:
+            cursor.close()
+            raise HTTPException(status_code=404, detail=f"Equipo {data.equipo_id} no encontrado en dataset_eventos.")
+
+        edad = float(prev.get("Edad_Equipo_Meses") or 40.0) + 0.1
+        mtbf = float(prev.get("MTBF_Promedio_Dias") or 500.0)
+        fallas = int(prev.get("Fallas_Acumuladas") or 0)
+        ahora = datetime.now()
+
+        cursor.execute('''
+            INSERT INTO dataset_eventos (
+                "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
+                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        ''', (
+            prev["ID_Equipo"],
+            prev["Tipo_Equipo"],
+            prev["Clasificacion_Riesgo"],
+            ahora,
+            edad,
+            0.0,  # Contador reiniciado a 0 por mantenimiento preventivo
+            fallas,
+            mtbf + 30.0,  # Mejora de MTBF tras intervención técnica
+            0.0,
+            f"Mantenimiento Preventivo Ejecutado por {user['nombre']}: {data.observaciones}"
+        ))
+        nuevo_id = cursor.fetchone()["id"]
+
+        cursor.execute('''
+            INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
+            VALUES (%s, %s, %s, %s)
+        ''', (user["id"], f"EJECUTAR_MTTO_PREVENTIVO: {data.equipo_id} (Nuevo ID #{nuevo_id})", "dataset_eventos", nuevo_id))
+        conn.commit()
+        cursor.close()
+
+        # Recalcular predicción post-mantenimiento
+        item_actualizado = {
+            "Tipo_Equipo": prev["Tipo_Equipo"],
+            "Clasificacion_Riesgo": prev["Clasificacion_Riesgo"],
+            "Edad_Equipo_Meses": edad,
+            "Meses_Desde_Ultimo_Mtto": 0.0,
+            "Fallas_Acumuladas": fallas,
+            "MTBF_Promedio_Dias": mtbf + 30.0,
+            "Variable_Target_Falla": 0.0,
+            "Descripcion_Evento": "Operación Normal (Preventivo Reciente)"
+        }
+        nueva_pred = calcular_prediccion_equipo(item_actualizado)
+
+        return {
+            "status": "success",
+            "message": f"Mantenimiento preventivo registrado exitosamente para {data.equipo_id}. Contador reiniciado a 0 meses.",
+            "registro_id": nuevo_id,
+            "prediccion_actualizada": nueva_pred
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error registrando mantenimiento preventivo: {str(e)}")
 
 @app.get("/api/equipos-prediccion-resumen", tags=["Predicción de Equipos"])
 def get_prediccion_resumen_global(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Genera la matriz predictiva del parque biomédico con priorización de mantenimiento."""
+    """Genera la matriz predictiva priorizada de los 232 equipos biomédicos desde dataset_eventos."""
     if user["rol_nombre"] not in PREDICCION_ROLES:
         raise HTTPException(
             status_code=403,
@@ -2592,37 +2640,41 @@ def get_prediccion_resumen_global(
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        lista_equipos = []
-        for tipo_k, cfg in [
-            ("ventiladores", EQUIPOS_TABLE_MAP["ventiladores"]),
-            ("monitores", EQUIPOS_TABLE_MAP["monitores"]),
-            ("bombas-volumetricas", EQUIPOS_TABLE_MAP["bombas-volumetricas"]),
-            ("bombas-jeringa", EQUIPOS_TABLE_MAP["bombas-jeringa"])
-        ]:
-            tbl = cfg["table"]
-            cols = ", ".join(f'"{c}"' for c in cfg["columns"])
-            pk = cfg["pk"]
-            cursor.execute(f'SELECT DISTINCT ON ("ID_Equipo") {cols} FROM "{tbl}" ORDER BY "ID_Equipo", "{pk}" DESC')
-            for r in cursor.fetchall():
-                p = calcular_prediccion_equipo(tipo_k, r)
-                lista_equipos.append({
-                    "tipo": tipo_k,
-                    "familia": cfg["name"],
-                    "equipo_id": r["ID_Equipo"],
-                    "cama": r.get("Cama_Asignada"),
-                    "horas_uso": r.get("Horas_Uso_Total"),
-                    "dias_mtto": r.get("Dias_Desde_Ultimo_Mtto"),
-                    "fallas_previas": r.get("Numero_Fallas_Previas"),
-                    "falla_actual": r.get("Falla_Actual", 0),
-                    "probabilidad_falla": p["probabilidad_falla"],
-                    "nivel_riesgo": p["nivel_riesgo"],
-                    "diagnostico": p["diagnostico"],
-                    "anomalias": p["anomalias"],
-                    "accion_recomendada": p["accion_recomendada"],
-                    "ultimo_registro": r.get("ID_Registro")
-                })
-
+        cursor.execute('''
+            SELECT DISTINCT ON ("ID_Equipo") 
+                id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
+                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+            FROM dataset_eventos
+            ORDER BY "ID_Equipo", "Fecha_Reporte" DESC
+        ''')
+        rows = cursor.fetchall()
         cursor.close()
+
+        lista_equipos = []
+        for r in rows:
+            p = calcular_prediccion_equipo(r)
+            slug = obtener_slug_tipo(r["Tipo_Equipo"])
+            f_str = r["Fecha_Reporte"].strftime("%Y-%m-%d") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
+            lista_equipos.append({
+                "registro_id": r["id"],
+                "tipo": slug,
+                "familia": r["Tipo_Equipo"],
+                "equipo_id": r["ID_Equipo"],
+                "clasificacion_riesgo": r.get("Clasificacion_Riesgo") or "IIB",
+                "fecha_reporte": f_str,
+                "edad_meses": r.get("Edad_Equipo_Meses") or 0.0,
+                "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
+                "fallas_previas": r.get("Fallas_Acumuladas") or 0,
+                "mtbf_dias": r.get("MTBF_Promedio_Dias") or 0.0,
+                "falla_actual": p["falla_actual"],
+                "probabilidad_falla": p["probabilidad_falla"],
+                "nivel_riesgo": p["nivel_riesgo"],
+                "diagnostico": p["diagnostico"],
+                "anomalias": p["anomalias"],
+                "accion_recomendada": p["accion_recomendada"],
+                "evento_reciente": r.get("Descripcion_Evento") or "Operación Normal"
+            })
 
         lista_equipos.sort(key=lambda x: (x["falla_actual"], x["probabilidad_falla"]), reverse=True)
 
@@ -2634,99 +2686,15 @@ def get_prediccion_resumen_global(
         return {
             "total_analizados": total,
             "equipos_criticos": criticos,
+            "criticos": criticos,
             "equipos_atencion": medios,
+            "preventivos": medios,
             "equipos_optimos": optimos,
             "indice_confiabilidad": round((optimos / total * 100) if total > 0 else 100, 1),
-            "equipos": lista_equipos
+            "confiabilidad_global_pct": round((optimos / total * 100) if total > 0 else 100, 1),
+            "equipos": lista_equipos,
+            "equipos_priorizados": lista_equipos
         }
     except Exception as e:
         cursor.close()
         raise HTTPException(status_code=500, detail=f"Error en resumen predictivo: {str(e)}")
-
-@app.post("/api/equipos-telemetria-simular", tags=["Telemetría de Equipos"])
-def simular_telemetria_equipo_biomedico(
-    data: SimularTelemetriaEquipoRequest,
-    user: dict = Depends(verify_user_credentials),
-    conn = Depends(get_db)
-):
-    """Simula o inyecta una nueva medición de telemetría física de un equipo (Servicio IoT o Admin)."""
-    if user["rol_nombre"] not in {"Servicio", "Admin Biomedico", "ADMIN", "ING_PREVENTIVO", "ING_CORRECTIVO"}:
-        raise HTTPException(status_code=403, detail="Acceso denegado: solo el Servicio IoT o Ingeniería pueden transmitir telemetría.")
-
-    tipo_key = data.tipo.lower()
-    if tipo_key not in EQUIPOS_TABLE_MAP or tipo_key == "rotativos":
-        raise HTTPException(status_code=400, detail="Tipo de equipo inválido para telemetría continua.")
-
-    cfg = EQUIPOS_TABLE_MAP[tipo_key]
-    table = cfg["table"]
-
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    try:
-        cursor.execute(f'SELECT count(*) FROM "{table}"')
-        total_rec = cursor.fetchone()["count"] + 1
-        new_id = f"REG-{total_rec:05d}"
-
-        # Obtener valores del equipo actual
-        cursor.execute(f'SELECT * FROM "{table}" WHERE "ID_Equipo" = %s ORDER BY "ID_Registro" DESC LIMIT 1', (data.equipo_id.strip(),))
-        prev = cursor.fetchone()
-        cursor.close()
-
-        horas = (float(prev["Horas_Uso_Total"]) + round(random.uniform(20.0, 80.0), 1)) if prev else 1000.0
-        dias = int(prev["Dias_Desde_Ultimo_Mtto"]) + 1 if prev else 10
-        fallas_prev = int(prev["Numero_Fallas_Previas"]) if prev else 0
-        cama = data.cama_asignada or (prev["Cama_Asignada"] if prev else 1)
-
-        new_row = {
-            "ID_Registro": new_id,
-            "ID_Equipo": data.equipo_id.strip(),
-            "Cama_Asignada": cama,
-            "Horas_Uso_Total": horas,
-            "Dias_Desde_Ultimo_Mtto": dias,
-            "Numero_Fallas_Previas": fallas_prev,
-            "Falla_Actual": 0
-        }
-
-        # Generar variables físicas según la familia
-        if tipo_key == "ventiladores":
-            new_row["Presion_Neumatica_psi"] = round(random.gauss(50.0, 1.8), 3)
-            new_row["Nivel_Vibracion_Turbina_Hz"] = round(random.gauss(72.0, 6.0), 3)
-            new_row["Temperatura_Bloque_C"] = round(random.gauss(44.0, 3.0), 3)
-            new_row["Fugas_Aire_Lmin"] = max(0.0, round(random.gauss(0.8, 0.4), 3))
-        elif tipo_key == "monitores":
-            new_row["Ciclos_Descarga_Bateria"] = int(random.uniform(250, 520))
-            new_row["Errores_Modulo_ECG"] = int(random.choices([0, 1, 2, 3], weights=[0.6, 0.25, 0.1, 0.05])[0])
-            new_row["Ruido_Senal_SpO2_dB"] = round(random.gauss(25.5, 3.5), 3)
-        elif tipo_key == "bombas-volumetricas":
-            new_row["Nivel_Vibracion_Motor_rpm"] = round(random.gauss(1560.0, 140.0), 3)
-            new_row["Desviacion_Presion_Oclusion_mmHg"] = round(random.gauss(26.0, 10.0), 3)
-            new_row["Frecuencia_Alarma_Burbuja"] = int(random.choices([0, 1, 2, 3, 4], weights=[0.4, 0.3, 0.15, 0.1, 0.05])[0])
-        elif tipo_key == "bombas-jeringa":
-            new_row["Error_Paso_Motor_Micro_mm"] = max(0.0, round(random.gauss(0.06, 0.025), 3))
-            new_row["Resistencia_Embolo_N"] = round(random.gauss(9.5, 2.4), 3)
-
-        if data.variables and isinstance(data.variables, dict):
-            new_row.update(data.variables)
-
-        # Determinar si detona Falla_Actual
-        pred = calcular_prediccion_equipo(tipo_key, new_row)
-        if pred["probabilidad_falla"] > 85.0:
-            new_row["Falla_Actual"] = 1
-
-        cols_sql = ", ".join(f'"{c}"' for c in new_row.keys())
-        placeholders = ", ".join(["%s"] * len(new_row))
-        insert_sql = f'INSERT INTO "{table}" ({cols_sql}) VALUES ({placeholders})'
-
-        cursor = conn.cursor()
-        cursor.execute(insert_sql, list(new_row.values()))
-        conn.commit()
-        cursor.close()
-
-        return {
-            "status": "success",
-            "message": f"Paquete de telemetría técnica inyectado para {data.equipo_id} ({new_id}).",
-            "registro": new_row,
-            "prediccion": pred
-        }
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Error transmitiendo telemetría técnica: {str(e)}")
