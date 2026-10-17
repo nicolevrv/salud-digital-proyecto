@@ -172,7 +172,7 @@
           <div>
             <label class="block text-slate-300 text-xs font-semibold mb-1.5">Correo Electrónico Autorizado:</label>
             <div class="relative">
-              <input type="email" id="portal-email" required placeholder="ej: admin.sistema@hospital.com" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+              <input type="email" id="portal-email" required placeholder="correo@hospital.com" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
               <span class="absolute right-3 top-2.5 text-slate-500">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"/></svg>
               </span>
@@ -181,12 +181,12 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-slate-300 text-xs font-semibold">Contraseña de Acceso:</label>
-              <button type="button" onclick="alternarVisibilidadPasswordPortal()" class="text-[11px] text-cyan-400 hover:text-cyan-300 transition">
+              <button type="button" onclick="alternarVisibilidadPasswordPortal()" class="text-[11px] text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1 font-medium">
                 <span id="portal-pass-visibility-text">Mostrar</span>
               </button>
             </div>
             <div class="relative">
-              <input type="password" id="portal-password" required placeholder="••••••••" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10 transition">
+              <input type="password" id="portal-password" required placeholder="Contraseña institucional" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10 transition">
               <span id="portal-pass-icon" class="absolute right-3 top-2.5 text-slate-500 pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </span>
@@ -1890,20 +1890,26 @@
     let cachePacientes = [];
     let cacheEquipos = [];
 
-    // Variables de Estado: Telemetría de Equipos & Dataset Neon
-    let cacheFamiliaSeleccionada = 'ventiladores';
-    let cacheEquipoSeleccionadoId = null;
+    // Variables de Estado Globales: Telemetría, Confiabilidad & Expedientes
+    let cacheFamiliaSeleccionada = 'bombas-volumetricas';
+    let cacheEquipoSeleccionadoId = 'BVOL-01';
     let chartEquipoInstance = null;
     let cacheEquiposEstado = null;
     let cachePrediccionResumen = null;
 
-    let cacheDatasetTipo = 'ventiladores';
-    let cacheDatasetPage = 1;
-    let cacheDatasetLimit = 25;
-    let cacheDatasetTotal = 0;
-    let cacheDatasetFiltroFalla = 'todos';
-    let cacheDatasetBusqueda = '';
-    let cacheDatasetRows = [];
+    // Estado de Mantenimiento y Registros Centralizados
+    let cacheRegistrosTecnologia = 'todas';
+    let cacheRegistrosFiltroFalla = 'todos';
+    let cacheRegistrosBusqueda = '';
+    let cacheRegistrosPage = 1;
+    let cacheRegistrosLimit = 25;
+    let cacheRegistrosTotal = 0;
+    let cacheRegistrosRows = [];
+
+    // Estado de Expediente & Certificados Metrológicos
+    let cacheDocumentacionEquipoId = 'BVOL-01';
+    let cacheDocumentosActuales = [];
+    let cacheCertificadoSeleccionado = null;
 
     function getAuthHeaders() {
       const headers = { "Content-Type": "application/json" };
@@ -1996,11 +2002,11 @@
       if (pass.type === "password") {
         pass.type = "text";
         if (txt) txt.innerText = "Ocultar";
-        if (icon) icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>`;
+        if (icon) icon.innerHTML = `<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>`;
       } else {
         pass.type = "password";
         if (txt) txt.innerText = "Mostrar";
-        if (icon) icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`;
+        if (icon) icon.innerHTML = `<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`;
       }
     }
 
@@ -2154,8 +2160,16 @@
           sessionStorage.setItem("salud_predictiva_session", JSON.stringify(sesionActiva));
 
           actualizarInterfazPerfil();
-          document.getElementById("modal-login").classList.add("hidden");
+          const modal = document.getElementById("modal-login");
+          if (modal) modal.classList.add("hidden");
           if (closeBtn) closeBtn.classList.remove("hidden");
+
+          // Redirigir a la pestaña correspondiente
+          if (sesionActiva.rol === "Medico") {
+            cambiarTab("pacientes");
+          } else {
+            cambiarTab("monitoreo");
+          }
 
           showToast(`Sesión iniciada: ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
           cargarTodoElDashboard();
@@ -2381,8 +2395,8 @@
 
         actualizarBannerPermisos();
       } else {
-        btnOpen.classList.remove("hidden");
-        badgeLogged.classList.add("hidden");
+        if (btnOpen) btnOpen.classList.remove("hidden");
+        if (badgeLogged) badgeLogged.classList.add("hidden");
 
         const portalLogin = document.getElementById("portal-login");
         const mainContent = document.getElementById("main-content");
@@ -3594,25 +3608,7 @@
       }
     };
 
-    let cacheFamiliaSeleccionada = 'bombas-volumetricas';
-    let cacheEquipoSeleccionadoId = 'BVOL-01';
-    let cacheEquiposEstado = null;
-    let cachePrediccionResumen = null;
-    let chartEquipoInstance = null;
-
-    // Estado del nuevo módulo: Registro de Mantenimientos
-    let cacheRegistrosTecnologia = 'todas';
-    let cacheRegistrosFiltroFalla = 'todos';
-    let cacheRegistrosBusqueda = '';
-    let cacheRegistrosPage = 1;
-    let cacheRegistrosLimit = 25;
-    let cacheRegistrosTotal = 0;
-    let cacheRegistrosRows = [];
-
-    // Estado del nuevo módulo: Expediente & Certificados
-    let cacheDocumentacionEquipoId = 'BVOL-01';
-    let cacheDocumentosActuales = [];
-    let cacheCertificadoSeleccionado = null;
+    // Estado de Confiabilidad y Expedientes inicializado globalmente
 
     function renderizarPillsFamiliasMonitoreo() {
       const container = document.getElementById("familia-equipos-pills");
