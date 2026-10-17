@@ -132,9 +132,190 @@
   </header>
 
   <!-- ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- PORTAL DE ACCESO Y AUTENTICACIÓN HOSPITALARIA (VISTA INICIAL OBLIGATORIA) -->
+  <!-- ========================================================================= -->
+  <section id="portal-login" class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 md:py-12 flex flex-col items-center justify-center">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full p-6 sm:p-8 shadow-2xl shadow-cyan-950/20 space-y-6">
+      
+      <!-- Encabezado del Portal Hospitalario -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div class="flex items-center gap-3.5">
+          <div class="p-3 rounded-2xl bg-gradient-to-tr from-cyan-600/30 to-teal-500/20 text-cyan-400 border border-cyan-500/30">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-bold text-white text-lg tracking-tight">Portal de Acceso Hospitalario</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">Conexión Segura</span>
+            </div>
+            <p class="text-xs text-slate-400">Sistema Central de Confiabilidad Biomédica, Telemetría & Metrología Clínica</p>
+          </div>
+        </div>
+        <div class="text-right text-[11px] text-slate-500 hidden sm:block font-mono">
+          <div>PostgreSQL Neon &bull; TLS 1.3</div>
+          <div class="text-slate-400">Política de Bloqueo: 3 intentos / 15m</div>
+        </div>
+      </div>
+
+      <!-- Alerta de Error / Bloqueo en Login del Portal -->
+      <div id="portal-login-error" class="hidden p-3.5 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 text-xs font-semibold flex items-start gap-2.5 shadow-lg shadow-rose-950/40">
+        <svg class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="portal-login-error-text">Credenciales incorrectas</span>
+      </div>
+
+      <!-- Formulario de Autenticación -->
+      <form onsubmit="ejecutarLoginPortal(event)" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 text-xs font-semibold mb-1.5">Correo Electrónico Autorizado:</label>
+            <div class="relative">
+              <input type="email" id="portal-email" required placeholder="ej: admin.sistema@hospital.com" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+              <span class="absolute right-3 top-2.5 text-slate-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"/></svg>
+              </span>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-slate-300 text-xs font-semibold">Contraseña de Acceso:</label>
+              <button type="button" onclick="alternarVisibilidadPasswordPortal()" class="text-[11px] text-cyan-400 hover:text-cyan-300 transition">
+                <span id="portal-pass-visibility-text">Mostrar</span>
+              </button>
+            </div>
+            <div class="relative">
+              <input type="password" id="portal-password" required placeholder="••••••••" class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10 transition">
+              <span id="portal-pass-icon" class="absolute right-3 top-2.5 text-slate-500 pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="portal-btn-submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/20 transition flex items-center justify-center gap-2">
+          <span>Ingresar al Sistema Hospitalario</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <!-- Divisor con texto -->
+      <div class="relative flex items-center justify-center pt-2">
+        <div class="border-t border-slate-800 w-full"></div>
+        <span class="bg-slate-900 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold whitespace-nowrap">Perfiles Institucionales Autorizados</span>
+        <div class="border-t border-slate-800 w-full"></div>
+      </div>
+
+      <!-- SECCIÓN A: PERFILES DE MANTENIMIENTO E INGENIERÍA -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+          <span>Ingeniería & Mantenimiento Hospitalario</span>
+          <span class="text-[10px] text-slate-500 font-normal">Clic para cargar y probar credencial</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          
+          <!-- ADMIN -->
+          <button onclick="cargarPerfilDemo('admin.sistema@hospital.com', 'sistema123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-amber-900/40 hover:border-amber-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-amber-500/40">
+              AD
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-amber-300 truncate">Admin del Sistema</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">admin.sistema@hospital.com</div>
+              <div class="text-[10px] text-amber-400 font-mono">clave: sistema123</div>
+            </div>
+          </button>
+
+          <!-- ING_PREVENTIVO -->
+          <button onclick="cargarPerfilDemo('ing.preventivo@hospital.com', 'prev123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-amber-900/40 hover:border-amber-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-amber-500/40">
+              IP
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-amber-300 truncate">Ing. Preventivo</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.preventivo@hospital.com</div>
+              <div class="text-[10px] text-amber-400 font-mono">clave: prev123</div>
+            </div>
+          </button>
+
+          <!-- ING_CORRECTIVO -->
+          <button onclick="cargarPerfilDemo('ing.correctivo@hospital.com', 'corr123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-amber-900/40 hover:border-amber-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-amber-500/40">
+              IC
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-amber-300 truncate">Ing. Correctivo</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">ing.correctivo@hospital.com</div>
+              <div class="text-[10px] text-amber-400 font-mono">clave: corr123</div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- SECCIÓN B: PERFILES CLÍNICOS & METROLÓGICOS -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+          <span>Área Clínica, Metrología & Telemetría UCI</span>
+          <span class="text-[10px] text-slate-500 font-normal">Clic para cargar y probar credencial</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          
+          <!-- Admin Biomédico -->
+          <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-purple-900/40 hover:border-purple-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-purple-500/40">
+              AB
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-purple-300 truncate">Admin Biomédico</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">admin.biomedico@hospital.com</div>
+              <div class="text-[10px] text-purple-400 font-mono">clave: admin123</div>
+            </div>
+          </button>
+
+          <!-- Médico UCI -->
+          <button onclick="cargarPerfilDemo('medico@hospital.com', 'med123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-emerald-900/40 hover:border-emerald-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-emerald-500/40">
+              CT
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-emerald-300 truncate">Médico Especialista</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">medico@hospital.com</div>
+              <div class="text-[10px] text-emerald-400 font-mono">clave: med123</div>
+            </div>
+          </button>
+
+          <!-- Servicio IoT -->
+          <button onclick="cargarPerfilDemo('servicio.iot@hospital.com', 'service123')" type="button" class="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-cyan-900/40 hover:border-cyan-500 text-left transition flex items-start gap-2.5 group cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-cyan-500/40">
+              ST
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white group-hover:text-cyan-300 truncate">Servicio Telemetría</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">servicio.iot@hospital.com</div>
+              <div class="text-[10px] text-cyan-400 font-mono">clave: service123</div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Pie de Seguridad Institucional -->
+      <div class="border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Acceso reservado a personal institucional autorizado. Ley 1581 de Protección de Datos en Salud.</span>
+        </div>
+        <div class="font-mono text-slate-400">Versión 2.4-Hospital</div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- MAIN CONTENT WRAPPER -->
   <!-- ========================================================================= -->
-  <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 transition-all duration-300">
+  <main id="main-content" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 transition-all duration-300">
 
     <!-- BANNER DE AUTORIZACIONES Y PERMISOS DEL PERFIL ACTIVO -->
     <div id="permissions-banner" class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">
@@ -1807,14 +1988,55 @@
       }
     }
 
+    function alternarVisibilidadPasswordPortal() {
+      const pass = document.getElementById("portal-password");
+      const txt = document.getElementById("portal-pass-visibility-text");
+      const icon = document.getElementById("portal-pass-icon");
+      if (!pass) return;
+      if (pass.type === "password") {
+        pass.type = "text";
+        if (txt) txt.innerText = "Ocultar";
+        if (icon) icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>`;
+      } else {
+        pass.type = "password";
+        if (txt) txt.innerText = "Mostrar";
+        if (icon) icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`;
+      }
+    }
+
     function cargarPerfilDemo(email, pass) {
-      document.getElementById("login-email").value = email;
-      const passInput = document.getElementById("login-password");
-      passInput.value = pass;
-      passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
-      document.getElementById("login-error-alert").classList.add("hidden");
-      passInput.focus();
-      showToast(`Credenciales cargadas para ${email}. Clic en 'Iniciar Sesión' para acceder, o modifique la clave para probar validación.`, "info");
+      // 1. Campos del portal de inicio
+      const pEmail = document.getElementById("portal-email");
+      const pPass = document.getElementById("portal-password");
+      if (pEmail) pEmail.value = email;
+      if (pPass) {
+        pPass.value = pass;
+        pPass.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+        pPass.focus();
+      }
+
+      // 2. Campos del modal de cambio de perfil
+      const mEmail = document.getElementById("login-email");
+      const mPass = document.getElementById("login-password");
+      if (mEmail) mEmail.value = email;
+      if (mPass) {
+        mPass.value = pass;
+        mPass.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+      }
+
+      const errP = document.getElementById("portal-login-error");
+      if (errP) errP.classList.add("hidden");
+      const errM = document.getElementById("login-error-alert");
+      if (errM) errM.classList.add("hidden");
+
+      showToast(`Credenciales cargadas para ${email}. Clic en 'Ingresar al Sistema' para acceder.`, "info");
+    }
+
+    function ejecutarLoginPortal(e) {
+      e.preventDefault();
+      const email = document.getElementById("portal-email").value.trim();
+      const pass = document.getElementById("portal-password").value;
+      ejecutarLogin(email, pass);
     }
 
     function cambiarTab(tabName) {
@@ -1881,6 +2103,16 @@
       const passInput = document.getElementById("login-password");
       const closeBtn = document.getElementById("btn-modal-login-close");
 
+      const portalErrBox = document.getElementById("portal-login-error");
+      const portalErrTxt = document.getElementById("portal-login-error-text");
+      const portalSubmitBtn = document.getElementById("portal-btn-submit");
+      const portalPassInput = document.getElementById("portal-password");
+
+      if (errorBox) errorBox.classList.add("hidden");
+      if (portalErrBox) portalErrBox.classList.add("hidden");
+      if (passInput) passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+      if (portalPassInput) portalPassInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
+
       errorBox.classList.add("hidden");
       if (passInput) passInput.classList.remove("border-rose-500", "ring-2", "ring-rose-500");
 
@@ -1893,6 +2125,10 @@
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<span>Validando credenciales...</span>`;
+      }
+      if (portalSubmitBtn) {
+        portalSubmitBtn.disabled = true;
+        portalSubmitBtn.innerHTML = `<span>Validando credenciales institucionalmente...</span>`;
       }
 
       try {
@@ -1935,13 +2171,23 @@
 
           // Mensaje de rechazo claro
           const msg = data.detail || "Contraseña incorrecta. Acceso denegado.";
-          errorTxt.innerText = msg;
-          errorBox.classList.remove("hidden");
+          if (errorTxt && errorBox) {
+            errorTxt.innerText = msg;
+            errorBox.classList.remove("hidden");
+          }
+          if (portalErrTxt && portalErrBox) {
+            portalErrTxt.innerText = msg;
+            portalErrBox.classList.remove("hidden");
+          }
 
           if (passInput) {
             passInput.value = "";
             passInput.classList.add("border-rose-500", "ring-2", "ring-rose-500");
-            passInput.focus();
+          }
+          if (portalPassInput) {
+            portalPassInput.value = "";
+            portalPassInput.classList.add("border-rose-500", "ring-2", "ring-rose-500");
+            portalPassInput.focus();
           }
 
           showToast(msg, "error");
@@ -1962,6 +2208,11 @@
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span>Iniciar Sesión</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+        }
+        const pBtn = document.getElementById("portal-btn-submit");
+        if (pBtn) {
+          pBtn.disabled = false;
+          pBtn.innerHTML = `<span>Ingresar al Sistema Hospitalario</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
         }
       }
     }
@@ -2119,8 +2370,12 @@
           }
         }
 
+        const portalLogin = document.getElementById("portal-login");
         const mainContent = document.getElementById("main-content");
+
+        if (portalLogin) portalLogin.classList.add("hidden");
         if (mainContent) {
+          mainContent.classList.remove("hidden");
           mainContent.classList.remove("filter", "blur-md", "pointer-events-none", "opacity-25", "select-none");
         }
 
@@ -2128,27 +2383,31 @@
       } else {
         btnOpen.classList.remove("hidden");
         badgeLogged.classList.add("hidden");
+
+        const portalLogin = document.getElementById("portal-login");
+        const mainContent = document.getElementById("main-content");
+
+        // Sin sesión activa: Ocultar 100% el dashboard y mostrar el portal de login hospitalario
+        if (portalLogin) portalLogin.classList.remove("hidden");
+        if (mainContent) {
+          mainContent.classList.add("hidden");
+          mainContent.classList.add("filter", "blur-md", "pointer-events-none", "opacity-25", "select-none");
+        }
         
-        // Sin sesión activa: Bloquear interfaz y ocultar todas las acciones
         if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
         if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
         if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
         if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
         if (btnSimularIot) btnSimularIot.classList.add("hidden");
 
-        if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
-        if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
-        if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
+        if (tabBtnPacientes) tabBtnPacientes.classList.add("hidden");
+        if (tabBtnObservaciones) tabBtnObservaciones.classList.add("hidden");
+        if (tabBtnEquipos) tabBtnEquipos.classList.add("hidden");
         if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
         if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
         if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
         if (tabBtnRegistros) tabBtnRegistros.classList.add("hidden");
         if (tabBtnDocumentacion) tabBtnDocumentacion.classList.add("hidden");
-
-        const mainContent = document.getElementById("main-content");
-        if (mainContent) {
-          mainContent.classList.add("filter", "blur-md", "pointer-events-none", "opacity-25", "select-none");
-        }
 
         actualizarBannerPermisos();
       }
@@ -4664,31 +4923,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      // 1. Modal de login inicial para autenticación hospitalaria
-      abrirModalLogin();
-      checkHealthStatus();
-
-      const savedSession = sessionStorage.getItem("salud_predictiva_session");
-      if (savedSession) {
-        try {
-          const parsed = JSON.parse(savedSession);
-          if (!parsed.token || (parsed.expiresAt && Date.now() >= parsed.expiresAt)) {
-            sessionStorage.removeItem("salud_predictiva_session");
-            sesionActiva = null;
-          } else {
-            sesionActiva = parsed;
-          }
-        } catch (e) {
-          sessionStorage.removeItem("salud_predictiva_session");
-          sesionActiva = null;
-        }
-      }
+      // Requerimiento estricto de inicio hospitalario:
+      // Debe aparecer siempre la pestaña/portal de login primero y NO mostrar nada del dashboard interno
+      sesionActiva = null;
+      sessionStorage.removeItem("salud_predictiva_session");
 
       actualizarInterfazPerfil();
-
-      if (sesionActiva) {
-        cargarTodoElDashboard();
-      }
+      checkHealthStatus();
 
       setInterval(() => {
         checkHealthStatus();
