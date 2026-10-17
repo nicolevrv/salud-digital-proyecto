@@ -3,6 +3,7 @@ import urllib.parse
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from fastapi import FastAPI, HTTPException, Header, Depends, status, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -612,6 +613,12 @@ def get_current_admin(user: dict = Depends(verify_user_credentials)):
 
 BASE_DIR = Path(__file__).resolve().parent
 
+# Montar directorio de recursos estáticos (fotografías reales de equipos y certificados)
+static_dir = BASE_DIR / "static"
+if not static_dir.exists():
+    static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
 def ensure_security_tables_and_roles(conn = None):
     """
     Garantiza de forma idempotente que las columnas de bloqueo, la tabla login_logs,
@@ -668,6 +675,25 @@ def ensure_security_tables_and_roles(conn = None):
             JOIN roles r ON r.nombre = v.rol_nombre
             ON CONFLICT (email) DO UPDATE SET rol_id = EXCLUDED.rol_id, password_hash = EXCLUDED.password_hash;
             SELECT setval('usuarios_id_seq', COALESCE((SELECT MAX(id) FROM usuarios), 1));
+
+            CREATE TABLE IF NOT EXISTS equipos_documentos (
+                id SERIAL PRIMARY KEY,
+                equipo_id VARCHAR(50) NOT NULL,
+                tipo_documento VARCHAR(50) NOT NULL,
+                titulo VARCHAR(150) NOT NULL,
+                numero_certificado VARCHAR(100),
+                entidad_emisora VARCHAR(150),
+                fecha_emision DATE,
+                fecha_vencimiento DATE,
+                estado_vigencia VARCHAR(30) DEFAULT 'VIGENTE',
+                archivo_url TEXT NOT NULL,
+                archivo_nombre VARCHAR(255),
+                archivo_tamano_kb INT DEFAULT 0,
+                observaciones TEXT,
+                created_by VARCHAR(100) DEFAULT 'Sistema Biomédico',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_equipos_docs_equipo ON equipos_documentos(equipo_id);
         """)
         conn.commit()
         print("Esquema de seguridad y roles inicializados correctamente (sin JEFE_AREA).")

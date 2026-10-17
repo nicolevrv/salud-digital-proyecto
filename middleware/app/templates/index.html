@@ -553,21 +553,6 @@
         </div>
       </div>
 
-      <!-- Parque Activo de la Tecnología Seleccionada -->
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-            <span>Parque Activo en Servicio:</span>
-            <span id="titulo-parque-activo" class="text-slate-200 normal-case font-semibold">--</span>
-          </h3>
-          <span class="text-xs text-slate-400">Total unidades en flota: <strong id="conteo-unidades-parque" class="text-sky-400 font-mono">--</strong></span>
-        </div>
-
-        <div id="grid-unidades-parque" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          <!-- Renderizado dinámicamente con tarjetas limpias destacando la PK -->
-        </div>
-      </div>
-
     </section>
 
     <!-- ========================================================================= -->
@@ -832,6 +817,26 @@
     <!-- TAB 3: REGISTRO DE MANTENIMIENTOS Y FALLAS (HISTORIAL CLÍNICO SIMPLIFICADO) -->
     <!-- ========================================================================= -->
     <section id="tab-registros" class="tab-content hidden space-y-6">
+
+      <!-- Parque Centralizado de Unidades y Equipos en Flota -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>Parque de Equipos Biomédicos:</span>
+              <span id="titulo-parque-activo" class="text-sky-400 font-semibold font-mono">--</span>
+            </h3>
+            <p class="text-xs text-slate-400">Inventario y estado de todas las unidades biomédicas con Llave Primaria (PK), criticidad, tiempo sin mtto y acceso a su expediente</p>
+          </div>
+          <span class="text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">Total unidades: <strong id="conteo-unidades-parque" class="text-sky-400 font-mono">--</strong></span>
+        </div>
+
+        <div id="grid-unidades-parque" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[460px] overflow-y-auto pr-1">
+          <!-- Renderizado dinámicamente con tarjetas limpias destacando la PK -->
+        </div>
+      </div>
+
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
         
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -2094,7 +2099,10 @@
 
       if (tabName === "seguridad") cargarSeguridad();
       if (tabName === "prediccion") cargarPrediccionResumen();
-      if (tabName === "registros") cargarRegistrosMantenimiento();
+      if (tabName === "registros") {
+        cargarRegistrosMantenimiento();
+        actualizarParqueEnRegistros();
+      }
       if (tabName === "documentacion") cargarDocumentacionEquipos(cacheEquipoSeleccionadoId);
       if (tabName === "monitoreo") cargarEstadoEquipos(cacheFamiliaSeleccionada);
     }
@@ -3839,7 +3847,7 @@
       container.innerHTML = "";
 
       if (!unidades || unidades.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-4 text-center">No hay unidades registradas en esta categoría.</div>`;
+        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-4 text-center">No hay unidades registradas con los filtros seleccionados.</div>`;
         return;
       }
 
@@ -3854,7 +3862,10 @@
             ? 'bg-slate-800/90 border-sky-500 shadow-md ring-1 ring-sky-500' 
             : 'bg-slate-900 border-slate-800 hover:border-slate-700'
         }`;
-        card.onclick = () => seleccionarEquipoEspecifico(u.id_equipo);
+        card.onclick = () => {
+          seleccionarEquipoEspecifico(u.id_equipo);
+          cambiarTab('monitoreo');
+        };
 
         let badgeStatus = conFalla
           ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Falla Activa</span>`
@@ -3874,6 +3885,10 @@
             </div>
             <div class="space-y-1 text-xs text-slate-400">
               <div class="flex justify-between">
+                <span>Tecnología:</span>
+                <span class="text-slate-200 font-semibold truncate max-w-[130px]">${u.tipo_nombre || u.tipo || 'Biomédico'}</span>
+              </div>
+              <div class="flex justify-between">
                 <span>Riesgo Invima:</span>
                 <span class="text-purple-300 font-semibold font-mono">Clase ${u.clasificacion_riesgo || 'IIB'}</span>
               </div>
@@ -3892,8 +3907,8 @@
             </div>
           </div>
           <div class="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-            <span class="${esSeleccionado ? 'text-sky-300 font-bold' : 'text-sky-400 font-medium'}">${esSeleccionado ? '● En Supervisión' : 'Ver Métricas &rarr;'}</span>
-            <button type="button" onclick="event.stopPropagation(); abrirExpedienteDesdeMonitoreo('${u.id_equipo}')" class="text-slate-400 hover:text-sky-300 underline font-mono text-[10px]">
+            <span class="text-sky-400 font-medium hover:underline">Ver Gráfica &rarr;</span>
+            <button type="button" onclick="event.stopPropagation(); abrirExpedienteDesdeMonitoreo('${u.id_equipo}')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-mono text-[10px]">
               Expediente
             </button>
           </div>
@@ -4407,7 +4422,48 @@
       }
     }
 
+    async function actualizarParqueEnRegistros() {
+      if (!cacheEquiposEstado || !cacheEquiposEstado.equipos) {
+        try {
+          const res = await fetch("/api/equipos-estado", { headers: getAuthHeaders() });
+          if (res.ok) cacheEquiposEstado = await res.json();
+        } catch (e) {
+          console.error("Error cargando equipos para registros:", e);
+        }
+      }
+      if (!cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
+
+      let unidades = cacheEquiposEstado.equipos || [];
+      const selTec = document.getElementById("registros-filtro-tecnologia")?.value || cacheRegistrosTecnologia || "todas";
+      if (selTec && selTec !== "todas") {
+        unidades = unidades.filter(e => e.tipo === selTec);
+      }
+      const qInput = document.getElementById("registros-busqueda-input")?.value?.trim().toLowerCase();
+      if (qInput) {
+        unidades = unidades.filter(e => 
+          (e.id_equipo && e.id_equipo.toLowerCase().includes(qInput)) ||
+          (e.tipo_nombre && e.tipo_nombre.toLowerCase().includes(qInput)) ||
+          (e.tipo && e.tipo.toLowerCase().includes(qInput))
+        );
+      }
+
+      const titParque = document.getElementById("titulo-parque-activo");
+      if (titParque) {
+        if (selTec === "todas") {
+          titParque.innerText = qInput ? `Filtrados (${unidades.length})` : "Toda la Flota Hospitalaria";
+        } else {
+          const fam = (typeof FAMILIAS_EQUIPOS !== "undefined" ? FAMILIAS_EQUIPOS : []).find(f => f.id === selTec);
+          titParque.innerText = fam ? fam.nombre : selTec;
+        }
+      }
+      const conteoParque = document.getElementById("conteo-unidades-parque");
+      if (conteoParque) conteoParque.innerText = unidades.length;
+
+      renderizarGridUnidadesParque(unidades);
+    }
+
     function manejarBusquedaRegistros(e) {
+      actualizarParqueEnRegistros();
       if (e.key === "Enter" || e.keyCode === 13) {
         cacheRegistrosBusqueda = document.getElementById("registros-busqueda-input").value.trim();
         cargarRegistrosMantenimiento(1);
@@ -4418,6 +4474,7 @@
       cacheRegistrosTecnologia = document.getElementById("registros-filtro-tecnologia").value;
       cacheRegistrosFiltroFalla = document.getElementById("registros-filtro-falla").value;
       cacheRegistrosBusqueda = document.getElementById("registros-busqueda-input").value.trim();
+      actualizarParqueEnRegistros();
       cargarRegistrosMantenimiento(1);
     }
 
@@ -4594,7 +4651,7 @@
 
       const container = document.getElementById("visor-doc-content");
       if (container) {
-        if (url && (url.startsWith("data:image/") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".svg"))) {
+        if (url && (url.startsWith("data:image/") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".svg") || url.endsWith(".webp"))) {
           container.innerHTML = `<img src="${url}" class="max-h-full max-w-full object-contain rounded-lg">`;
         } else if (url && (url.startsWith("data:application/pdf") || url.endsWith(".pdf"))) {
           container.innerHTML = `<iframe src="${url}" class="w-full h-full rounded-lg border-0"></iframe>`;
