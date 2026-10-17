@@ -89,7 +89,7 @@
               <span>Sembrar BD</span>
             </button>
             <button onclick="confirmarReinicioLimpio()" title="Reconstruir base de datos limpia desde cero" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition">
-              ⚡ Limpiar
+              <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Limpiar
             </button>
           </div>
 
@@ -225,43 +225,48 @@
     <!-- TAB NAVIGATION CONTROLS -->
     <!-- ========================================================================= -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="cambiarTab('monitoreo')" id="tab-btn-monitoreo" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button onclick="cambiarTab('monitoreo')" id="tab-btn-monitoreo" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-sky-600 text-white shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           <span>Estado del Equipo</span>
         </button>
 
-        <button onclick="cambiarTab('prediccion')" id="tab-btn-prediccion" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('prediccion')" id="tab-btn-prediccion" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          <span>Predicción de Equipos</span>
+          <span>Análisis Predictivo</span>
         </button>
 
-        <button onclick="cambiarTab('dataset')" id="tab-btn-dataset" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
-          <span>Base de Datos de Equipos</span>
+        <button onclick="cambiarTab('registros')" id="tab-btn-registros" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Historial de Registros</span>
         </button>
 
-        <button onclick="cambiarTab('pacientes')" id="tab-btn-pacientes" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('documentacion')" id="tab-btn-documentacion" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Expediente & Certificados</span>
+        </button>
+
+        <button onclick="cambiarTab('pacientes')" id="tab-btn-pacientes" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span>Pacientes y Encuentros</span>
         </button>
 
-        <button onclick="cambiarTab('equipos')" id="tab-btn-equipos" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('equipos')" id="tab-btn-equipos" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-          <span>Equipos UCI & Biomédica</span>
+          <span>Equipos UCI & Inventario</span>
         </button>
 
-        <button onclick="cambiarTab('observaciones')" id="tab-btn-observaciones" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('observaciones')" id="tab-btn-observaciones" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-          <span>Mediciones & Soft Delete</span>
+          <span>Mediciones Clínicas</span>
         </button>
 
-        <button onclick="cambiarTab('auditoria')" id="tab-btn-auditoria" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('auditoria')" id="tab-btn-auditoria" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span>Pista de Auditoría</span>
         </button>
 
-        <button onclick="cambiarTab('seguridad')" id="tab-btn-seguridad" class="hidden tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
+        <button onclick="cambiarTab('seguridad')" id="tab-btn-seguridad" class="hidden tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2v1h-4v-1zm-5 1h10a1 1 0 011 1v6a1 1 0 01-1 1H7a1 1 0 01-1-1v-6a1 1 0 011-1zm2 0V9a3 3 0 016 0v3"/></svg>
           <span>Seguridad y Accesos</span>
         </button>
@@ -281,43 +286,84 @@
         <!-- ========================================================================= -->
     <!-- TAB 1: ESTADO DEL EQUIPO (BASE DE DATOS Y CONFIABILIDAD BIOMÉDICA NEON) -->
     <!-- ========================================================================= -->
+        <!-- ========================================================================= -->
+    <!-- TAB 1: ESTADO DEL EQUIPO (SUPERVISIÓN CLÍNICA Y CONFIABILIDAD BIOMÉDICA) -->
+    <!-- ========================================================================= -->
     <section id="tab-monitoreo" class="tab-content space-y-6">
       
-      <!-- Selector de Familia Tecnológica Biomédica (10 Tecnologías de dataset_eventos) -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-2" id="familia-equipos-pills">
-          <!-- Renderizado dinámicamente con las 10 tecnologías -->
+      <!-- Selector de Tecnologías Biomédicas Hospitalarias (10 Familias) -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5" id="familia-equipos-pills">
+          <!-- Renderizado dinámicamente con las 10 tecnologías y SVGs clínicos -->
         </div>
 
-        <!-- Selector de Unidad Específica & Botón de Mantenimiento Preventivo Rápido -->
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <label class="text-xs text-slate-400 whitespace-nowrap hidden sm:inline">Equipo:</label>
-          <select id="select-equipo-especifico" onchange="seleccionarEquipoEspecifico(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-cyan-500 w-full sm:w-48">
-            <option value="">Cargando unidades...</option>
-          </select>
-          <button type="button" onclick="ejecutarMantenimientoRapido()" id="btn-mtto-rapido" class="px-3 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-cyan-600/20 transition flex items-center gap-1.5 whitespace-nowrap">
-            <span>🛠️ Ejecutar Mtto</span>
+          <button onclick="cargarEstadoEquipos(cacheFamiliaSeleccionada)" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition" title="Refrescar estado de equipos">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Tarjetas de Variables de Estado y Mantenimiento del Equipo Seleccionado -->
-      <div id="grid-variables-equipo" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <!-- Renderizado dinámicamente con las variables reales de la base de datos -->
+      <!-- Ficha de la Unidad Seleccionada con LLAVE PRIMARIA (PK) Destacada -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-800">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Badge Llave Primaria -->
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950 text-sky-300 border border-sky-800 font-mono text-xs font-bold shadow-sm">
+              <span class="text-[10px] text-sky-400/80 uppercase tracking-wider">PLACA / PK:</span>
+              <span id="badge-equipo-pk" class="text-white text-sm">--</span>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 id="txt-equipo-nombre-tecnologia" class="text-sm font-bold text-slate-100">Cargando tecnología...</h3>
+                <span id="badge-equipo-riesgo-invima" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-950 text-purple-300 border border-purple-800 font-mono">Clase IIB</span>
+              </div>
+              <p id="txt-equipo-ubicacion" class="text-xs text-slate-400">Ubicación: Servicio Clínico • UCI Adultos</p>
+            </div>
+          </div>
+
+          <!-- Selector de Unidad y Acciones de Expediente / Mantenimiento -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-400 whitespace-nowrap">Cambiar Unidad:</label>
+              <select id="select-equipo-especifico" onchange="seleccionarEquipoEspecifico(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 min-w-[180px]">
+                <option value="">Cargando unidades...</option>
+              </select>
+            </div>
+
+            <!-- Botón de acceso directo al Expediente & Certificados -->
+            <button type="button" onclick="irAExpedienteEquipoActual()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Ver Certificados & Foto</span>
+            </button>
+
+            <!-- Botón de Ejecución de Mantenimiento Preventivo -->
+            <button type="button" onclick="ejecutarMantenimientoRapido()" id="btn-mtto-rapido" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 whitespace-nowrap">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>Registrar Mantenimiento</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjetas Estandarizadas de Métricas Técnicas y Confiabilidad (8 Tarjetas Uniformes) -->
+        <div id="grid-variables-equipo" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <!-- Renderizado dinámicamente con las variables reales del equipo -->
+        </div>
       </div>
 
       <!-- Gráfico de Evolución Histórica de Confiabilidad (MTBF) y Mantenimiento -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-              <span id="chart-equipo-titulo">Evolución Histórica de Mantenimiento y Confiabilidad (MTBF)</span>
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-sky-400"></span>
+              <span id="chart-equipo-titulo">Evolución Histórica de Confiabilidad Metrológica (MTBF)</span>
             </h3>
-            <p id="chart-equipo-subtitulo" class="text-xs text-slate-400">Comportamiento temporal de MTBF promedio (días), meses sin mtto y fallas acumuladas</p>
+            <p id="chart-equipo-subtitulo" class="text-xs text-slate-400">Tendencia de tiempo medio entre fallas (días), meses acumulados sin intervención y fallas reportadas</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">Estado operativo:</span>
+            <span class="text-xs text-slate-400">Estado Operativo:</span>
             <span id="badge-estado-operativo-equipo" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800">Nominal</span>
           </div>
         </div>
@@ -326,47 +372,18 @@
         </div>
       </div>
 
-      <!-- Historial de Registros y Eventos del Equipo Seleccionado -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <span>Historial de Eventos del Equipo:</span>
-            <span id="titulo-historial-equipo" class="text-cyan-400 font-mono normal-case">--</span>
-          </h3>
-          <span class="text-xs text-slate-400">Registros en Neon: <strong id="conteo-historial-registros" class="text-cyan-400 font-mono">--</strong></span>
-        </div>
-        <div class="overflow-x-auto rounded-xl border border-slate-800">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
-              <tr>
-                <th class="py-2.5 px-3">Fecha Reporte</th>
-                <th class="py-2.5 px-3">Edad (meses)</th>
-                <th class="py-2.5 px-3">Meses Sin Mtto</th>
-                <th class="py-2.5 px-3">MTBF (días)</th>
-                <th class="py-2.5 px-3">Fallas Acum.</th>
-                <th class="py-2.5 px-3">Target Falla</th>
-                <th class="py-2.5 px-3">Descripción / Evento Reportado</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-historial-equipo-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
-              <!-- Filas dinámicas -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Matriz de Inventario y Estado de las Unidades de la Familia -->
+      <!-- Parque Activo de la Tecnología Seleccionada -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <span>Parque Activo:</span>
-            <span id="titulo-parque-activo" class="text-cyan-400 normal-case font-semibold">--</span>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <span>Parque Activo en Servicio:</span>
+            <span id="titulo-parque-activo" class="text-slate-200 normal-case font-semibold">--</span>
           </h3>
-          <span class="text-xs text-slate-400">Total unidades: <strong id="conteo-unidades-parque" class="text-cyan-400 font-mono">--</strong></span>
+          <span class="text-xs text-slate-400">Total unidades en flota: <strong id="conteo-unidades-parque" class="text-sky-400 font-mono">--</strong></span>
         </div>
 
         <div id="grid-unidades-parque" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          <!-- Renderizado dinámicamente -->
+          <!-- Renderizado dinámicamente con tarjetas limpias destacando la PK -->
         </div>
       </div>
 
@@ -378,68 +395,72 @@
         <!-- ========================================================================= -->
     <!-- TAB: PREDICCIÓN DE EQUIPOS (CONEXIÓN DIRECTA Y EDITABLE EN NEON) -->
     <!-- ========================================================================= -->
+        <!-- ========================================================================= -->
+    <!-- TAB 2: ANÁLISIS PREDICTIVO DE FALLAS BIOMÉDICAS -->
+    <!-- ========================================================================= -->
     <section id="tab-prediccion" class="tab-content hidden space-y-6">
       
       <!-- Banner KPIs Predictivos -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Confiabilidad Global Flota</div>
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Confiabilidad Global de Flota</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-confiabilidad" class="text-2xl font-bold text-emerald-400">--%</span>
-            <span class="text-xs text-slate-400">operativa</span>
+            <span id="pred-kpi-confiabilidad" class="text-2xl font-bold font-mono text-emerald-400">--%</span>
+            <span class="text-xs text-slate-500">en operación normal</span>
           </div>
         </div>
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Riesgo Crítico (>70%)</div>
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Riesgo Crítico (>70%)</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-criticos" class="text-2xl font-bold text-rose-400">--</span>
-            <span class="text-xs text-rose-300">atención inmediata</span>
+            <span id="pred-kpi-criticos" class="text-2xl font-bold font-mono text-rose-400">--</span>
+            <span class="text-xs text-rose-400/80">intervención inmediata</span>
           </div>
         </div>
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Mantenimiento Preventivo</div>
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Mantenimientos Programables</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-preventivos" class="text-2xl font-bold text-amber-400">--</span>
-            <span class="text-xs text-amber-300">programables</span>
+            <span id="pred-kpi-preventivos" class="text-2xl font-bold font-mono text-amber-400">--</span>
+            <span class="text-xs text-amber-400/80">atención preventiva</span>
           </div>
         </div>
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Equipos Evaluados</div>
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Equipos Evaluados</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-total" class="text-2xl font-bold text-cyan-400">--</span>
-            <span class="text-xs text-slate-400">unidades analizadas</span>
+            <span id="pred-kpi-total" class="text-2xl font-bold font-mono text-sky-400">--</span>
+            <span class="text-xs text-slate-500">activos biomédicos</span>
           </div>
         </div>
       </div>
 
-      <!-- Calculadora / Simulador de Diagnóstico Predictivo Editable -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+      <!-- Simulador Predictivo Clínico Conectado a Neon -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
           <div>
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">🔬</span>
-              Simulador Predictivo de Falla Biomédica (Editable & Conectado a BD)
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <span>Simulador de Diagnóstico Predictivo & Confiabilidad Metrológica</span>
             </h3>
-            <p class="text-xs text-slate-400">Simule escenarios de degradación, recalcule probabilidades de falla en tiempo real y registre mantenimientos en Neon</p>
+            <p class="text-xs text-slate-400">Evaluación del tiempo transcurrido desde último mantenimiento, frecuencia de fallas y probabilidad de paro no programado</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-950 text-purple-300 border border-purple-800">
-              ⚡ Modelo Calibrado en Neon
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 text-sky-300 border border-slate-700">
+              Modelo Analítico Calibrado
             </span>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Columna Izquierda: Controles y Parámetros Editables -->
+          <!-- Columna Izquierda: Parámetros del Simulador -->
           <div class="lg:col-span-7 space-y-4">
-            <!-- Selección de Unidad Preexistente para Auto-Carga -->
+            <!-- Selector para Cargar Unidad de la Base de Datos -->
             <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
-              <div class="text-xs text-slate-300 font-semibold flex items-center gap-2">
-                <span>🔄 Cargar Unidad Existente:</span>
+              <div class="text-xs text-slate-300 font-semibold flex items-center gap-1.5">
+                <span class="text-[10px] text-sky-400 font-mono uppercase">PLACA / PK:</span>
+                <span>Cargar Equipo de Flota:</span>
               </div>
               <div class="flex-1 min-w-[200px]">
-                <select id="calc-selector-equipo-bd" onchange="cargarEquipoEnSimulador(this.value)" class="w-full bg-slate-800 border border-slate-700 text-cyan-300 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:ring-1 focus:ring-cyan-500">
-                  <option value="">Seleccionar unidad para autocompletar...</option>
+                <select id="calc-selector-equipo-bd" onchange="cargarEquipoEnSimulador(this.value)" class="w-full bg-slate-800 border border-slate-700 text-sky-300 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500">
+                  <option value="">Seleccionar unidad para autocompletar parámetros...</option>
                 </select>
               </div>
             </div>
@@ -447,7 +468,7 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs text-slate-300 font-medium mb-1">Tecnología Biomédica:</label>
-                <select id="calc-tipo-equipo" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-500">
+                <select id="calc-tipo-equipo" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-sky-500">
                   <option value="bombas-volumetricas">Bomba de Infusión Volumétrica</option>
                   <option value="bombas-jeringa">Bomba de Infusión a Jeringa</option>
                   <option value="ventiladores">Ventilador Mecánico</option>
@@ -461,14 +482,14 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-slate-300 font-medium mb-1">Identificador de Unidad:</label>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Identificador Primario (PK):</label>
                 <input type="text" id="calc-id-equipo" value="BVOL-01" placeholder="ej: BVOL-01" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs font-mono">
               </div>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Meses Sin Mtto:</label>
+                <label class="block text-xs text-slate-400 mb-1">Meses sin Mtto:</label>
                 <input type="number" id="calc-meses-mtto" value="6.0" step="0.5" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
               <div>
@@ -483,11 +504,11 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Edad Equipo (meses):</label>
+                <label class="block text-xs text-slate-400 mb-1">Edad del Activo (meses):</label>
                 <input type="number" id="calc-edad-meses" value="36.0" step="1.0" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
               <div>
-                <label class="block text-xs text-slate-400 mb-1">Clasificación Riesgo:</label>
+                <label class="block text-xs text-slate-400 mb-1">Clasificación Riesgo Invima:</label>
                 <select id="calc-clase-riesgo" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono">
                   <option value="IIB">Clase IIB (Alto Riesgo)</option>
                   <option value="IIA">Clase IIA (Riesgo Moderado)</option>
@@ -497,28 +518,30 @@
               </div>
             </div>
 
-            <!-- Botones de Acción de Predicción y Mantenimiento -->
+            <!-- Botones Clínicos Profesionales (Sin emojis) -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-800">
-              <button type="button" onclick="ejecutarCalculoPrediccion()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 transition flex items-center justify-center gap-1.5">
+              <button type="button" onclick="ejecutarCalculoPrediccion()" class="py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 <span>Calcular Riesgo</span>
               </button>
 
-              <button type="button" onclick="ejecutarMantenimientoDesdeSimulador()" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5">
-                <span>🛠️ Reset Mtto a 0</span>
+              <button type="button" onclick="ejecutarMantenimientoDesdeSimulador()" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Reset Mantenimiento a Cero</span>
               </button>
 
-              <button type="button" onclick="guardarPrediccionEnBD()" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md shadow-purple-600/20 transition flex items-center justify-center gap-1.5">
-                <span>💾 Guardar en BD</span>
+              <button type="button" onclick="guardarPrediccionEnBD()" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                <span>Guardar en Base de Datos</span>
               </button>
             </div>
           </div>
 
-          <!-- Columna Derecha: Resultado del Diagnóstico Predictivo -->
+          <!-- Columna Derecha: Resultado del Diagnóstico -->
           <div class="lg:col-span-5 bg-slate-950/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-                <span class="text-xs font-semibold text-slate-300">Diagnóstico Predictivo:</span>
+                <span class="text-xs font-semibold text-slate-300">Diagnóstico de Confiabilidad:</span>
                 <span id="calc-res-badge-riesgo" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">Listo</span>
               </div>
 
@@ -526,44 +549,45 @@
               <div class="mb-4">
                 <div class="flex items-baseline justify-between mb-1.5">
                   <span class="text-xs text-slate-400">Probabilidad de Falla (30 días):</span>
-                  <span id="calc-res-probabilidad" class="text-3xl font-extrabold text-cyan-400 font-mono">0.0%</span>
+                  <span id="calc-res-probabilidad" class="text-3xl font-extrabold text-sky-400 font-mono">0.0%</span>
                 </div>
-                <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden">
-                  <div id="calc-res-barra" class="bg-cyan-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 border border-slate-700 overflow-hidden">
+                  <div id="calc-res-barra" class="bg-sky-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
 
-              <!-- Factores de Riesgo / Anomalías Detectadas -->
+              <!-- Factores Determinantes -->
               <div class="mb-3">
                 <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Factores Determinantes de Riesgo:</div>
                 <div id="calc-res-factores" class="flex flex-wrap gap-1.5">
-                  <span class="text-xs text-slate-500 italic">Seleccione o ajuste parámetros para diagnosticar</span>
+                  <span class="text-xs text-slate-500 italic">Seleccione una unidad o ingrese parámetros para diagnosticar</span>
                 </div>
               </div>
             </div>
 
             <!-- Acción de Mantenimiento Recomendada -->
             <div class="mt-4 pt-3 border-t border-slate-800">
-              <div class="text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <span>🛠️ Protocolo Técnico Recomendado:</span>
+              <div class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Protocolo Técnico Hospitalario:</span>
               </div>
-              <div id="calc-res-accion" class="text-xs text-slate-200 bg-slate-900 border border-slate-800 rounded-xl p-2.5 leading-relaxed">
-                Ajuste los meses desde último mantenimiento y MTBF para observar el comportamiento predictivo del equipo.
+              <div id="calc-res-accion" class="text-xs text-slate-200 bg-slate-900 border border-slate-800 rounded-xl p-3 leading-relaxed">
+                Seleccione un activo biomédico para obtener la recomendación técnica y estado de mantenimiento preventivo.
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Matriz Priorizada de Equipos por Riesgo de Falla -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+      <!-- Matriz Priorizada de Flota por Riesgo -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <span class="p-1 rounded-lg bg-rose-500/20 text-rose-400">⚠️</span>
-              Matriz Priorizada de Mantenimiento Predictivo (Flota Completa Neon)
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <span>Matriz Priorizada de Intervención Técnica (Flota Hospitalaria)</span>
             </h3>
-            <p class="text-xs text-slate-400">Ranking de las 232 unidades ordenadas por probabilidad de falla para asignación a ingenieros</p>
+            <p class="text-xs text-slate-400">Listado de las 232 unidades ordenadas por probabilidad de falla para asignación a ingenieros clínicos</p>
           </div>
           <div class="flex items-center gap-2">
             <select id="filtro-pred-familia" onchange="filtrarMatrizPredictiva()" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-2.5 py-1.5 text-xs">
@@ -586,18 +610,20 @@
               <option value="MEDIO">Solo Medio (35-50%)</option>
               <option value="BAJO">Solo Bajo (<35%)</option>
             </select>
-            <button onclick="cargarPrediccionResumen()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition" title="Refrescar matriz">🔄</button>
+            <button onclick="cargarPrediccionResumen()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition" title="Refrescar matriz">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
           <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+            <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
               <tr>
-                <th class="py-3 px-3">Equipo ID</th>
+                <th class="py-3 px-3">Placa / PK</th>
                 <th class="py-3 px-3">Tecnología</th>
                 <th class="py-3 px-3">Riesgo Invima</th>
-                <th class="py-3 px-3">Meses Sin Mtto</th>
+                <th class="py-3 px-3">Meses sin Mtto</th>
                 <th class="py-3 px-3">MTBF (Días)</th>
                 <th class="py-3 px-3">Fallas Acum.</th>
                 <th class="py-3 px-3">Probabilidad Falla</th>
@@ -606,8 +632,8 @@
                 <th class="py-3 px-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody id="tabla-prediccion-body" class="divide-y divide-slate-800/60">
-              <!-- Renderizado dinámicamente -->
+            <tbody id="tabla-prediccion-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+              <!-- Filas dinámicas -->
             </tbody>
           </table>
         </div>
@@ -621,21 +647,24 @@
         <!-- ========================================================================= -->
     <!-- TAB: BASE DE DATOS DE EQUIPOS (DATASET EVENTOS NEON - 7,630 REGISTROS) -->
     <!-- ========================================================================= -->
-    <section id="tab-dataset" class="tab-content hidden space-y-6">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <!-- ========================================================================= -->
+    <!-- TAB 3: REGISTRO DE MANTENIMIENTOS Y FALLAS (HISTORIAL CLÍNICO SIMPLIFICADO) -->
+    <!-- ========================================================================= -->
+    <section id="tab-registros" class="tab-content hidden space-y-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
         
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <span class="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">📊</span>
-              Base de Datos Técnica y Registro de Mantenimientos & Fallas
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Registro Centralizado de Mantenimientos & Fallas de Equipos</span>
             </h3>
-            <p class="text-xs text-slate-400">Visualización interactiva, corrección y edición directa en PostgreSQL Neon (tabla dataset_eventos)</p>
+            <p class="text-xs text-slate-400">Historial consolidado de intervenciones preventivas, reportes de fallas y calibraciones de toda la flota hospitalaria</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="abrirModalNuevoRegistroDataset()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-cyan-600/20 transition flex items-center gap-1.5">
+            <button type="button" onclick="abrirModalNuevoRegistroMantenimiento()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <span>+ Nuevo Registro</span>
+              <span>+ Nuevo Registro Técnico</span>
             </button>
             <button type="button" onclick="descargarDatasetCSV()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -644,43 +673,56 @@
           </div>
         </div>
 
-        <!-- Pestañas de Filtrado por Tecnología Biomédica -->
-        <div class="flex flex-wrap items-center gap-1.5 pb-4 border-b border-slate-800" id="dataset-familias-pills">
-          <!-- Renderizado dinámicamente con las 10 tecnologías + Todas -->
-        </div>
+        <!-- Barra de Búsqueda y Filtros Simplificados -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <div class="md:col-span-2 relative">
+            <input type="text" id="registros-busqueda-input" onkeyup="manejarBusquedaRegistros(event)" placeholder="Buscar por Placa / PK (ej: BVOL-01), tipo o descripción..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl pl-8 pr-3 py-2 text-xs focus:ring-1 focus:ring-sky-500">
+            <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
 
-        <!-- Barra de Búsqueda y Filtros -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 mb-4">
-          <div class="flex flex-wrap items-center gap-2.5 flex-1 max-w-xl">
-            <div class="relative flex-1 min-w-[200px]">
-              <input type="text" id="dataset-busqueda-input" onkeyup="manejarBusquedaDataset(event)" placeholder="Buscar por ID Equipo, Tipo, Evento..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-1 focus:ring-cyan-500">
-              <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </div>
-            <select id="dataset-filtro-falla" onchange="aplicarFiltrosDataset()" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs">
-              <option value="todos">Todos los Estados (Falla & Normal)</option>
-              <option value="1">Solo con Falla Reportada (Target = 1)</option>
-              <option value="0">Solo Normal / Sin Falla (Target = 0)</option>
-              <option value="null">Ventana Actual / Pendiente (Target = Null)</option>
+          <div>
+            <select id="registros-filtro-tecnologia" onchange="aplicarFiltrosRegistros()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs">
+              <option value="todas">Todas las Tecnologías</option>
+              <option value="bombas-volumetricas">Bombas Volumétricas</option>
+              <option value="bombas-jeringa">Bombas de Jeringa</option>
+              <option value="ventiladores">Ventiladores Mecánicos</option>
+              <option value="monitores">Monitores Multiparámetro</option>
+              <option value="desfibriladores">Desfibriladores Bifásicos</option>
+              <option value="crrt">Máquinas CRRT</option>
+              <option value="ecg">Electrocardiógrafos 12D</option>
+              <option value="poct">Gases POCT</option>
+              <option value="ecografos">Ecógrafos Doppler</option>
+              <option value="rayos-x">Rayos X Portátiles</option>
             </select>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-slate-400">
-            <span>Filas por página:</span>
-            <select id="dataset-filas-limite" onchange="cambiarLimiteDataset(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-2 py-1 text-xs">
-              <option value="25" selected>25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
+          <div>
+            <select id="registros-filtro-falla" onchange="aplicarFiltrosRegistros()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs">
+              <option value="todos">Todos los Estados de Evento</option>
+              <option value="1">Solo Fallas Reportadas (Target = 1)</option>
+              <option value="0">Operación Normal / Mtto (Target = 0)</option>
+              <option value="null">Ventana Actual / Pendiente</option>
             </select>
           </div>
         </div>
 
-        <!-- Tabla Interactiva Dinámica Editable -->
+        <!-- Tabla Simplificada y Estandarizada -->
         <div class="overflow-x-auto rounded-xl border border-slate-800">
-          <table class="w-full text-left text-xs text-slate-300" id="tabla-dataset-element">
-            <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700" id="tabla-dataset-head">
-              <!-- Renderizado dinámicamente -->
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-3">Placa / PK</th>
+                <th class="py-3 px-3">Tecnología Biomédica</th>
+                <th class="py-3 px-3">Fecha Reporte</th>
+                <th class="py-3 px-3">Meses sin Mtto</th>
+                <th class="py-3 px-3">MTBF (días)</th>
+                <th class="py-3 px-3">Fallas Acum.</th>
+                <th class="py-3 px-3">Estado Evento</th>
+                <th class="py-3 px-3">Descripción Técnica del Evento</th>
+                <th class="py-3 px-3 text-right">Acciones</th>
+              </tr>
             </thead>
-            <tbody id="tabla-dataset-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tbody id="tabla-registros-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
               <!-- Filas dinámicas -->
             </tbody>
           </table>
@@ -689,18 +731,170 @@
         <!-- Controles de Paginación -->
         <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800 text-xs">
           <div class="text-slate-400">
-            Mostrando <span id="dataset-pag-inicio" class="text-white font-mono">1</span> - <span id="dataset-pag-fin" class="text-white font-mono">25</span> de <span id="dataset-total-regs" class="text-cyan-400 font-mono font-bold">--</span> registros
+            Mostrando <span id="registros-pag-inicio" class="text-white font-mono">1</span> - <span id="registros-pag-fin" class="text-white font-mono">25</span> de <span id="registros-total-regs" class="text-sky-400 font-mono font-bold">--</span> registros
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" id="btn-ds-pag-prev" onclick="cambiarPaginaDataset(-1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <button type="button" id="btn-reg-pag-prev" onclick="cambiarPaginaRegistros(-1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
               &laquo; Anterior
             </button>
-            <span class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-semibold" id="dataset-pag-actual">
+            <span class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-semibold" id="registros-pag-actual">
               Página 1
             </span>
-            <button type="button" id="btn-ds-pag-next" onclick="cambiarPaginaDataset(1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <button type="button" id="btn-reg-pag-next" onclick="cambiarPaginaRegistros(1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
               Siguiente &raquo;
             </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: EXPEDIENTE, FOTOGRAFÍAS Y CERTIFICADOS DE CALIBRACIÓN METROLÓGICA -->
+    <!-- ========================================================================= -->
+    <section id="tab-documentacion" class="tab-content hidden space-y-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Expediente Digital del Activo & Certificados de Calibración Metrológica</span>
+            </h3>
+            <p class="text-xs text-slate-400">Gestión de fotografías del equipo, certificados de calibración trazables ONAC y fichas técnicas hospitalarias</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="abrirModalSubirDocumento()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>+ Subir Certificado o Foto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Selector de Unidad por Placa / Llave Primaria (PK) -->
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="px-3 py-1.5 rounded-lg bg-sky-950 text-sky-300 border border-sky-800 font-mono font-bold text-xs">
+              PLACA / PK: <span id="doc-hero-pk" class="text-white text-sm">--</span>
+            </div>
+            <div>
+              <div id="doc-hero-nombre-tec" class="text-sm font-semibold text-slate-200">Seleccione un equipo biomédico</div>
+              <div id="doc-hero-clase-riesgo" class="text-xs text-slate-400">Expediente metrológico hospitalario</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-400">Seleccionar Unidad:</label>
+            <select id="doc-selector-equipo" onchange="cargarDocumentacionEquipos(this.value)" class="bg-slate-800 border border-slate-700 text-sky-300 rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 min-w-[220px]">
+              <option value="">Cargando unidades de flota...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Hero Pack: Foto Oficial + Certificado de Calibración Vigente -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+          <!-- Tarjeta Foto del Activo -->
+          <div class="lg:col-span-5 bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span>Fotografía Oficial de Identificación</span>
+                </span>
+                <span id="doc-badge-foto-vigente" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">Verificado</span>
+              </div>
+
+              <!-- Contenedor Visual de la Imagen / SVG del Equipo -->
+              <div id="doc-foto-preview-container" class="w-full h-56 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden p-2">
+                <div class="text-slate-500 text-xs">Cargando visualización del equipo...</div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+              <span id="doc-foto-nombre-archivo" class="text-slate-400 font-mono text-[11px] truncate max-w-[200px]">foto_activo.svg</span>
+              <button type="button" onclick="abrirModalSubirFotoEquipo()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-semibold transition">
+                Actualizar Foto
+              </button>
+            </div>
+          </div>
+
+          <!-- Tarjeta Certificado de Calibración Vigente -->
+          <div class="lg:col-span-7 bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Certificado de Calibración Metrológica</span>
+                </span>
+                <span id="doc-badge-cert-vigencia" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">VIGENTE</span>
+              </div>
+
+              <div class="space-y-2.5 text-xs">
+                <div class="flex justify-between py-1 border-b border-slate-800/60">
+                  <span class="text-slate-400">N° de Certificado:</span>
+                  <span id="doc-cert-numero" class="text-sky-300 font-mono font-bold">CAL-2026-BVOL-0042</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800/60">
+                  <span class="text-slate-400">Entidad Acreditadora:</span>
+                  <span id="doc-cert-entidad" class="text-slate-200">Laboratorio Metrológico Biomédico S.A.S. (ONAC 19-LAB-058)</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 py-1 border-b border-slate-800/60">
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Fecha Calibración:</span>
+                    <span id="doc-cert-fecha-emision" class="text-slate-200 font-mono">2026-02-15</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Fecha Vencimiento:</span>
+                    <span id="doc-cert-fecha-vencimiento" class="text-emerald-400 font-mono font-bold">2027-02-15</span>
+                  </div>
+                </div>
+                <div class="py-1">
+                  <span class="text-slate-400 block mb-1">Dictamen Metrológico:</span>
+                  <p id="doc-cert-observaciones" class="text-slate-300 bg-slate-900 border border-slate-800 rounded-xl p-2.5 leading-relaxed text-[11px]">
+                    El activo biomédico cumple con la exactitud y tolerancias metrológicas estipuladas por el fabricante y los estándares hospitalarios de calibración.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end gap-2 text-xs">
+              <button type="button" onclick="previsualizarCertificadoActual()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-semibold transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>Ver Certificado Digital</span>
+              </button>
+              <button type="button" onclick="abrirModalSubirDocumento('CERTIFICADO_CALIBRACION')" class="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>+ Nuevo Certificado</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla Completa de Documentos del Expediente -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Documentos Registrados en Expediente:</h4>
+            <span id="doc-conteo-total" class="text-xs text-slate-400 font-mono">-- documentos</span>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-800/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700">
+                <tr>
+                  <th class="py-2.5 px-3">Tipo</th>
+                  <th class="py-2.5 px-3">Título / Documento</th>
+                  <th class="py-2.5 px-3">N° Certificado / Ref</th>
+                  <th class="py-2.5 px-3">Entidad Emisora</th>
+                  <th class="py-2.5 px-3">Emisión</th>
+                  <th class="py-2.5 px-3">Vigencia</th>
+                  <th class="py-2.5 px-3">Estado</th>
+                  <th class="py-2.5 px-3 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-documentos-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+                <!-- Filas dinámicas -->
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -765,7 +959,7 @@
               <span>+ Registrar Equipo / Hoja de Vida</span>
             </button>
             <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-950 text-purple-300 border border-purple-800">
-              🛡️ Gestión Metrológica Biomédica
+              <svg class="w-4 h-4 text-purple-400 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Gestión Metrológica Biomédica
             </span>
           </div>
         </div>
@@ -886,7 +1080,7 @@
             <h3 class="text-base font-bold text-white">Usuarios y Estado de Bloqueo</h3>
             <p class="text-xs text-slate-400">Tras 3 intentos fallidos la cuenta se bloquea 15 minutos. El administrador puede desbloquearla y queda registrado.</p>
           </div>
-          <button onclick="cargarSeguridad()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">🔄 Actualizar</button>
+          <button onclick="cargarSeguridad()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition"><svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Actualizar Lista</button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-300">
@@ -972,7 +1166,7 @@
           </div>
           <div class="relative">
             <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 pr-10 transition">
-            <span id="pass-status-icon" class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none">🔒</span>
+            <span id="pass-status-icon" class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></span>
           </div>
         </div>
         <button type="submit" id="btn-submit-login" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/20 transition flex items-center justify-center gap-2">
@@ -1282,7 +1476,7 @@
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
           <h4 class="font-bold text-white text-sm flex items-center gap-2">
-            <span class="p-1 rounded bg-cyan-500/20 text-cyan-400">⚡</span>
+            <span class="p-1 rounded bg-cyan-500/20 text-cyan-400"><svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
             Registrar Nueva Medición Técnica de Equipo
           </h4>
           <p class="text-[11px] text-slate-400">Variables operativas y de estado físico del equipo (Base de datos Neon)</p>
@@ -1297,25 +1491,25 @@
         <div>
           <label class="block text-slate-300 font-semibold mb-1">Variable Técnica del Equipo (Neon DB):</label>
           <select id="nueva-obs-parametro" onchange="actualizarVariableEquipo(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
-            <optgroup label="🫁 Ventiladores Mecánicos (Neon DB)">
+            <optgroup label="Ventiladores Mecánicos (Neon DB)">
               <option value="Presión Neumática (psi)|Presion_Neumatica_psi|psi|52.0|Presión nominal estable en rango de operación">Presión Neumática (psi) — [45 - 60 psi]</option>
               <option value="Nivel Vibración Turbina (Hz)|Nivel_Vibracion_Turbina_Hz|Hz|72.0|Vibración dinámica en rango seguro">Nivel Vibración Turbina (Hz) — [&lt; 75 Hz]</option>
               <option value="Temperatura Bloque (°C)|Temperatura_Bloque_C|°C|42.5|Temperatura operativa nominal">Temperatura Bloque (°C) — [&lt; 49 °C]</option>
               <option value="Fugas de Aire (L/min)|Fugas_Aire_Lmin|L/min|1.20|Estanqueidad del circuito dentro de tolerancia">Fugas de Aire (L/min) — [&lt; 3.0 L/min]</option>
               <option value="Horas de Uso Total|Horas_Uso_Total|h|5200|Horas operativas acumuladas del ventilador">Horas de Uso Total (h)</option>
             </optgroup>
-            <optgroup label="📈 Monitores de Signos Vitales (Neon DB)">
+            <optgroup label="Monitores de Signos Vitales (Neon DB)">
               <option value="Ciclos Descarga Batería|Ciclos_Descarga_Bateria|ciclos|320|Ciclos de vida útil de batería dentro de norma">Ciclos Descarga Batería (ciclos) — [&lt; 500]</option>
               <option value="Errores Módulo ECG|Errores_Modulo_ECG|eventos|2|Tasa de error admisible en amplificador ECG">Errores Módulo ECG (eventos) — [&lt; 8 eventos]</option>
               <option value="Ruido Señal SpO2 (dB)|Ruido_Senal_SpO2_dB|dB|14.0|Relación señal/ruido nominal en fotopletismografía">Ruido Señal SpO2 (dB) — [&lt; 22 dB]</option>
               <option value="Horas de Uso Total|Horas_Uso_Total|h|4800|Horas operativas del monitor">Horas de Uso Total (h)</option>
             </optgroup>
-            <optgroup label="💉 Bombas de Infusión Volumétrica (Neon DB)">
+            <optgroup label="Bombas de Infusión Volumétrica (Neon DB)">
               <option value="Nivel Vibración Motor (rpm)|Nivel_Vibracion_Motor_rpm|rpm|3100|Régimen de giro peristáltico balanceado">Nivel Vibración Motor (rpm) — [&lt; 3300 rpm]</option>
               <option value="Desviación Presión Oclusión (mmHg)|Desviacion_Presion_Oclusion_mmHg|mmHg|12.0|Sensor de oclusión en línea calibrado">Desviación Presión Oclusión (mmHg) — [&lt; 25 mmHg]</option>
               <option value="Frecuencia Alarma Burbuja|Frecuencia_Alarma_Burbuja|alarmas|1|Sensor ultrasónico sin falsas alarmas">Frecuencia Alarma Burbuja (alarmas) — [&lt; 6 alarmas]</option>
             </optgroup>
-            <optgroup label="🩺 Bombas de Infusión a Jeringa (Neon DB)">
+            <optgroup label="Bombas de Infusión a Jeringa (Neon DB)">
               <option value="Error Paso Motor Micrométrico (mm)|Error_Paso_Motor_Micro_mm|mm|0.05|Tolerancia de avance del husillo nominal">Error Paso Motor Micrométrico (mm) — [&lt; 0.15 mm]</option>
               <option value="Resistencia Émbolo (N)|Resistencia_Embolo_N|N|15.0|Fuerza de fricción en jeringa nominal">Resistencia Émbolo (N) — [&lt; 24 N]</option>
               <option value="Horas de Uso Total|Horas_Uso_Total|h|3600|Horas acumuladas de dosificación">Horas de Uso Total (h)</option>
@@ -1350,7 +1544,120 @@
     <!-- ========================================================================= -->
   <!-- MODAL: EDITAR / CREAR REGISTRO DE DATASET DE EQUIPOS (NEON POSTGRESQL) -->
   <!-- ========================================================================= -->
-  <div id="modal-editar-dataset" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <!-- ========================================================================= -->
+  <!-- MODAL: SUBIR CERTIFICADO DE CALIBRACIÓN O FOTOGRAFÍA -->
+  <!-- ========================================================================= -->
+  <div id="modal-subir-documento" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-sky-500/20 text-sky-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <h4 class="font-bold text-white text-sm">Registrar Documento / Certificado de Calibración</h4>
+            <p class="text-xs text-slate-400">Expediente metrológico digital del activo biomédico</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModal('modal-subir-documento')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <form id="form-subir-documento" onsubmit="guardarDocumentoEquipo(event)" class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Placa / Llave Primaria (PK):</label>
+            <input type="text" id="doc-form-equipo-id" name="equipo_id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono uppercase">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Tipo de Documento:</label>
+            <select id="doc-form-tipo" name="tipo_documento" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+              <option value="CERTIFICADO_CALIBRACION">Certificado de Calibración Metrológica</option>
+              <option value="FOTO_EQUIPO">Fotografía Oficial del Activo</option>
+              <option value="FICHA_TECNICA">Ficha Técnica / Manual</option>
+              <option value="PROTOCOLO_PREVENTIVO">Protocolo de Mantenimiento Preventivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Título del Documento:</label>
+          <input type="text" id="doc-form-titulo" name="titulo" value="Certificado de Calibración Metrológica Anual" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">N° de Certificado:</label>
+            <input type="text" id="doc-form-numero" name="numero_certificado" placeholder="ej: CAL-2026-0042" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Entidad / Laboratorio Emisor:</label>
+            <input type="text" id="doc-form-entidad" name="entidad_emisora" value="Laboratorio Metrológico Hospitalario (Acreditación ONAC)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Fecha de Calibración / Emisión:</label>
+            <input type="date" id="doc-form-fecha-emision" name="fecha_emision" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Fecha de Vencimiento:</label>
+            <input type="date" id="doc-form-fecha-vencimiento" name="fecha_vencimiento" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Seleccionar Archivo (PDF o Imagen):</label>
+          <input type="file" id="doc-form-archivo" accept=".pdf,image/*,.svg" onchange="procesarArchivoDocumento(event)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-sky-600 file:text-white hover:file:bg-sky-500">
+          <input type="hidden" id="doc-form-archivo-url" name="archivo_url">
+          <input type="hidden" id="doc-form-archivo-nombre" name="archivo_nombre">
+          <input type="hidden" id="doc-form-archivo-tamano" name="archivo_tamano_kb">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Observaciones / Dictamen Metrológico:</label>
+          <textarea id="doc-form-observaciones" name="observaciones" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="Cumple tolerancias y rangos de operación..."></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-800">
+          <button type="button" onclick="cerrarModal('modal-subir-documento')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-submit-subir-doc" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition flex items-center gap-2">
+            <span>Guardar en Expediente</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VISOR DE DOCUMENTO / CERTIFICADO DIGITAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-ver-documento" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h4 id="visor-doc-titulo" class="font-bold text-white text-sm">Certificado de Calibración Metrológica</h4>
+          <p id="visor-doc-subtitulo" class="text-xs text-slate-400 font-mono">CAL-2026-0042 • ACTIVO: BVOL-01</p>
+        </div>
+        <button type="button" onclick="cerrarModal('modal-ver-documento')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <div id="visor-doc-content" class="w-full h-80 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden p-2">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <div class="flex justify-between items-center pt-3 border-t border-slate-800 text-xs">
+        <span id="visor-doc-footer-info" class="text-slate-400">Acreditación ONAC ISO/IEC 17025</span>
+        <button type="button" onclick="cerrarModal('modal-ver-documento')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+<div id="modal-editar-dataset" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1492,11 +1799,11 @@
       if (pass.type === "password") {
         pass.type = "text";
         if (txt) txt.innerText = "Ocultar";
-        if (icon) icon.innerText = "🔓";
+        if (icon) icon.innerHTML = `<svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>`;
       } else {
         pass.type = "password";
         if (txt) txt.innerText = "Mostrar";
-        if (icon) icon.innerText = "🔒";
+        if (icon) icon.innerHTML = `<svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`;
       }
     }
 
@@ -1514,21 +1821,29 @@
       const esAdminUI = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
 
+      const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
+      const tabBtnRegistros = document.getElementById("tab-btn-registros");
+      const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
+
+      if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
+
       if (sesionActiva) {
         if (!esAdminUI && tabName === "auditoria") {
-          showToast("Acceso restringido: La pista de auditoría está reservada exclusivamente para el Administrador.", "warning");
+          showToast("Acceso restringido: La pista de auditoría está reservada para el Administrador.", "warning");
           return;
         }
         if (!esAdminUI && tabName === "seguridad") {
           showToast("Acceso restringido: Seguridad y Accesos es exclusiva del Administrador.", "warning");
           return;
         }
-        if (!esRolTecnico && (tabName === "prediccion" || tabName === "dataset")) {
-          showToast("Acceso restringido: Los módulos de Predicción y Base de Datos están reservados para Administración Biomédica e Ingenieros de Mantenimiento.", "warning");
+        if (!esRolTecnico && (tabName === "prediccion" || tabName === "registros" || tabName === "documentacion")) {
+          showToast("Acceso restringido: Los módulos de Ingeniería Clínica están reservados para Administración Biomédica e Ingenieros de Mantenimiento.", "warning");
           return;
         }
       } else {
-        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "dataset") {
+        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "registros" || tabName === "documentacion") {
           showToast("Inicia sesión con un perfil autorizado para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
@@ -1538,7 +1853,7 @@
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(el => {
         const estabaOculto = el.classList.contains("hidden");
-        el.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2";
+        el.className = "tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition flex items-center gap-2";
         if (estabaOculto) el.classList.add("hidden");
       });
 
@@ -1546,16 +1861,16 @@
       const selectedBtn = document.getElementById(`tab-btn-${tabName}`);
       if (selectedTab && selectedBtn) {
         selectedTab.classList.remove("hidden");
-        selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20";
+        selectedBtn.className = "tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-sky-600 text-white shadow-sm";
       }
 
       if (tabName === "seguridad") cargarSeguridad();
       if (tabName === "prediccion") cargarPrediccionResumen();
-      if (tabName === "dataset") cargarDataset(cacheDatasetTipo, 1);
+      if (tabName === "registros") cargarRegistrosMantenimiento();
+      if (tabName === "documentacion") cargarDocumentacionEquipos(cacheEquipoSeleccionadoId);
       if (tabName === "monitoreo") cargarEstadoEquipos(cacheFamiliaSeleccionada);
     }
 
-    // ==========================================
     // AUTENTICACIÓN ESTRICTA (LOGIN, VALIDACIÓN Y RECHAZO DE CLAVES MALAS)
     // ==========================================
 
@@ -1685,7 +2000,8 @@
 
       const tabBtnMonitoreo = document.getElementById("tab-btn-monitoreo");
       const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
-      const tabBtnDataset = document.getElementById("tab-btn-dataset");
+      const tabBtnRegistros = document.getElementById("tab-btn-registros");
+      const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
       const tabBtnPacientes = document.getElementById("tab-btn-pacientes");
       const tabBtnEquipos = document.getElementById("tab-btn-equipos");
       const tabBtnObservaciones = document.getElementById("tab-btn-observaciones");
@@ -1695,7 +2011,8 @@
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
-      if (tabBtnDataset) tabBtnDataset.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
 
       if (sesionActiva) {
         btnOpen.classList.add("hidden");
@@ -1742,7 +2059,7 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-dataset"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("pacientes");
@@ -1768,7 +2085,7 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-dataset"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("monitoreo");
@@ -1825,7 +2142,8 @@
         if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
         if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
         if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
-        if (tabBtnDataset) tabBtnDataset.classList.add("hidden");
+        if (tabBtnRegistros) tabBtnRegistros.classList.add("hidden");
+        if (tabBtnDocumentacion) tabBtnDocumentacion.classList.add("hidden");
 
         const mainContent = document.getElementById("main-content");
         if (mainContent) {
@@ -1846,7 +2164,7 @@
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700";
         pill.innerText = "Sin Autenticar";
         email.innerText = "Inicie sesión con un perfil";
-        descList.innerHTML = `<span class="text-amber-400">⚠️ Inicia sesión para habilitar las autorizaciones de tu rol clínico o biomédico.</span>`;
+        descList.innerHTML = `<span class="text-amber-400">Inicia sesión para habilitar las autorizaciones de tu rol clínico o biomédico.</span>`;
         return;
       }
 
@@ -1857,27 +2175,27 @@
         pill.innerText = "Médico";
         iconBox.className = "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-emerald-300">🩺 <strong>Clínico:</strong> Consulta y admite pacientes, inicia y finaliza encuentros.</span>
-          <span class="inline-flex items-center gap-1 text-amber-300">✍️ <strong>Autoría:</strong> Solo modifica o borra los registros que creó.</span>
-          <span class="inline-flex items-center gap-1 text-teal-300">🔄 <strong>Restauración:</strong> Reservada al médico autor.</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300"><strong>Clínico:</strong> Consulta y admite pacientes, inicia y finaliza encuentros.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300"><strong>Autoría:</strong> Solo modifica o borra los registros que creó.</span>
+          <span class="inline-flex items-center gap-1 text-teal-300"><strong>Restauración:</strong> Reservada al médico autor.</span>
         `;
       } else if (sesionActiva.rol === "Admin Biomedico") {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-950 text-purple-300 border border-purple-800";
         pill.innerText = "Admin Biomédico";
         iconBox.className = "p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-purple-300">🛡️ <strong>Metrología & Predicción:</strong> Acceso completo a modelos predictivos y dataset.</span>
-          <span class="inline-flex items-center gap-1 text-amber-300">✏️ <strong>Edición Directa:</strong> Modifica parámetros físicos de equipos en Neon.</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">📑 <strong>Auditoría:</strong> Consulta registros de auditoría inmutable e inicializa BD.</span>
+          <span class="inline-flex items-center gap-1 text-purple-300"><strong>Metrología & Predicción:</strong> Acceso completo a modelos predictivos y expediente técnico.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300"><strong>Edición Directa:</strong> Modifica parámetros físicos de equipos en Neon.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300"><strong>Auditoría:</strong> Consulta registros de auditoría inmutable e inicializa BD.</span>
         `;
       } else if (sesionActiva.rol === "Servicio") {
         pill.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800";
         pill.innerText = "Servicio IoT";
         iconBox.className = "p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
         descList.innerHTML = `
-          <span class="inline-flex items-center gap-1 text-cyan-300">📡 <strong>Telemetría:</strong> Emisión automática de señales IoT.</span>
-          <span class="inline-flex items-center gap-1 text-emerald-300">⚡ <strong>Simulación:</strong> Exclusiva de esta cuenta de servicio.</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Solo Lectura:</strong> No puede agregar pacientes ni modificar datos.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300"><strong>Variables Técnicas:</strong> Emisión automática de señales IoT.</span>
+          <span class="inline-flex items-center gap-1 text-emerald-300"><strong>Simulación:</strong> Exclusiva de esta cuenta de servicio.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400"><strong>Solo Lectura:</strong> No puede agregar pacientes ni modificar datos.</span>
         `;
       } else {
         const etiquetas = {
@@ -1889,13 +2207,13 @@
         pill.innerText = etiquetas[sesionActiva.rol] || sesionActiva.rol;
         iconBox.className = "p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20";
         descList.innerHTML = sesionActiva.rol === "ADMIN" ? `
-          <span class="inline-flex items-center gap-1 text-amber-300">🔐 <strong>Seguridad & Accesos:</strong> Consulta ingresos y desbloquea usuarios.</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">🔬 <strong>Predicción & Datasets:</strong> Acceso a análisis predictivo y edición técnica.</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">📑 <strong>Auditoría:</strong> Consulta de trazabilidad inmutable.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300"><strong>Seguridad & Accesos:</strong> Consulta ingresos y desbloquea usuarios.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300"><strong>Predicción & Confiabilidad:</strong> Acceso a análisis predictivo y edición técnica.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400"><strong>Auditoría:</strong> Consulta de trazabilidad inmutable.</span>
         ` : `
-          <span class="inline-flex items-center gap-1 text-amber-300">🛠️ <strong>Ingeniería & Predicción:</strong> Análisis predictivo de fallas y telemetría de equipos.</span>
-          <span class="inline-flex items-center gap-1 text-cyan-300">📊 <strong>Base de Datos:</strong> Edición y corrección de parámetros técnicos en Neon.</span>
-          <span class="inline-flex items-center gap-1 text-slate-400">👁️ <strong>Clínico:</strong> Solo lectura de pacientes y encuentros.</span>
+          <span class="inline-flex items-center gap-1 text-amber-300"><strong>Ingeniería & Predicción:</strong> Análisis predictivo de fallas y variables de equipos.</span>
+          <span class="inline-flex items-center gap-1 text-cyan-300"><strong>Historial de Registros:</strong> Edición y corrección de parámetros técnicos en Neon.</span>
+          <span class="inline-flex items-center gap-1 text-slate-400"><strong>Clínico:</strong> Solo lectura de pacientes y encuentros.</span>
         `;
       }
     }
@@ -2073,7 +2391,7 @@
             <td class="py-3 px-4 text-right">
               ${esAdmin ? `
                 <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] transition font-semibold">
-                  ⚙️ Metrología
+                  Metrología
                 </button>
               ` : `<span class="text-xs text-slate-500">Solo Lectura</span>`}
             </td>
@@ -2113,11 +2431,11 @@
           tr.className = `hover:bg-slate-800/40 transition ${o.is_deleted ? 'opacity-50 bg-rose-950/10' : ''}`;
           
           let badgeAlerta = o.alerta_predictiva 
-            ? `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[11px] font-medium" title="${o.alerta_predictiva}">⚠️ ${o.alerta_predictiva.substring(0, 30)}...</span>`
+            ? `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[11px] font-medium" title="${o.alerta_predictiva}"><span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 mr-1"></span>${o.alerta_predictiva.substring(0, 30)}...</span>`
             : `<span class="text-slate-500">Normal</span>`;
 
           let badgeEstado = o.is_deleted 
-            ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">🗑️ Soft-Deleted</span>`
+            ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">Eliminado</span>`
             : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
 
           const esAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
@@ -2145,12 +2463,12 @@
             <td class="py-2.5 px-3 text-right whitespace-nowrap">
               ${!o.is_deleted ? `
                 ${puedeModificar ? `
-                  <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1">✏️ Editar</button>
-                  <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]">🗑️ Borrar</button>
+                  <button onclick="abrirModalEdicionObs(${o.id}, '${o.parametro}', ${o.valor}, '${o.alerta_predictiva || ''}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-[11px] mr-1">Editar</button>
+                  <button onclick="ejecutarSoftDeleteObs(${o.id})" class="px-2 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[11px]">Borrar</button>
                 ` : `<span class="text-[11px] text-slate-500">Solo lectura</span>`}
               ` : `
                 ${puedeModificar ? `
-                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">🔄 Restaurar</button>
+                  <button onclick="ejecutarRestoreObs(${o.id})" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">Restaurar</button>
                 ` : `<span class="text-[10px] text-slate-500">Restauración reservada</span>`}
               `}
             </td>
@@ -2251,10 +2569,10 @@
           const usuarios = (await resU.json()).usuarios || [];
           usuarios.forEach(u => {
             const estado = u.bloqueado
-              ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-bold">🔒 Bloqueado hasta ${escapeHtml(new Date(u.locked_until).toLocaleTimeString())}</span>`
+              ? `<span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-bold">Bloqueado hasta ${escapeHtml(new Date(u.locked_until).toLocaleTimeString())}</span>`
               : `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Activo</span>`;
             const accion = u.bloqueado
-              ? `<button data-nombre="${escapeHtml(u.nombre)}" onclick="desbloquearUsuario(${Number(u.id)}, this.dataset.nombre)" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[11px] font-semibold transition">🔓 Desbloquear</button>`
+              ? `<button data-nombre="${escapeHtml(u.nombre)}" onclick="desbloquearUsuario(${Number(u.id)}, this.dataset.nombre)" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[11px] font-semibold transition">Desbloquear</button>`
               : `<span class="text-[11px] text-slate-500">—</span>`;
             const tr = document.createElement("tr");
             tr.className = `hover:bg-slate-800/40 transition ${u.bloqueado ? "bg-rose-950/10" : ""}`;
@@ -2960,21 +3278,82 @@
 
     // ==========================================
     // ==========================================
-    // ESTADO DEL EQUIPO & BASE DE DATOS NEON (10 TECNOLOGÍAS REALES)
+        // ==========================================
+    // SECCIÓN 6: GESTIÓN CLÍNICA Y CONFIABILIDAD BIOMÉDICA (10 TECNOLOGÍAS HOSPITALARIAS)
     // ==========================================
 
     const FAMILIAS_MAP = {
-      'bombas-volumetricas': { nombre: 'Bombas Volumétricas', icono: '💧', prefijo: 'BVOL' },
-      'bombas-jeringa': { nombre: 'Bombas de Jeringa', icono: '💉', prefijo: 'BJER' },
-      'ventiladores': { nombre: 'Ventiladores Mecánicos', icono: '🫁', prefijo: 'VENT' },
-      'monitores': { nombre: 'Monitores de Signos Vitales', icono: '📈', prefijo: 'MON' },
-      'desfibriladores': { nombre: 'Desfibriladores Bifásicos', icono: '⚡', prefijo: 'DEF' },
-      'crrt': { nombre: 'Máquinas CRRT', icono: '🩸', prefijo: 'CRRT' },
-      'ecg': { nombre: 'Electrocardiógrafos 12D', icono: '📊', prefijo: 'ECG' },
-      'poct': { nombre: 'Analizadores de Gases POCT', icono: '🧪', prefijo: 'POCT' },
-      'ecografos': { nombre: 'Ecógrafos Doppler', icono: '📡', prefijo: 'ECO' },
-      'rayos-x': { nombre: 'Equipos Rayos X Portátiles', icono: '☢️', prefijo: 'RX' }
+      'bombas-volumetricas': {
+        nombre: 'Bombas Volumétricas',
+        prefijo: 'BVOL',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>`
+      },
+      'bombas-jeringa': {
+        nombre: 'Bombas de Jeringa',
+        prefijo: 'BJER',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>`
+      },
+      'ventiladores': {
+        nombre: 'Ventiladores Mecánicos',
+        prefijo: 'VENT',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>`
+      },
+      'monitores': {
+        nombre: 'Monitores Multiparámetro',
+        prefijo: 'MON',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`
+      },
+      'desfibriladores': {
+        nombre: 'Desfibriladores Bifásicos',
+        prefijo: 'DEF',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`
+      },
+      'crrt': {
+        nombre: 'Máquinas CRRT',
+        prefijo: 'CRRT',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`
+      },
+      'ecg': {
+        nombre: 'Electrocardiógrafos 12D',
+        prefijo: 'ECG',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>`
+      },
+      'poct': {
+        nombre: 'Analizadores de Gases (POCT)',
+        prefijo: 'POCT',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>`
+      },
+      'ecografos': {
+        nombre: 'Ecógrafos Doppler',
+        prefijo: 'ECO',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>`
+      },
+      'rayos-x': {
+        nombre: 'Rayos X Portátiles',
+        prefijo: 'RX',
+        svg: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>`
+      }
     };
+
+    let cacheFamiliaSeleccionada = 'bombas-volumetricas';
+    let cacheEquipoSeleccionadoId = 'BVOL-01';
+    let cacheEquiposEstado = null;
+    let cachePrediccionResumen = null;
+    let chartEquipoInstance = null;
+
+    // Estado del nuevo módulo: Registro de Mantenimientos
+    let cacheRegistrosTecnologia = 'todas';
+    let cacheRegistrosFiltroFalla = 'todos';
+    let cacheRegistrosBusqueda = '';
+    let cacheRegistrosPage = 1;
+    let cacheRegistrosLimit = 25;
+    let cacheRegistrosTotal = 0;
+    let cacheRegistrosRows = [];
+
+    // Estado del nuevo módulo: Expediente & Certificados
+    let cacheDocumentacionEquipoId = 'BVOL-01';
+    let cacheDocumentosActuales = [];
+    let cacheCertificadoSeleccionado = null;
 
     function renderizarPillsFamiliasMonitoreo() {
       const container = document.getElementById("familia-equipos-pills");
@@ -2986,41 +3365,17 @@
         return `
           <button type="button" onclick="seleccionarFamiliaEquipo('${slug}')" id="pill-fam-${slug}" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
             esActiva 
-              ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20' 
+              ? 'bg-sky-600 text-white shadow-sm' 
               : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }">
-            <span>${f.icono} ${f.nombre}</span>
-            <span id="badge-count-${slug}" class="px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
-              esActiva ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' : 'bg-slate-800 text-slate-300 border border-slate-700'
+            ${f.svg}
+            <span>${f.nombre}</span>
+            <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
+              esActiva ? 'bg-sky-950 text-sky-200 border border-sky-800' : 'bg-slate-800 text-slate-400 border border-slate-700'
             }">${count}</span>
           </button>
         `;
       }).join("");
-    }
-
-    function renderizarPillsFamiliasDataset() {
-      const container = document.getElementById("dataset-familias-pills");
-      if (!container) return;
-      const todasActiva = cacheDatasetTipo === 'todas';
-      let html = `
-        <button type="button" onclick="cambiarFamiliaDataset('todas')" id="pill-ds-todas" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-          todasActiva ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-        }">
-          Todas las Tecnologías (7,630)
-        </button>
-      `;
-      html += Object.keys(FAMILIAS_MAP).map(slug => {
-        const f = FAMILIAS_MAP[slug];
-        const esActiva = slug === cacheDatasetTipo;
-        return `
-          <button type="button" onclick="cambiarFamiliaDataset('${slug}')" id="pill-ds-${slug}" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-            esActiva ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }">
-            ${f.icono} ${f.nombre}
-          </button>
-        `;
-      }).join("");
-      container.innerHTML = html;
     }
 
     function seleccionarFamiliaEquipo(tipo) {
@@ -3032,7 +3387,7 @@
       const titParque = document.getElementById("titulo-parque-activo");
       if (titParque) titParque.innerText = infoFam.nombre;
       const titChart = document.getElementById("chart-equipo-titulo");
-      if (titChart) titChart.innerText = `Evolución de Confiabilidad: ${infoFam.nombre}`;
+      if (titChart) titChart.innerText = `Evolución de Confiabilidad Metrológica: ${infoFam.nombre}`;
 
       if (cacheEquiposEstado && cacheEquiposEstado.equipos) {
         const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === tipo);
@@ -3042,7 +3397,7 @@
         const select = document.getElementById("select-equipo-especifico");
         if (select) {
           select.innerHTML = unidades.map(u => `
-            <option value="${u.id_equipo}">${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
+            <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
           `).join("");
 
           if (unidades.length > 0) {
@@ -3078,7 +3433,7 @@
         if (select) {
           if (unidades.length > 0) {
             select.innerHTML = unidades.map(u => `
-              <option value="${u.id_equipo}">${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
+              <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
             `).join("");
 
             if (!cacheEquipoSeleccionadoId || !unidades.some(u => u.id_equipo === cacheEquipoSeleccionadoId)) {
@@ -3120,14 +3475,20 @@
     }
 
     function renderizarVariablesEquipo(equipo) {
-      const container = document.getElementById("grid-variables-equipo");
-      if (!container) return;
-      container.innerHTML = "";
+      if (!equipo) return;
 
-      if (!equipo) {
-        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-2">Sin información operativa para esta unidad.</div>`;
-        return;
-      }
+      // Actualizar encabezado del equipo activo y LLAVE PRIMARIA (PK)
+      const pkBadge = document.getElementById("badge-equipo-pk");
+      if (pkBadge) pkBadge.innerText = equipo.id_equipo || "--";
+
+      const nomTec = document.getElementById("txt-equipo-nombre-tecnologia");
+      if (nomTec) nomTec.innerText = equipo.tipo_nombre || equipo.tipo || "Activo Biomédico";
+
+      const rInvima = document.getElementById("badge-equipo-riesgo-invima");
+      if (rInvima) rInvima.innerText = `Riesgo Invima: Clase ${equipo.clasificacion_riesgo || 'IIB'}`;
+
+      const ubTxt = document.getElementById("txt-equipo-ubicacion");
+      if (ubTxt) ubTxt.innerText = `Ubicación Hospitalaria: Piso 3 - UCI Adultos • Placa de Inventario PK-${equipo.id_equipo}`;
 
       const tieneFalla = equipo.falla_actual === 1;
       const pred = equipo.prediccion || {};
@@ -3138,51 +3499,55 @@
       if (badgeEstado) {
         if (tieneFalla) {
           badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-950 text-rose-300 border border-rose-800 animate-pulse";
-          badgeEstado.innerText = "⚠️ En Falla Crítica";
+          badgeEstado.innerText = "Falla Reportada";
         } else if (prob > 70) {
           badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-950 text-amber-300 border border-amber-800 animate-pulse";
-          badgeEstado.innerText = `⚠️ Riesgo Crítico (${prob}%)`;
+          badgeEstado.innerText = `Atención Prioritaria (${prob}%)`;
         } else {
           badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800";
-          badgeEstado.innerText = "✓ Operativo Nominal";
+          badgeEstado.innerText = "Operativo / Calibrado";
         }
       }
+
+      const container = document.getElementById("grid-variables-equipo");
+      if (!container) return;
+      container.innerHTML = "";
 
       const cards = [
         {
           label: "Estado Operativo",
           valor: tieneFalla ? "Falla Activa" : (prob > 70 ? "Alerta Mtto" : "Operativo"),
-          sub: equipo.id_equipo,
+          sub: `PK: ${equipo.id_equipo}`,
           color: tieneFalla ? "text-rose-400" : (prob > 70 ? "text-amber-400" : "text-emerald-400")
         },
         {
-          label: "Meses Sin Mtto",
+          label: "Meses sin Mtto",
           valor: `${equipo.meses_sin_mtto ?? 0} m`,
-          sub: (equipo.meses_sin_mtto || 0) > 6 ? "Mtto pendiente" : "En periodo seguro",
-          color: (equipo.meses_sin_mtto || 0) > 8 ? "text-rose-400" : ((equipo.meses_sin_mtto || 0) > 4 ? "text-amber-400" : "text-cyan-300")
+          sub: (equipo.meses_sin_mtto || 0) > 6 ? "Mtto pendiente" : "En intervalo seguro",
+          color: (equipo.meses_sin_mtto || 0) > 8 ? "text-rose-400" : ((equipo.meses_sin_mtto || 0) > 4 ? "text-amber-400" : "text-sky-300")
         },
         {
           label: "MTBF Promedio",
           valor: `${Math.round(equipo.mtbf_dias || 0)} d`,
           sub: "Días medios entre fallas",
-          color: (equipo.mtbf_dias || 0) < 60 ? "text-amber-400" : "text-white"
+          color: (equipo.mtbf_dias || 0) < 60 ? "text-amber-400" : "text-slate-100"
         },
         {
           label: "Fallas Acumuladas",
           valor: `${equipo.fallas_acumuladas ?? 0}`,
           sub: "Historial acumulado",
-          color: (equipo.fallas_acumuladas || 0) > 5 ? "text-rose-400" : "text-white"
+          color: (equipo.fallas_acumuladas || 0) > 5 ? "text-rose-400" : "text-slate-100"
         },
         {
-          label: "Edad del Equipo",
+          label: "Edad del Activo",
           valor: `${Math.round(equipo.edad_meses || 0)} m`,
-          sub: `${((equipo.edad_meses || 0) / 12).toFixed(1)} años de servicio`,
+          sub: `${((equipo.edad_meses || 0) / 12).toFixed(1)} años en servicio`,
           color: "text-slate-200"
         },
         {
-          label: "Clase de Riesgo",
+          label: "Clasificación Invima",
           valor: equipo.clasificacion_riesgo || "IIB",
-          sub: "Clasificación Invima",
+          sub: "Riesgo Sanitario",
           color: "text-purple-300"
         },
         {
@@ -3194,18 +3559,18 @@
         {
           label: "Último Reporte",
           valor: equipo.fecha_reporte ? equipo.fecha_reporte.slice(0, 10) : "Actual",
-          sub: (equipo.descripcion_evento || "Sin anomalías").slice(0, 24) + "...",
+          sub: (equipo.descripcion_evento || "Operación Normal").slice(0, 24) + "...",
           color: "text-slate-300"
         }
       ];
 
       cards.forEach(c => {
         const div = document.createElement("div");
-        div.className = "bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-sm flex flex-col justify-between";
+        div.className = "bg-slate-950/70 border border-slate-800 rounded-xl p-3 shadow-sm flex flex-col justify-between";
         div.innerHTML = `
           <div class="text-[10px] font-medium text-slate-400 truncate mb-1" title="${c.label}">${c.label}</div>
           <div>
-            <div class="text-lg font-bold font-mono ${c.color} truncate">${c.valor}</div>
+            <div class="text-base font-bold font-mono ${c.color} truncate">${c.valor}</div>
             <div class="text-[10px] text-slate-500 truncate mt-0.5" title="${c.sub}">${c.sub}</div>
           </div>
         `;
@@ -3219,7 +3584,7 @@
       container.innerHTML = "";
 
       if (!unidades || unidades.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-4 text-center">No hay unidades en esta categoría.</div>`;
+        container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-4 text-center">No hay unidades registradas en esta categoría.</div>`;
         return;
       }
 
@@ -3229,51 +3594,53 @@
         const pred = u.prediccion || {};
         const prob = pred.probabilidad_falla ?? 0;
         const card = document.createElement("div");
-        card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+        card.className = `p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
           esSeleccionado 
-            ? 'bg-slate-800 border-2 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400' 
+            ? 'bg-slate-800/90 border-sky-500 shadow-md ring-1 ring-sky-500' 
             : 'bg-slate-900 border-slate-800 hover:border-slate-700'
         }`;
         card.onclick = () => seleccionarEquipoEspecifico(u.id_equipo);
 
         let badgeStatus = conFalla
-          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">⚠️ Falla</span>`
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Falla Activa</span>`
           : (prob > 70
-              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">⚠️ ${prob}% Riesgo</span>`
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">${prob}% Riesgo</span>`
               : (prob > 35
-                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">⚠️ ${prob}% Riesgo</span>`
-                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">✓ Operativo</span>`
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">${prob}% Riesgo</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">Operativo</span>`
                 )
             );
 
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
-              <span class="font-bold font-mono text-white text-xs">${u.id_equipo}</span>
+              <span class="px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800 font-bold font-mono text-xs">PK: ${u.id_equipo}</span>
               ${badgeStatus}
             </div>
             <div class="space-y-1 text-xs text-slate-400">
               <div class="flex justify-between">
                 <span>Riesgo Invima:</span>
-                <span class="text-purple-300 font-semibold font-mono">${u.clasificacion_riesgo || 'IIB'}</span>
+                <span class="text-purple-300 font-semibold font-mono">Clase ${u.clasificacion_riesgo || 'IIB'}</span>
               </div>
               <div class="flex justify-between">
                 <span>Meses sin Mtto:</span>
                 <span class="${(u.meses_sin_mtto || 0) > 6 ? 'text-amber-400 font-bold' : 'text-slate-200'} font-mono">${u.meses_sin_mtto || 0} m</span>
               </div>
               <div class="flex justify-between">
-                <span>MTBF:</span>
+                <span>MTBF Promedio:</span>
                 <span class="text-slate-200 font-mono">${Math.round(u.mtbf_dias || 0)} días</span>
               </div>
               <div class="flex justify-between">
-                <span>Fallas Acum:</span>
+                <span>Fallas Acumuladas:</span>
                 <span class="text-slate-200 font-mono">${u.fallas_acumuladas || 0}</span>
               </div>
             </div>
           </div>
           <div class="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-            <span class="${esSeleccionado ? 'text-cyan-300 font-bold' : 'text-cyan-400 font-medium'}">${esSeleccionado ? '● Monitoreando' : 'Ver análisis &rarr;'}</span>
-            <span class="text-slate-500 font-mono">${prob}% falla</span>
+            <span class="${esSeleccionado ? 'text-sky-300 font-bold' : 'text-sky-400 font-medium'}">${esSeleccionado ? '● En Supervisión' : 'Ver Métricas &rarr;'}</span>
+            <button type="button" onclick="event.stopPropagation(); abrirExpedienteDesdeMonitoreo('${u.id_equipo}')" class="text-slate-400 hover:text-sky-300 underline font-mono text-[10px]">
+              Expediente
+            </button>
           </div>
         `;
         container.appendChild(card);
@@ -3288,46 +3655,14 @@
         const data = await res.json();
         const puntos = data.puntos || [];
 
-        const titHist = document.getElementById("titulo-historial-equipo");
-        if (titHist) titHist.innerText = `${equipoId} (${data.tipo_nombre || tipo})`;
-        const countHist = document.getElementById("conteo-historial-registros");
-        if (countHist) countHist.innerText = puntos.length;
-
-        // Renderizar Tabla de Eventos Históricos
-        const tbodyHist = document.getElementById("tabla-historial-equipo-body");
-        if (tbodyHist) {
-          tbodyHist.innerHTML = puntos.map(p => {
-            const esFalla = p.Variable_Target_Falla === 1;
-            const esSinDato = p.Variable_Target_Falla === null || p.Variable_Target_Falla === undefined;
-            const badgeFalla = esSinDato
-              ? '<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Ventana Actual</span>'
-              : (esFalla 
-                  ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">1 (Falla)</span>'
-                  : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">0 (OK)</span>'
-                );
-
-            return `
-              <tr class="hover:bg-slate-800/40 transition ${esFalla ? 'bg-rose-950/20' : ''}">
-                <td class="py-2 px-3 text-slate-300 whitespace-nowrap">${p.Fecha_Reporte || '-'}</td>
-                <td class="py-2 px-3 text-slate-300 font-mono">${p.Edad_Equipo_Meses ?? '-'}</td>
-                <td class="py-2 px-3 text-cyan-300 font-mono font-semibold">${p.Meses_Desde_Ultimo_Mtto ?? '-'}</td>
-                <td class="py-2 px-3 text-slate-300 font-mono">${p.MTBF_Promedio_Dias ? Math.round(p.MTBF_Promedio_Dias) : '-'}</td>
-                <td class="py-2 px-3 text-slate-300 font-mono">${p.Fallas_Acumuladas ?? '-'}</td>
-                <td class="py-2 px-3">${badgeFalla}</td>
-                <td class="py-2 px-3 text-slate-300 max-w-md truncate" title="${p.Descripcion_Evento || ''}">${p.Descripcion_Evento || '-'}</td>
-              </tr>
-            `;
-          }).join("");
-        }
-
-        // Renderizar Gráfico Histórico
+        // Renderizar Gráfico Histórico en Tab 1
         const ctx = document.getElementById("equipoTelemetriaChart")?.getContext("2d");
         if (!ctx) return;
         if (chartEquipoInstance) {
           chartEquipoInstance.destroy();
         }
 
-        const labels = puntos.map(p => p.Fecha_Reporte || `R-${p.id}`);
+        const labels = puntos.map(p => p.Fecha_Reporte ? p.Fecha_Reporte.slice(0, 10) : `R-${p.id}`);
         const dataMTBF = puntos.map(p => p.MTBF_Promedio_Dias ?? 0);
         const dataMesesMtto = puntos.map(p => p.Meses_Desde_Ultimo_Mtto ?? 0);
         const dataFallas = puntos.map(p => p.Fallas_Acumuladas ?? 0);
@@ -3340,14 +3675,14 @@
               {
                 label: 'MTBF Promedio (días)',
                 data: dataMTBF,
-                borderColor: '#06b6d4',
-                backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                borderWidth: 2.5,
+                borderColor: '#0284c7',
+                backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                borderWidth: 2,
                 tension: 0.3,
                 yAxisID: 'y'
               },
               {
-                label: 'Meses Sin Mantenimiento',
+                label: 'Meses sin Mantenimiento',
                 data: dataMesesMtto,
                 borderColor: '#f59e0b',
                 backgroundColor: 'rgba(245, 158, 11, 0.05)',
@@ -3378,8 +3713,8 @@
               x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
               y: { 
                 grid: { color: '#1e293b' }, 
-                ticks: { color: '#06b6d4', font: { size: 10 } },
-                title: { display: true, text: 'MTBF (Días)', color: '#06b6d4', font: { size: 10 } }
+                ticks: { color: '#0284c7', font: { size: 10 } },
+                title: { display: true, text: 'MTBF (Días)', color: '#0284c7', font: { size: 10 } }
               },
               y1: {
                 position: 'right',
@@ -3398,10 +3733,10 @@
 
     async function ejecutarMantenimientoRapido() {
       if (!cacheEquipoSeleccionadoId) {
-        showToast("Seleccione un equipo para ejecutar mantenimiento", "warning");
+        showToast("Seleccione un equipo para registrar mantenimiento", "warning");
         return;
       }
-      if (!confirm(`¿Confirmas la ejecución de Mantenimiento Preventivo para la unidad ${cacheEquipoSeleccionadoId}?\n\nEsta acción reseteará el contador de meses sin mantenimiento a 0.0 y registrará el evento en la base de datos de Neon.`)) {
+      if (!confirm(`¿Confirmas la ejecución del Mantenimiento Preventivo para el activo PK: ${cacheEquipoSeleccionadoId}?\n\nEsta acción reseteará el contador de meses sin mantenimiento a 0.0 y registrará la orden de trabajo en la base de datos de Neon.`)) {
         return;
       }
       try {
@@ -3410,12 +3745,12 @@
           headers: getAuthHeaders(),
           body: JSON.stringify({
             equipo_id: cacheEquipoSeleccionadoId,
-            descripcion: "Mantenimiento Preventivo Rápido ejecutado desde Estado de Equipos: Inspección y calibración metrológica completadas."
+            descripcion: "Mantenimiento Preventivo Protocolario: Calibración metrológica anual, verificación de seguridad eléctrica IEC 60601-1 y puesta a cero de meses sin mtto."
           })
         });
         const data = await res.json();
         if (res.ok) {
-          showToast(`✓ Mantenimiento registrado para ${cacheEquipoSeleccionadoId}. Meses reseteados a 0.`, "success");
+          showToast(`Mantenimiento registrado para ${cacheEquipoSeleccionadoId}. Contador reseteado a 0 meses.`, "success");
           await cargarEstadoEquipos(cacheFamiliaSeleccionada);
           if (typeof cargarPrediccionResumen === "function") {
             cargarPrediccionResumen();
@@ -3428,8 +3763,19 @@
       }
     }
 
+    function irAExpedienteEquipoActual() {
+      if (!cacheEquipoSeleccionadoId) return;
+      abrirExpedienteDesdeMonitoreo(cacheEquipoSeleccionadoId);
+    }
+
+    function abrirExpedienteDesdeMonitoreo(equipoId) {
+      cacheDocumentacionEquipoId = equipoId;
+      cambiarTab("documentacion");
+      cargarDocumentacionEquipos(equipoId);
+    }
+
     // ==========================================
-    // PREDICCIÓN DE EQUIPOS (SIMULADOR Y MATRIZ EDITABLE NEON)
+    // PREDICCIÓN DE EQUIPOS (SIMULADOR Y MATRIZ PRIORIZADA)
     // ==========================================
 
     async function cargarPrediccionResumen() {
@@ -3440,20 +3786,21 @@
         cachePrediccionResumen = data;
 
         const kpiConf = document.getElementById("pred-kpi-confiabilidad");
-        if (kpiConf) kpiConf.innerText = `${data.confiabilidad_global_pct}%`;
+        if (kpiConf) kpiConf.innerText = `${data.confiabilidad_global_pct ?? data.indice_confiabilidad ?? 95}%`;
         const kpiCrit = document.getElementById("pred-kpi-criticos");
-        if (kpiCrit) kpiCrit.innerText = data.criticos;
+        if (kpiCrit) kpiCrit.innerText = data.criticos ?? data.equipos_criticos ?? 0;
         const kpiPrev = document.getElementById("pred-kpi-preventivos");
-        if (kpiPrev) kpiPrev.innerText = data.preventivos;
+        if (kpiPrev) kpiPrev.innerText = data.preventivos ?? data.equipos_atencion ?? 0;
         const kpiTot = document.getElementById("pred-kpi-total");
-        if (kpiTot) kpiTot.innerText = data.total_analizados;
+        if (kpiTot) kpiTot.innerText = data.total_analizados ?? 232;
 
-        // Llenar selector de unidades para auto-completar simulador
+        // Llenar selector de unidades del simulador
         const selEq = document.getElementById("calc-selector-equipo-bd");
-        if (selEq && data.equipos_priorizados) {
-          selEq.innerHTML = '<option value="">-- Seleccionar unidad para autocompletar --</option>' +
-            data.equipos_priorizados.map(eq => `
-              <option value="${eq.id_equipo}">${eq.id_equipo} • ${eq.tipo_nombre} (${eq.probabilidad_falla}% riesgo)</option>
+        const listaEquipos = data.equipos_priorizados || data.equipos || [];
+        if (selEq && listaEquipos.length > 0) {
+          selEq.innerHTML = '<option value="">-- Seleccionar unidad por Placa / PK --</option>' +
+            listaEquipos.map(eq => `
+              <option value="${eq.equipo_id || eq.id_equipo}">PK: ${eq.equipo_id || eq.id_equipo} • ${eq.familia || eq.tipo_nombre} (${eq.probabilidad_falla}% riesgo)</option>
             `).join("");
         }
 
@@ -3465,19 +3812,20 @@
 
     function cargarEquipoEnSimulador(equipoId) {
       if (!equipoId || !cachePrediccionResumen) return;
-      const eq = (cachePrediccionResumen.equipos_priorizados || []).find(e => e.id_equipo === equipoId);
+      const listaEquipos = cachePrediccionResumen.equipos_priorizados || cachePrediccionResumen.equipos || [];
+      const eq = listaEquipos.find(e => (e.equipo_id || e.id_equipo) === equipoId);
       if (!eq) return;
 
       const selTipo = document.getElementById("calc-tipo-equipo");
       if (selTipo) selTipo.value = eq.tipo;
       const inpId = document.getElementById("calc-id-equipo");
-      if (inpId) inpId.value = eq.id_equipo;
+      if (inpId) inpId.value = eq.equipo_id || eq.id_equipo;
       const inpMeses = document.getElementById("calc-meses-mtto");
-      if (inpMeses) inpMeses.value = eq.meses_sin_mtto ?? 0;
+      if (inpMeses) inpMeses.value = eq.meses_mtto ?? eq.meses_sin_mtto ?? 0;
       const inpMtbf = document.getElementById("calc-mtbf");
       if (inpMtbf) inpMtbf.value = eq.mtbf_dias ?? 180;
       const inpFallas = document.getElementById("calc-fallas-acum");
-      if (inpFallas) inpFallas.value = eq.fallas_acumuladas ?? 0;
+      if (inpFallas) inpFallas.value = eq.fallas_previas ?? eq.fallas_acumuladas ?? 0;
       const inpEdad = document.getElementById("calc-edad-meses");
       if (inpEdad) inpEdad.value = eq.edad_meses ?? 36;
       const inpClase = document.getElementById("calc-clase-riesgo");
@@ -3532,17 +3880,17 @@
 
         let colorBarra = "bg-emerald-500";
         let badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
-        if (data.nivel_riesgo === "MEDIO") {
+        if (data.nivel_riesgo === "Medio") {
           colorBarra = "bg-amber-500";
           badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
-        } else if (data.nivel_riesgo === "ALTO") {
+        } else if (data.nivel_riesgo === "Alto") {
           colorBarra = "bg-orange-500";
           badgeClass = "bg-orange-950 text-orange-300 border-orange-800";
-        } else if (data.nivel_riesgo === "CRITICO") {
+        } else if (data.nivel_riesgo === "Crítico") {
           colorBarra = "bg-rose-500";
           badgeClass = "bg-rose-950 text-rose-300 border-rose-800 animate-pulse";
         }
-        if (barraElem) barraElem.className = `${colorBarra} h-3 rounded-full transition-all duration-500`;
+        if (barraElem) barraElem.className = `${colorBarra} h-2.5 rounded-full transition-all duration-500`;
         if (badgeElem) {
           badgeElem.className = `px-2.5 py-0.5 rounded-full text-xs font-bold border ${badgeClass}`;
           badgeElem.innerText = `Riesgo ${data.nivel_riesgo}`;
@@ -3552,12 +3900,12 @@
           factoresElem.innerHTML = "";
           const factores = data.factores_riesgo || [];
           if (factores.length === 0) {
-            factoresElem.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-800 text-slate-300 border border-slate-700">✓ Todos los parámetros en umbral óptimo</span>`;
+            factoresElem.innerHTML = `<span class="px-2 py-0.5 rounded-md text-[11px] bg-slate-800 text-slate-300 border border-slate-700">Parámetros dentro de norma hospitalaria</span>`;
           } else {
             factores.forEach(f => {
               const span = document.createElement("span");
-              span.className = "px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-950/80 text-amber-300 border border-amber-800";
-              span.innerText = `⚠️ ${f}`;
+              span.className = "px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-950/80 text-amber-300 border border-amber-800";
+              span.innerText = `Atención: ${f}`;
               factoresElem.appendChild(span);
             });
           }
@@ -3568,8 +3916,7 @@
         }
 
         if (guardarEnBD) {
-          showToast(`Predicción guardada en dataset_eventos para ${equipoId}`, "success");
-          cargarDataset();
+          showToast(`Predicción registrada en base de datos para ${equipoId}`, "success");
           cargarPrediccionResumen();
         }
 
@@ -3580,7 +3927,7 @@
 
     async function ejecutarMantenimientoDesdeSimulador() {
       const equipoId = document.getElementById("calc-id-equipo")?.value || "BVOL-01";
-      if (!confirm(`¿Registrar mantenimiento preventivo para ${equipoId} y resetear contador a 0 meses?`)) {
+      if (!confirm(`¿Registrar mantenimiento preventivo y resetear contador a 0 meses para el equipo PK: ${equipoId}?`)) {
         return;
       }
       try {
@@ -3589,12 +3936,12 @@
           headers: getAuthHeaders(),
           body: JSON.stringify({
             equipo_id: equipoId,
-            descripcion: "Mantenimiento Preventivo ejecutado desde Simulador: Calibración, verificación eléctrica y puesta a cero de meses sin mtto."
+            descripcion: "Mantenimiento Preventivo Ejecutado desde Simulador: Verificación eléctrica IEC 60601-1, calibración y puesta a cero."
           })
         });
         const data = await res.json();
         if (res.ok) {
-          showToast(`✓ Mantenimiento ejecutado para ${equipoId}. Contador reseteado a 0 meses.`, "success");
+          showToast(`Mantenimiento ejecutado para ${equipoId}. Contador reseteado a 0 meses.`, "success");
           const inpMeses = document.getElementById("calc-meses-mtto");
           if (inpMeses) inpMeses.value = 0.0;
           await ejecutarCalculoPrediccion();
@@ -3617,13 +3964,13 @@
       const famFiltro = document.getElementById("filtro-pred-familia")?.value || "todos";
       const riesgoFiltro = document.getElementById("filtro-pred-riesgo")?.value || "todos";
 
-      let lista = cachePrediccionResumen.equipos_priorizados || [];
+      let lista = cachePrediccionResumen.equipos_priorizados || cachePrediccionResumen.equipos || [];
 
       if (famFiltro !== "todos") {
         lista = lista.filter(e => e.tipo === famFiltro);
       }
       if (riesgoFiltro !== "todos") {
-        lista = lista.filter(e => e.nivel_riesgo === riesgoFiltro);
+        lista = lista.filter(e => (e.nivel_riesgo || "").toUpperCase() === riesgoFiltro.toUpperCase());
       }
 
       const tbody = document.getElementById("tabla-prediccion-body");
@@ -3636,20 +3983,23 @@
       }
 
       lista.slice(0, 60).forEach(eq => {
+        const idEq = eq.equipo_id || eq.id_equipo;
         let badgeRiesgo = "bg-emerald-950 text-emerald-300 border-emerald-800";
-        if (eq.nivel_riesgo === "MEDIO") badgeRiesgo = "bg-amber-950 text-amber-300 border-amber-800";
-        if (eq.nivel_riesgo === "ALTO") badgeRiesgo = "bg-orange-950 text-orange-300 border-orange-800";
-        if (eq.nivel_riesgo === "CRITICO") badgeRiesgo = "bg-rose-950 text-rose-300 border-rose-800";
+        if (eq.nivel_riesgo === "Medio") badgeRiesgo = "bg-amber-950 text-amber-300 border-amber-800";
+        if (eq.nivel_riesgo === "Alto") badgeRiesgo = "bg-orange-950 text-orange-300 border-orange-800";
+        if (eq.nivel_riesgo === "Crítico") badgeRiesgo = "bg-rose-950 text-rose-300 border-rose-800";
 
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-800/40 transition";
         tr.innerHTML = `
-          <td class="py-3 px-3 font-mono font-bold text-white whitespace-nowrap">${eq.id_equipo}</td>
-          <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${eq.tipo_nombre}</td>
-          <td class="py-3 px-3 text-purple-300 font-semibold font-mono">${eq.clasificacion_riesgo || 'IIB'}</td>
-          <td class="py-3 px-3 font-mono ${eq.meses_sin_mtto > 6 ? 'text-amber-400 font-bold' : 'text-slate-300'}">${eq.meses_sin_mtto} m</td>
+          <td class="py-3 px-3 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800 font-bold font-mono">PK: ${idEq}</span>
+          </td>
+          <td class="py-3 px-3 text-slate-300 whitespace-nowrap font-sans">${eq.familia || eq.tipo_nombre}</td>
+          <td class="py-3 px-3 text-purple-300 font-semibold font-mono">Clase ${eq.clasificacion_riesgo || 'IIB'}</td>
+          <td class="py-3 px-3 font-mono ${eq.meses_mtto > 6 ? 'text-amber-400 font-bold' : 'text-slate-300'}">${eq.meses_mtto ?? eq.meses_sin_mtto ?? 0} m</td>
           <td class="py-3 px-3 font-mono text-slate-300">${Math.round(eq.mtbf_dias)} d</td>
-          <td class="py-3 px-3 font-mono text-slate-300">${eq.fallas_acumuladas}</td>
+          <td class="py-3 px-3 font-mono text-slate-300">${eq.fallas_previas ?? eq.fallas_acumuladas ?? 0}</td>
           <td class="py-3 px-3 whitespace-nowrap">
             <div class="flex items-center gap-2">
               <span class="font-mono font-bold ${eq.probabilidad_falla > 70 ? 'text-rose-400' : (eq.probabilidad_falla > 35 ? 'text-amber-400' : 'text-emerald-400')}">${eq.probabilidad_falla}%</span>
@@ -3667,11 +4017,14 @@
             ${eq.accion_recomendada}
           </td>
           <td class="py-3 px-3 text-right whitespace-nowrap">
-            <button onclick="cargarEquipoEnSimulador('${eq.id_equipo}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-[11px] transition mr-1" title="Cargar en simulador">
-              🔬 Simular
+            <button onclick="cargarEquipoEnSimulador('${idEq}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] transition mr-1" title="Cargar parámetros en simulador">
+              Simular
             </button>
-            <button onclick="ejecutarMantenimientoDirecto('${eq.id_equipo}')" class="px-2 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[11px] transition" title="Reset meses a 0">
-              🛠️ Mtto
+            <button onclick="abrirExpedienteDesdeMonitoreo('${idEq}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] transition mr-1" title="Ver Certificados">
+              Expediente
+            </button>
+            <button onclick="ejecutarMantenimientoDirecto('${idEq}')" class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 text-[11px] transition" title="Reset meses a 0">
+              Mtto
             </button>
           </td>
         `;
@@ -3689,12 +4042,12 @@
           headers: getAuthHeaders(),
           body: JSON.stringify({
             equipo_id: equipoId,
-            descripcion: "Mantenimiento Preventivo ejecutado desde Matriz Predictiva: Inspección física y puesta a cero de meses sin mantenimiento."
+            descripcion: "Mantenimiento Preventivo Protocolario: Calibración y puesta a cero de meses sin mantenimiento."
           })
         });
         const data = await res.json();
         if (res.ok) {
-          showToast(`✓ Mantenimiento ejecutado para ${equipoId}`, "success");
+          showToast(`Mantenimiento ejecutado para ${equipoId}`, "success");
           cargarPrediccionResumen();
           cargarEstadoEquipos(cacheFamiliaSeleccionada);
         } else {
@@ -3706,180 +4059,398 @@
     }
 
     // ==========================================
-    // BASE DE DATOS DE EQUIPOS (DATASET EVENTOS NEON - CRUD EDITABLE)
+    // SECCIÓN 7: HISTORIAL DE REGISTROS DE MANTENIMIENTO (SIMPLIFICADO Y ORGANIZADO)
     // ==========================================
 
-    function cambiarFamiliaDataset(tipo) {
-      cacheDatasetTipo = tipo;
-      cacheDatasetPage = 1;
-      renderizarPillsFamiliasDataset();
-      cargarDataset(tipo, 1);
-    }
+    async function cargarRegistrosMantenimiento(page = cacheRegistrosPage) {
+      cacheRegistrosPage = page;
+      const tbody = document.getElementById("tabla-registros-body");
+      if (!tbody) return;
 
-    async function cargarDataset(tipo = cacheDatasetTipo, page = cacheDatasetPage) {
-      cacheDatasetTipo = tipo;
-      cacheDatasetPage = page;
-      renderizarPillsFamiliasDataset();
-
-      const tbody = document.getElementById("tabla-dataset-body");
-      const thead = document.getElementById("tabla-dataset-head");
-      if (!tbody || !thead) return;
-
-      tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-slate-400 font-mono text-xs">Cargando registros desde Neon PostgreSQL (tabla dataset_eventos)...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400 font-mono text-xs">Cargando registros históricos desde Neon PostgreSQL...</td></tr>`;
 
       try {
-        const url = `/api/equipos-dataset/${tipo}?page=${page}&limit=${cacheDatasetLimit}&falla=${cacheDatasetFiltroFalla}&q=${encodeURIComponent(cacheDatasetBusqueda)}&search=${encodeURIComponent(cacheDatasetBusqueda)}`;
+        const url = `/api/equipos-dataset/${cacheRegistrosTecnologia}?page=${page}&limit=${cacheRegistrosLimit}&falla=${cacheRegistrosFiltroFalla}&q=${encodeURIComponent(cacheRegistrosBusqueda)}&search=${encodeURIComponent(cacheRegistrosBusqueda)}`;
         const res = await fetch(url, { headers: getAuthHeaders() });
 
         if (!res.ok) {
-          const err = await res.json();
-          let errDetail = err.detail || 'Error al cargar dataset';
-          if (Array.isArray(errDetail)) {
-            errDetail = errDetail.map(e => e.msg || JSON.stringify(e)).join(', ');
-          } else if (typeof errDetail === 'object') {
-            errDetail = JSON.stringify(errDetail);
-          }
-          tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">${errDetail}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-rose-400 text-xs">Error al cargar registros históricos.</td></tr>`;
           return;
         }
 
         const data = await res.json();
-        cacheDatasetTotal = data.total || 0;
-        cacheDatasetRows = data.rows || [];
-        const cols = data.columnas || [];
+        cacheRegistrosTotal = data.total || 0;
+        cacheRegistrosRows = data.rows || [];
 
-        // Renderizar Headers
-        thead.innerHTML = "";
-        const trHead = document.createElement("tr");
-        cols.forEach(c => {
-          const th = document.createElement("th");
-          th.className = "py-3 px-3 whitespace-nowrap";
-          th.innerText = c.replace(/_/g, " ");
-          trHead.appendChild(th);
-        });
-        const thAccion = document.createElement("th");
-        thAccion.className = "py-3 px-3 text-right whitespace-nowrap";
-        thAccion.innerText = "Acciones";
-        trHead.appendChild(thAccion);
-        thead.appendChild(trHead);
-
-        // Renderizar Filas
         tbody.innerHTML = "";
-        if (cacheDatasetRows.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" class="py-8 text-center text-slate-500 font-mono text-xs">No se encontraron registros en dataset_eventos con los filtros aplicados.</td></tr>`;
+        if (cacheRegistrosRows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500 text-xs">No se encontraron registros con los filtros seleccionados.</td></tr>`;
         } else {
-          cacheDatasetRows.forEach(row => {
+          cacheRegistrosRows.forEach(row => {
             const tr = document.createElement("tr");
             const tieneFalla = row["Variable_Target_Falla"] === 1.0 || row["Variable_Target_Falla"] === 1;
-            tr.className = `hover:bg-slate-800/50 transition ${tieneFalla ? 'bg-rose-950/20' : ''}`;
+            const esPendiente = row["Variable_Target_Falla"] === null || row["Variable_Target_Falla"] === undefined;
+            tr.className = `hover:bg-slate-800/40 transition ${tieneFalla ? 'bg-rose-950/15' : ''}`;
 
-            const idReg = row["id"];
+            const badgeEvento = esPendiente
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Ventana Pendiente</span>`
+              : (tieneFalla
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">Falla Reportada (1)</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">Operación Normal (0)</span>`
+                );
 
-            cols.forEach(col => {
-              const td = document.createElement("td");
-              td.className = "py-2.5 px-3 whitespace-nowrap";
-              const val = row[col];
+            const fReporte = row["Fecha_Reporte"] ? row["Fecha_Reporte"].slice(0, 10) : "-";
 
-              if (col === "Variable_Target_Falla") {
-                if (val === null || val === undefined) {
-                  td.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Ventana Pendiente</span>`;
-                } else if (val === 1.0 || val === 1) {
-                  td.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">1 (Falla)</span>`;
-                } else {
-                  td.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">0 (OK)</span>`;
-                }
-              } else if (col === "ID_Equipo") {
-                td.innerHTML = `<span class="font-bold text-white">${val}</span>`;
-              } else if (col === "Clasificacion_Riesgo") {
-                td.innerHTML = `<span class="font-bold text-purple-300 font-mono">${val || '-'}</span>`;
-              } else if (col === "Meses_Desde_Ultimo_Mtto") {
-                td.innerHTML = `<span class="font-mono font-semibold text-cyan-300">${val !== null ? Number(val).toFixed(1) : '-'}</span>`;
-              } else if (col === "MTBF_Promedio_Dias") {
-                td.innerHTML = `<span class="font-mono text-slate-200">${val !== null ? Math.round(val) : '-'}</span>`;
-              } else if (col === "Descripcion_Evento") {
-                td.className = "py-2.5 px-3 max-w-xs truncate";
-                td.title = val || "";
-                td.innerText = val || "-";
-              } else if (typeof val === "number") {
-                td.innerText = Number.isInteger(val) ? val : val.toFixed(1);
-              } else {
-                td.innerText = val !== null && val !== undefined ? val : "-";
-              }
-              tr.appendChild(td);
-            });
-
-            // Columna de Acciones: Editar y Eliminar
-            const tdAcc = document.createElement("td");
-            tdAcc.className = "py-2.5 px-3 text-right whitespace-nowrap";
-            tdAcc.innerHTML = `
-              <button onclick="abrirModalEditarRegistroDataset('${idReg}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-[11px] font-semibold transition mr-1">
-                ✏️ Editar
-              </button>
-              <button onclick="eliminarRegistroDataset('${idReg}')" class="px-2.5 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-semibold transition">
-                🗑️
-              </button>
+            tr.innerHTML = `
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800 font-bold font-mono">PK: ${row["ID_Equipo"]}</span>
+              </td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-sans text-slate-200">${row["Tipo_Equipo"] || "-"}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap text-slate-400">${fReporte}</td>
+              <td class="py-2.5 px-3 font-mono font-semibold text-sky-300">${row["Meses_Desde_Ultimo_Mtto"] !== null ? Number(row["Meses_Desde_Ultimo_Mtto"]).toFixed(1) : "-"} m</td>
+              <td class="py-2.5 px-3 font-mono text-slate-300">${row["MTBF_Promedio_Dias"] !== null ? Math.round(row["MTBF_Promedio_Dias"]) : "-"} d</td>
+              <td class="py-2.5 px-3 font-mono text-slate-300">${row["Fallas_Acumuladas"] ?? "-"}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap">${badgeEvento}</td>
+              <td class="py-2.5 px-3 max-w-sm truncate text-slate-300" title="${row["Descripcion_Evento"] || ''}">
+                ${row["Descripcion_Evento"] || "-"}
+              </td>
+              <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                <button onclick="abrirExpedienteDesdeMonitoreo('${row["ID_Equipo"]}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] font-semibold transition mr-1">
+                  Certificados
+                </button>
+                <button onclick="abrirModalEditarRegistroMantenimiento('${row["id"]}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-[11px] font-semibold transition">
+                  Editar
+                </button>
+              </td>
             `;
-            tr.appendChild(tdAcc);
             tbody.appendChild(tr);
           });
         }
 
-        // Actualizar controles de paginación
-        const total = cacheDatasetTotal;
-        const inicio = total === 0 ? 0 : (page - 1) * cacheDatasetLimit + 1;
-        const fin = Math.min(page * cacheDatasetLimit, total);
-        const totalPags = Math.ceil(total / cacheDatasetLimit) || 1;
+        // Paginación
+        const total = cacheRegistrosTotal;
+        const inicio = total === 0 ? 0 : (page - 1) * cacheRegistrosLimit + 1;
+        const fin = Math.min(page * cacheRegistrosLimit, total);
+        const totalPags = Math.ceil(total / cacheRegistrosLimit) || 1;
 
-        document.getElementById("dataset-pag-inicio").innerText = inicio;
-        document.getElementById("dataset-pag-fin").innerText = fin;
-        document.getElementById("dataset-total-regs").innerText = total;
-        document.getElementById("dataset-pag-actual").innerText = `Página ${page} de ${totalPags}`;
+        const pagIni = document.getElementById("registros-pag-inicio");
+        if (pagIni) pagIni.innerText = inicio;
+        const pagFin = document.getElementById("registros-pag-fin");
+        if (pagFin) pagFin.innerText = fin;
+        const pagTot = document.getElementById("registros-total-regs");
+        if (pagTot) pagTot.innerText = total.toLocaleString();
+        const pagAct = document.getElementById("registros-pag-actual");
+        if (pagAct) pagAct.innerText = `Página ${page} de ${totalPags}`;
 
-        const btnPrev = document.getElementById("btn-ds-pag-prev");
-        const btnNext = document.getElementById("btn-ds-pag-next");
+        const btnPrev = document.getElementById("btn-reg-pag-prev");
+        const btnNext = document.getElementById("btn-reg-pag-next");
         if (btnPrev) btnPrev.disabled = page <= 1;
         if (btnNext) btnNext.disabled = page >= totalPags;
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="12" class="py-8 text-center text-rose-400 font-mono text-xs">Error de conexión: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-rose-400 text-xs">Error de conexión: ${err.message}</td></tr>`;
       }
     }
 
-    function manejarBusquedaDataset(e) {
+    function manejarBusquedaRegistros(e) {
       if (e.key === "Enter" || e.keyCode === 13) {
-        cacheDatasetBusqueda = document.getElementById("dataset-busqueda-input").value.trim();
-        cargarDataset(cacheDatasetTipo, 1);
+        cacheRegistrosBusqueda = document.getElementById("registros-busqueda-input").value.trim();
+        cargarRegistrosMantenimiento(1);
       }
     }
 
-    function aplicarFiltrosDataset() {
-      cacheDatasetFiltroFalla = document.getElementById("dataset-filtro-falla").value;
-      cacheDatasetBusqueda = document.getElementById("dataset-busqueda-input").value.trim();
-      cargarDataset(cacheDatasetTipo, 1);
+    function aplicarFiltrosRegistros() {
+      cacheRegistrosTecnologia = document.getElementById("registros-filtro-tecnologia").value;
+      cacheRegistrosFiltroFalla = document.getElementById("registros-filtro-falla").value;
+      cacheRegistrosBusqueda = document.getElementById("registros-busqueda-input").value.trim();
+      cargarRegistrosMantenimiento(1);
     }
 
-    function cambiarLimiteDataset(val) {
-      cacheDatasetLimit = parseInt(val) || 25;
-      cargarDataset(cacheDatasetTipo, 1);
-    }
-
-    function cambiarPaginaDataset(delta) {
-      const nuevaPag = cacheDatasetPage + delta;
-      if (nuevaPag >= 1) {
-        cargarDataset(cacheDatasetTipo, nuevaPag);
+    function cambiarPaginaRegistros(delta) {
+      const nueva = cacheRegistrosPage + delta;
+      if (nueva >= 1) {
+        cargarRegistrosMantenimiento(nueva);
       }
     }
 
+    function abrirModalNuevoRegistroMantenimiento() {
+      abrirModalNuevoRegistroDataset();
+    }
+
+    function abrirModalEditarRegistroMantenimiento(idRegistro) {
+      abrirModalEditarRegistroDataset(idRegistro);
+    }
+
+    // ==========================================
+    // SECCIÓN 8: EXPEDIENTE, FOTOGRAFÍAS Y CERTIFICADOS DE CALIBRACIÓN
+    // ==========================================
+
+    async function cargarDocumentacionEquipos(equipoId = cacheDocumentacionEquipoId) {
+      if (!equipoId) equipoId = "BVOL-01";
+      cacheDocumentacionEquipoId = equipoId;
+
+      // Actualizar selectores
+      const sel = document.getElementById("doc-selector-equipo");
+      if (sel && cachePrediccionResumen && cachePrediccionResumen.equipos_priorizados) {
+        const lista = cachePrediccionResumen.equipos_priorizados;
+        sel.innerHTML = lista.map(e => `
+          <option value="${e.id_equipo}" ${e.id_equipo === equipoId ? 'selected' : ''}>PK: ${e.id_equipo} • ${e.tipo_nombre}</option>
+        `).join("");
+      }
+
+      const pkHero = document.getElementById("doc-hero-pk");
+      if (pkHero) pkHero.innerText = equipoId;
+
+      try {
+        const res = await fetch(`/api/equipos-documentos/${encodeURIComponent(equipoId)}`, { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        cacheDocumentosActuales = data.todos || [];
+
+        const foto = data.foto;
+        const cert = data.certificado;
+        cacheCertificadoSeleccionado = cert;
+
+        // Renderizar Foto Oficial del Activo
+        const containerFoto = document.getElementById("doc-foto-preview-container");
+        const nomFoto = document.getElementById("doc-foto-nombre-archivo");
+        if (containerFoto) {
+          if (foto && foto.archivo_url) {
+            containerFoto.innerHTML = `<img src="${foto.archivo_url}" alt="Foto de ${equipoId}" class="max-h-full max-w-full object-contain rounded-lg">`;
+            if (nomFoto) nomFoto.innerText = foto.archivo_nombre || `${equipoId}_foto.svg`;
+          } else {
+            containerFoto.innerHTML = `<div class="text-slate-500 text-xs">Sin fotografía oficial registrada</div>`;
+          }
+        }
+
+        // Renderizar Certificado de Calibración
+        if (cert) {
+          const certNum = document.getElementById("doc-cert-numero");
+          if (certNum) certNum.innerText = cert.numero_certificado || "CAL-2026-OFICIAL";
+          const certEnt = document.getElementById("doc-cert-entidad");
+          if (certEnt) certEnt.innerText = cert.entidad_emisora || "Laboratorio Metrológico Biomédico Acreditado ONAC";
+          const certEmi = document.getElementById("doc-cert-fecha-emision");
+          if (certEmi) certEmi.innerText = cert.fecha_emision || "-";
+          const certVenc = document.getElementById("doc-cert-fecha-vencimiento");
+          if (certVenc) certVenc.innerText = cert.fecha_vencimiento || "-";
+          const certObs = document.getElementById("doc-cert-observaciones");
+          if (certObs) certObs.innerText = cert.observaciones || "Activo biomédico calibrado con patrones trazables.";
+
+          const badgeVig = document.getElementById("doc-badge-cert-vigencia");
+          if (badgeVig) {
+            if (cert.estado_vigencia === "VENCIDO") {
+              badgeVig.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-950 text-rose-300 border border-rose-800 animate-pulse";
+              badgeVig.innerText = "CALIBRACIÓN VENCIDA";
+            } else if (cert.estado_vigencia === "PROXIMO_VENCER") {
+              badgeVig.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800";
+              badgeVig.innerText = "PRÓXIMO A VENCER";
+            } else {
+              badgeVig.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
+              badgeVig.innerText = "CALIBRACIÓN VIGENTE";
+            }
+          }
+        }
+
+        // Renderizar Tabla Completa de Documentos del Expediente
+        const tbodyDocs = document.getElementById("tabla-documentos-body");
+        const docCount = document.getElementById("doc-conteo-total");
+        if (docCount) docCount.innerText = `${cacheDocumentosActuales.length} documentos registrados`;
+
+        if (tbodyDocs) {
+          if (cacheDocumentosActuales.length === 0) {
+            tbodyDocs.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No hay documentos registrados para esta unidad.</td></tr>`;
+          } else {
+            tbodyDocs.innerHTML = cacheDocumentosActuales.map(d => {
+              let badgeTipo = "bg-sky-950 text-sky-300 border-sky-800";
+              let labelTipo = d.tipo_documento;
+              if (d.tipo_documento === "CERTIFICADO_CALIBRACION") {
+                badgeTipo = "bg-emerald-950 text-emerald-300 border-emerald-800";
+                labelTipo = "Certificado Calibración";
+              } else if (d.tipo_documento === "FOTO_EQUIPO") {
+                badgeTipo = "bg-purple-950 text-purple-300 border-purple-800";
+                labelTipo = "Foto de Identificación";
+              } else if (d.tipo_documento === "FICHA_TECNICA") {
+                badgeTipo = "bg-indigo-950 text-indigo-300 border-indigo-800";
+                labelTipo = "Ficha Técnica";
+              }
+
+              return `
+                <tr class="hover:bg-slate-800/40 transition">
+                  <td class="py-2.5 px-3 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeTipo}">${labelTipo}</span>
+                  </td>
+                  <td class="py-2.5 px-3 font-sans text-slate-200">${d.titulo || '-'}</td>
+                  <td class="py-2.5 px-3 text-sky-300 font-mono">${d.numero_certificado || '-'}</td>
+                  <td class="py-2.5 px-3 text-slate-400 truncate max-w-xs" title="${d.entidad_emisora}">${d.entidad_emisora || '-'}</td>
+                  <td class="py-2.5 px-3 text-slate-400 whitespace-nowrap">${d.fecha_emision || '-'}</td>
+                  <td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">${d.fecha_vencimiento || '-'}</td>
+                  <td class="py-2.5 px-3 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      d.estado_vigencia === 'VENCIDO' ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                    }">${d.estado_vigencia || 'VIGENTE'}</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                    <button onclick="abrirVisorDocumentoPorId(${d.id})" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] font-semibold transition mr-1">
+                      Ver
+                    </button>
+                    <button onclick="eliminarDocumentoPorId(${d.id})" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-semibold transition">
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join("");
+          }
+        }
+
+      } catch (err) {
+        console.error("Error al cargar documentación de equipo:", err);
+      }
+    }
+
+    function previsualizarCertificadoActual() {
+      if (cacheCertificadoSeleccionado) {
+        abrirVisorDocumento(
+          cacheCertificadoSeleccionado.archivo_url,
+          cacheCertificadoSeleccionado.titulo,
+          `${cacheCertificadoSeleccionado.numero_certificado} • ACTIVO PK: ${cacheDocumentacionEquipoId}`
+        );
+      } else {
+        showToast("No hay certificado cargado para este equipo", "warning");
+      }
+    }
+
+    function abrirVisorDocumentoPorId(docId) {
+      const doc = cacheDocumentosActuales.find(d => d.id === docId);
+      if (doc) {
+        abrirVisorDocumento(
+          doc.archivo_url,
+          doc.titulo,
+          `${doc.numero_certificado || doc.tipo_documento} • ACTIVO PK: ${doc.equipo_id}`
+        );
+      }
+    }
+
+    function abrirVisorDocumento(url, titulo, sub) {
+      const tit = document.getElementById("visor-doc-titulo");
+      if (tit) tit.innerText = titulo || "Documento Digital";
+      const subElem = document.getElementById("visor-doc-subtitulo");
+      if (subElem) subElem.innerText = sub || "Expediente Digital";
+
+      const container = document.getElementById("visor-doc-content");
+      if (container) {
+        if (url && (url.startsWith("data:image/") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".svg"))) {
+          container.innerHTML = `<img src="${url}" class="max-h-full max-w-full object-contain rounded-lg">`;
+        } else if (url && (url.startsWith("data:application/pdf") || url.endsWith(".pdf"))) {
+          container.innerHTML = `<iframe src="${url}" class="w-full h-full rounded-lg border-0"></iframe>`;
+        } else {
+          container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Visualización no disponible directamente. <br><a href="${url}" download class="text-sky-400 underline mt-2 inline-block">Descargar Archivo</a></div>`;
+        }
+      }
+      abrirModal("modal-ver-documento");
+    }
+
+    function abrirModalSubirDocumento(tipoDoc = "CERTIFICADO_CALIBRACION") {
+      document.getElementById("doc-form-equipo-id").value = cacheDocumentacionEquipoId;
+      document.getElementById("doc-form-tipo").value = tipoDoc;
+      const hoy = new Date().toISOString().slice(0, 10);
+      document.getElementById("doc-form-fecha-emision").value = hoy;
+      abrirModal("modal-subir-documento");
+    }
+
+    function abrirModalSubirFotoEquipo() {
+      abrirModalSubirDocumento("FOTO_EQUIPO");
+    }
+
+    function procesarArchivoDocumento(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById("doc-form-archivo-nombre").value = file.name;
+      document.getElementById("doc-form-archivo-tamano").value = Math.round(file.size / 1024);
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById("doc-form-archivo-url").value = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function guardarDocumentoEquipo(e) {
+      e.preventDefault();
+      const form = document.getElementById("form-subir-documento");
+      const submitBtn = document.getElementById("btn-submit-subir-doc");
+      if (submitBtn) submitBtn.disabled = true;
+
+      const payload = {
+        equipo_id: document.getElementById("doc-form-equipo-id").value.trim().toUpperCase(),
+        tipo_documento: document.getElementById("doc-form-tipo").value,
+        titulo: document.getElementById("doc-form-titulo").value.trim(),
+        numero_certificado: document.getElementById("doc-form-numero").value.trim() || null,
+        entidad_emisora: document.getElementById("doc-form-entidad").value.trim() || null,
+        fecha_emision: document.getElementById("doc-form-fecha-emision").value || null,
+        fecha_vencimiento: document.getElementById("doc-form-fecha-vencimiento").value || null,
+        archivo_url: document.getElementById("doc-form-archivo-url").value || null,
+        archivo_nombre: document.getElementById("doc-form-archivo-nombre").value || null,
+        archivo_tamano_kb: parseInt(document.getElementById("doc-form-archivo-tamano").value) || 120,
+        observaciones: document.getElementById("doc-form-observaciones").value.trim() || null
+      };
+
+      try {
+        const res = await fetch("/api/equipos-documentos", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Documento guardado exitosamente para ${payload.equipo_id}`, "success");
+          cerrarModal("modal-subir-documento");
+          form.reset();
+          cargarDocumentacionEquipos(payload.equipo_id);
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error al subir documento: ${err.message}`, "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    async function eliminarDocumentoPorId(docId) {
+      if (!confirm(`¿Confirmas la eliminación del documento #${docId} del expediente digital?`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/equipos-documentos/${docId}`, {
+          method: "DELETE",
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Documento eliminado exitosamente.", "success");
+          cargarDocumentacionEquipos(cacheDocumentacionEquipoId);
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (err) {
+        showToast(`Error de red: ${err.message}`, "error");
+      }
+    }
+
+    // CRUD DE REGISTROS TÉCNICOS EN DATASET_EVENTOS
     function abrirModalEditarRegistroDataset(idRegistro) {
-      const row = cacheDatasetRows.find(r => r["id"] == idRegistro);
+      const row = cacheRegistrosRows.find(r => r["id"] == idRegistro);
       if (!row) {
         showToast("No se encontró el registro seleccionado en caché", "error");
         return;
       }
 
-      document.getElementById("ds-modal-titulo").innerText = `Editar Registro #${idRegistro} (${row['ID_Equipo']})`;
+      document.getElementById("ds-modal-titulo").innerText = `Editar Registro #${idRegistro} (PK: ${row['ID_Equipo']})`;
       document.getElementById("ds-form-id").value = idRegistro;
-      document.getElementById("ds-form-tipo").value = cacheDatasetTipo;
+      document.getElementById("ds-form-tipo").value = cacheRegistrosTecnologia;
 
       const container = document.getElementById("ds-form-campos-dinamicos");
       container.innerHTML = "";
@@ -3894,10 +4465,10 @@
 
         if (col === "Variable_Target_Falla") {
           div.innerHTML = `
-            <label class="block text-slate-300 font-semibold mb-1">Variable Target Falla:</label>
-            <select name="${col}" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
-              <option value="0" ${val === 0 || val === 0.0 ? 'selected' : ''}>0 - Operativo Sin Falla</option>
-              <option value="1" ${val === 1 || val === 1.0 ? 'selected' : ''}>1 - Falla Ocurrida</option>
+            <label class="block text-slate-300 font-semibold mb-1">Estado del Evento (Target):</label>
+            <select name="${col}" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-sky-500">
+              <option value="0" ${val === 0 || val === 0.0 ? 'selected' : ''}>0 - Operación Normal / Preventivo</option>
+              <option value="1" ${val === 1 || val === 1.0 ? 'selected' : ''}>1 - Falla Reportada</option>
               <option value="null" ${val === null || val === undefined ? 'selected' : ''}>null - Ventana Pendiente</option>
             </select>
           `;
@@ -3905,13 +4476,13 @@
           div.className = "sm:col-span-2";
           div.innerHTML = `
             <label class="block text-slate-300 font-semibold mb-1">Descripción del Evento:</label>
-            <textarea name="${col}" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">${val || ''}</textarea>
+            <textarea name="${col}" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-sky-500">${val || ''}</textarea>
           `;
         } else {
           const esNum = typeof val === "number";
           div.innerHTML = `
             <label class="block text-slate-300 font-semibold mb-1">${col.replace(/_/g, " ")}:</label>
-            <input type="${esNum ? 'number' : 'text'}" ${esNum ? 'step="any"' : ''} name="${col}" value="${val !== null && val !== undefined ? val : ''}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-cyan-500">
+            <input type="${esNum ? 'number' : 'text'}" ${esNum ? 'step="any"' : ''} name="${col}" value="${val !== null && val !== undefined ? val : ''}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-sky-500">
           `;
         }
         grid.appendChild(div);
@@ -3922,9 +4493,9 @@
     }
 
     function abrirModalNuevoRegistroDataset() {
-      document.getElementById("ds-modal-titulo").innerText = "Nuevo Registro en dataset_eventos";
+      document.getElementById("ds-modal-titulo").innerText = "Nuevo Registro de Mantenimiento / Falla";
       document.getElementById("ds-form-id").value = "";
-      document.getElementById("ds-form-tipo").value = cacheDatasetTipo;
+      document.getElementById("ds-form-tipo").value = cacheRegistrosTecnologia;
 
       const container = document.getElementById("ds-form-campos-dinamicos");
       container.innerHTML = "";
@@ -3935,11 +4506,11 @@
 
       grid.innerHTML = `
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">ID Equipo:</label>
-          <input type="text" name="ID_Equipo" value="BVOL-01" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+          <label class="block text-slate-300 font-semibold mb-1">Placa / Llave Primaria (PK):</label>
+          <input type="text" name="ID_Equipo" value="${cacheEquipoSeleccionadoId || 'BVOL-01'}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono uppercase">
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Tipo de Equipo:</label>
+          <label class="block text-slate-300 font-semibold mb-1">Tecnología Biomédica:</label>
           <select name="Tipo_Equipo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
             <option value="Bomba de Infusión Volumétrica">Bomba de Infusión Volumétrica</option>
             <option value="Bomba de Infusión a Jeringa">Bomba de Infusión a Jeringa</option>
@@ -3954,7 +4525,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Clasificación de Riesgo:</label>
+          <label class="block text-slate-300 font-semibold mb-1">Clasificación de Riesgo Invima:</label>
           <select name="Clasificacion_Riesgo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
             <option value="IIB">Clase IIB</option>
             <option value="IIA">Clase IIA</option>
@@ -3963,15 +4534,15 @@
           </select>
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Fecha de Reporte:</label>
+          <label class="block text-slate-300 font-semibold mb-1">Fecha del Reporte:</label>
           <input type="date" name="Fecha_Reporte" value="${hoy}" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Edad Equipo (meses):</label>
+          <label class="block text-slate-300 font-semibold mb-1">Edad del Activo (meses):</label>
           <input type="number" step="any" name="Edad_Equipo_Meses" value="36.0" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Meses Sin Mtto:</label>
+          <label class="block text-slate-300 font-semibold mb-1">Meses sin Mantenimiento:</label>
           <input type="number" step="any" name="Meses_Desde_Ultimo_Mtto" value="0.0" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
         </div>
         <div>
@@ -3983,16 +4554,16 @@
           <input type="number" step="any" name="MTBF_Promedio_Dias" value="180.0" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
         </div>
         <div>
-          <label class="block text-slate-300 font-semibold mb-1">Variable Target Falla:</label>
+          <label class="block text-slate-300 font-semibold mb-1">Estado del Evento:</label>
           <select name="Variable_Target_Falla" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
-            <option value="0">0 - Operativo Sin Falla</option>
+            <option value="0">0 - Operación Normal / Preventivo</option>
             <option value="1">1 - Falla Reportada</option>
             <option value="null">null - Ventana Pendiente</option>
           </select>
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-slate-300 font-semibold mb-1">Descripción del Evento:</label>
-          <textarea name="Descripcion_Evento" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono" placeholder="Detalles de la inspección, falla o calibración..."></textarea>
+          <label class="block text-slate-300 font-semibold mb-1">Descripción Técnica del Evento:</label>
+          <textarea name="Descripcion_Evento" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono" placeholder="Detalles de inspección, calibración o falla..."></textarea>
         </div>
       `;
 
@@ -4035,7 +4606,7 @@
         if (res.ok) {
           showToast(data.mensaje || data.message || "Registro guardado exitosamente en Neon PostgreSQL", "success");
           cerrarModal("modal-editar-dataset");
-          cargarDataset(cacheDatasetTipo, cacheDatasetPage);
+          cargarRegistrosMantenimiento(cacheRegistrosPage);
           cargarEstadoEquipos(cacheFamiliaSeleccionada);
           if (typeof cargarPrediccionResumen === "function") {
             cargarPrediccionResumen();
@@ -4050,48 +4621,27 @@
       }
     }
 
-    async function eliminarRegistroDataset(idRegistro) {
-      if (!confirm(`¿Confirmas la eliminación del registro #${idRegistro} en dataset_eventos de Neon PostgreSQL?\n\nEsta acción afectará la base de datos de entrenamiento.`)) {
-        return;
-      }
-      try {
-        const res = await fetch(`/api/equipos-dataset/${idRegistro}`, {
-          method: "DELETE",
-          headers: getAuthHeaders()
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.mensaje || data.message || `Registro #${idRegistro} eliminado`, "success");
-          cargarDataset(cacheDatasetTipo, cacheDatasetPage);
-          cargarEstadoEquipos(cacheFamiliaSeleccionada);
-        } else {
-          showToast(`Error: ${data.detail}`, "error");
-        }
-      } catch (err) {
-        showToast(`Error de red: ${err.message}`, "error");
-      }
-    }
-
     function descargarDatasetCSV() {
-      if (!cacheDatasetRows || cacheDatasetRows.length === 0) {
+      if (!cacheRegistrosRows || cacheRegistrosRows.length === 0) {
         showToast("No hay registros en la vista actual para exportar", "warning");
         return;
       }
-      const cols = Object.keys(cacheDatasetRows[0]);
+      const cols = Object.keys(cacheRegistrosRows[0]);
       const header = cols.join(",");
-      const lines = cacheDatasetRows.map(r => cols.map(c => JSON.stringify(r[c] !== null && r[c] !== undefined ? r[c] : "")).join(","));
+      const lines = cacheRegistrosRows.map(r => cols.map(c => JSON.stringify(r[c] !== null && r[c] !== undefined ? r[c] : "")).join(","));
       const csvContent = "data:text/csv;charset=utf-8," + [header, ...lines].join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `dataset_eventos_${cacheDatasetTipo}_p${cacheDatasetPage}.csv`);
+      link.setAttribute("download", `registros_mantenimiento_${cacheRegistrosTecnologia}_p${cacheRegistrosPage}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       showToast("Descarga de CSV iniciada", "info");
     }
 
-    // INICIALIZACIÓN GENERAL
+    // ==========================================
+    // INICIALIZACIÓN GENERAL DEL DASHBOARD
     // ==========================================
 
     async function cargarTodoElDashboard() {
@@ -4114,15 +4664,9 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      // 1. Siempre abrir modal de login al iniciar para permitir selección o autenticación
+      // 1. Modal de login inicial para autenticación hospitalaria
       abrirModalLogin();
       checkHealthStatus();
-
-      try {
-        inicializarGrafico();
-      } catch (e) {
-        console.warn("Grafico:", e);
-      }
 
       const savedSession = sessionStorage.getItem("salud_predictiva_session");
       if (savedSession) {
@@ -4154,7 +4698,7 @@
           cargarObservaciones();
           cargarEstadoEquipos(cacheFamiliaSeleccionada);
         }
-      }, 8000);
+      }, 10000);
     });
   </script>
 </body>

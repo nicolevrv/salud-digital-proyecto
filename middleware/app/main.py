@@ -13,7 +13,7 @@ import secrets
 import base64
 import hmac
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from enum import Enum
 from pathlib import Path
 
@@ -2698,3 +2698,253 @@ def get_prediccion_resumen_global(
     except Exception as e:
         cursor.close()
         raise HTTPException(status_code=500, detail=f"Error en resumen predictivo: {str(e)}")
+
+
+# ==========================================
+# SECCIÓN 7: EXPEDIENTE METROLÓGICO Y MULTIMEDIA DE EQUIPOS (FOTOS Y CERTIFICADOS)
+# ==========================================
+
+class DocumentoEquipoCreate(BaseModel):
+    equipo_id: str
+    tipo_documento: str
+    titulo: str
+    numero_certificado: Optional[str] = None
+    entidad_emisora: Optional[str] = None
+    fecha_emision: Optional[str] = None
+    fecha_vencimiento: Optional[str] = None
+    estado_vigencia: Optional[str] = "VIGENTE"
+    archivo_url: Optional[str] = None
+    archivo_nombre: Optional[str] = None
+    archivo_tamano_kb: Optional[int] = 0
+    observaciones: Optional[str] = None
+
+
+@app.get("/api/equipos-documentos", tags=["Expediente de Equipos"])
+def listar_documentos_equipos(
+    equipo_id: Optional[str] = None,
+    tipo: Optional[str] = None,
+    vigencia: Optional[str] = None,
+    search: Optional[str] = None,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Consulta la lista de certificados de calibración, fotografías y fichas técnicas de los equipos."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        query = 'SELECT * FROM equipos_documentos WHERE 1=1'
+        params = []
+
+        if equipo_id:
+            query += ' AND UPPER(equipo_id) = UPPER(%s)'
+            params.append(equipo_id.strip())
+
+        if tipo and tipo.lower() != 'todos':
+            query += ' AND UPPER(tipo_documento) = UPPER(%s)'
+            params.append(tipo.strip())
+
+        if vigencia and vigencia.lower() != 'todos':
+            query += ' AND UPPER(estado_vigencia) = UPPER(%s)'
+            params.append(vigencia.strip())
+
+        if search:
+            query += ' AND (titulo ILIKE %s OR equipo_id ILIKE %s OR numero_certificado ILIKE %s OR entidad_emisora ILIKE %s)'
+            term = f"%{search.strip()}%"
+            params.extend([term, term, term, term])
+
+        query += ' ORDER BY fecha_emision DESC NULLS LAST, id DESC;'
+        cursor.execute(query, tuple(params))
+        docs = cursor.fetchall()
+        cursor.close()
+
+        # Formatear fechas
+        for d in docs:
+            if isinstance(d.get("fecha_emision"), (datetime, date)):
+                d["fecha_emision"] = d["fecha_emision"].strftime("%Y-%m-%d")
+            if isinstance(d.get("fecha_vencimiento"), (datetime, date)):
+                d["fecha_vencimiento"] = d["fecha_vencimiento"].strftime("%Y-%m-%d")
+            if isinstance(d.get("created_at"), (datetime, date)):
+                d["created_at"] = d["created_at"].strftime("%Y-%m-%d %H:%M")
+
+        return {
+            "total": len(docs),
+            "documentos": docs
+        }
+    except Exception as e:
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al listar documentos: {str(e)}")
+
+
+@app.get("/api/equipos-documentos/{equipo_id}", tags=["Expediente de Equipos"])
+def get_documentos_equipo_individual(
+    equipo_id: str,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Obtiene el pack documental completo (foto, certificado de calibración y ficha técnica) de una unidad por su Primary Key (ID_Equipo)."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute(
+            'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = UPPER(%s) ORDER BY id ASC;',
+            (equipo_id.strip(),)
+        )
+        docs = cursor.fetchall()
+
+        # Si no tiene documentos específicos asignados, generar plantilla predeterminada con su tecnología
+        if not docs:
+            cursor.execute(
+                'SELECT "Tipo_Equipo", "Clasificacion_Riesgo" FROM dataset_eventos WHERE UPPER("ID_Equipo") = UPPER(%s) LIMIT 1;',
+                (equipo_id.strip(),)
+            )
+            eq_info = cursor.fetchone()
+            tipo_nombre = eq_info["Tipo_Equipo"] if eq_info else "Equipo Biomédico"
+
+            # Intentar clonar del primer equipo con esa tecnología o prefijo
+            prefix = equipo_id.split("-")[0].strip().upper() if "-" in equipo_id else "BVOL"
+            cursor.execute(
+                'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) LIKE %s ORDER BY id ASC;',
+                (f"{prefix}-%",)
+            )
+            docs = cursor.fetchall()
+
+        cursor.close()
+
+        for d in docs:
+            d["equipo_id"] = equipo_id.upper()
+            if isinstance(d.get("fecha_emision"), (datetime, date)):
+                d["fecha_emision"] = d["fecha_emision"].strftime("%Y-%m-%d")
+            if isinstance(d.get("fecha_vencimiento"), (datetime, date)):
+                d["fecha_vencimiento"] = d["fecha_vencimiento"].strftime("%Y-%m-%d")
+            if isinstance(d.get("created_at"), (datetime, date)):
+                d["created_at"] = d["created_at"].strftime("%Y-%m-%d %H:%M")
+
+        foto = next((d for d in docs if d["tipo_documento"] == "FOTO_EQUIPO"), None)
+        certificado = next((d for d in docs if d["tipo_documento"] == "CERTIFICADO_CALIBRACION"), None)
+        ficha = next((d for d in docs if d["tipo_documento"] == "FICHA_TECNICA"), None)
+
+        return {
+            "equipo_id": equipo_id.upper(),
+            "foto": foto,
+            "certificado": certificado,
+            "ficha_tecnica": ficha,
+            "todos": docs
+        }
+    except Exception as e:
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al obtener documentos del equipo: {str(e)}")
+
+
+@app.post("/api/equipos-documentos", tags=["Expediente de Equipos"])
+def registrar_documento_equipo(
+    doc: DocumentoEquipoCreate,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Sube o registra un nuevo certificado de calibración, fotografía o manual para un equipo."""
+    if user["rol_nombre"] not in PREDICCION_ROLES:
+        raise HTTPException(status_code=403, detail="Permiso denegado: Solo personal de ingeniería y administración biomédica puede registrar certificados.")
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        # Calcular estado de vigencia si se suministró fecha de vencimiento
+        estado_vig = doc.estado_vigencia or "VIGENTE"
+        if doc.fecha_vencimiento:
+            try:
+                f_venc = datetime.strptime(doc.fecha_vencimiento, "%Y-%m-%d").date()
+                hoy = date.today()
+                if f_venc < hoy:
+                    estado_vig = "VENCIDO"
+                elif (f_venc - hoy).days <= 30:
+                    estado_vig = "PROXIMO_VENCER"
+                else:
+                    estado_vig = "VIGENTE"
+            except Exception:
+                pass
+
+        cursor.execute('''
+            INSERT INTO equipos_documentos (
+                equipo_id, tipo_documento, titulo, numero_certificado,
+                entidad_emisora, fecha_emision, fecha_vencimiento, estado_vigencia,
+                archivo_url, archivo_nombre, archivo_tamano_kb, observaciones,
+                created_by
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, equipo_id, titulo, tipo_documento, estado_vigencia;
+        ''', (
+            doc.equipo_id.strip().upper(),
+            doc.tipo_documento.strip().upper(),
+            doc.titulo.strip(),
+            doc.numero_certificado.strip() if doc.numero_certificado else None,
+            doc.entidad_emisora.strip() if doc.entidad_emisora else "Ingeniería Biomédica Hospitalaria",
+            doc.fecha_emision or date.today().strftime("%Y-%m-%d"),
+            doc.fecha_vencimiento,
+            estado_vig,
+            doc.archivo_url,
+            doc.archivo_nombre or f"{doc.tipo_documento.lower()}_{doc.equipo_id.lower()}",
+            doc.archivo_tamano_kb or 150,
+            doc.observaciones or "Registrado en expediente digital del equipo.",
+            user.get("nombre") or user.get("email")
+        ))
+        nuevo_doc = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+
+        registrar_auditoria(
+            conn,
+            usuario_id=user["id"],
+            usuario_email=user["email"],
+            usuario_rol=user["rol_nombre"],
+            accion="CREATE",
+            modulo="EXPEDIENTE_EQUIPOS",
+            entidad_id=nuevo_doc["id"],
+            detalles=f"Subido {doc.tipo_documento} para equipo {doc.equipo_id}: {doc.titulo}"
+        )
+
+        return {
+            "mensaje": f"Documento '{doc.titulo}' registrado exitosamente para el equipo {doc.equipo_id}.",
+            "documento": nuevo_doc
+        }
+    except Exception as e:
+        conn.rollback()
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al registrar documento: {str(e)}")
+
+
+@app.delete("/api/equipos-documentos/{doc_id}", tags=["Expediente de Equipos"])
+def eliminar_documento_equipo(
+    doc_id: int,
+    user: dict = Depends(verify_user_credentials),
+    conn = Depends(get_db)
+):
+    """Elimina un documento del expediente de un equipo."""
+    if user["rol_nombre"] not in PREDICCION_ROLES:
+        raise HTTPException(status_code=403, detail="Permiso denegado.")
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute('DELETE FROM equipos_documentos WHERE id = %s RETURNING id, equipo_id, titulo;', (doc_id,))
+        eliminado = cursor.fetchone()
+        if not eliminado:
+            cursor.close()
+            raise HTTPException(status_code=404, detail="Documento no encontrado.")
+
+        conn.commit()
+        cursor.close()
+
+        registrar_auditoria(
+            conn,
+            usuario_id=user["id"],
+            usuario_email=user["email"],
+            usuario_rol=user["rol_nombre"],
+            accion="DELETE",
+            modulo="EXPEDIENTE_EQUIPOS",
+            entidad_id=doc_id,
+            detalles=f"Eliminado documento {eliminado['titulo']} del equipo {eliminado['equipo_id']}"
+        )
+
+        return {"mensaje": f"Documento #{doc_id} eliminado exitosamente."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar documento: {str(e)}")
+
