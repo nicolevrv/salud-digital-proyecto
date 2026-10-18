@@ -1011,7 +1011,7 @@
           </div>
         </div>
 
-        <!-- Selector de Unidad por Placa / Llave Primaria (PK) -->
+        <!-- Selector y Filtros por Tecnología Biomédica y Llave Primaria (PK) -->
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 mb-6 shadow-xs">
           <div class="flex items-center gap-3">
             <div class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 font-semibold font-mono font-bold text-xs">
@@ -1023,11 +1023,36 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <label class="text-xs text-slate-500">Seleccionar Unidad:</label>
-            <select id="doc-selector-equipo" onchange="cargarDocumentacionEquipos(this.value)" class="bg-slate-100 border border-slate-200 text-sky-300 rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 min-w-[220px]">
-              <option value="">Cargando unidades de flota...</option>
-            </select>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-600 font-medium">Filtrar por Tecnología:</label>
+              <select id="doc-filtro-tecnologia" onchange="filtrarPorTecnologia(this.value)" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-sky-500 shadow-xs">
+                <option value="todos">Todas las Tecnologías</option>
+                <option value="VENT">Ventilador Mecánico (VENT)</option>
+                <option value="MON">Monitor Multiparímetro (MON)</option>
+                <option value="BVOL">Bomba Infusión Volumétrica (BVOL)</option>
+                <option value="BJER">Bomba Microinfusión Jeringa (BJER)</option>
+                <option value="DEF">Desfibrilador Bifásico (DEF)</option>
+                <option value="CRRT">Terapia Renal Continua CRRT (CRRT)</option>
+                <option value="POCT">Analizador Gases Sangre POCT (POCT)</option>
+                <option value="ECG">Electrocardiógrafo Digital (ECG)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-600 font-medium">Buscar Placa / PK:</label>
+              <div class="relative">
+                <input type="text" id="doc-input-pk" list="doc-datalist-pks" oninput="alCambiarPkDocumentos(this.value)" placeholder="ej: VENT-01" class="w-32 bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-mono uppercase focus:ring-2 focus:ring-sky-500 shadow-xs">
+                <datalist id="doc-datalist-pks"></datalist>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-600 font-medium">Unidad Específica:</label>
+              <select id="doc-selector-equipo" onchange="cargarDocumentacionEquipos(this.value)" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 min-w-[200px] shadow-xs">
+                <option value="">Cargando unidades de flota...</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1057,24 +1082,33 @@
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span>Fotografía Oficial</span>
+                    <span>Fotografía Oficial (PACS)</span>
                   </span>
                   <span id="doc-foto-pk-badge" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-50 text-sky-800 border border-sky-200" title="Llave Primaria del Documento">PK: DOC-0001</span>
                 </div>
                 <span id="doc-badge-foto-vigente" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Verificado</span>
               </div>
 
-              <!-- Contenedor Visual de la Imagen / SVG del Equipo -->
-              <div id="doc-foto-preview-container" class="w-full h-56 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2">
+              <!-- Contenedor Visual de la Imagen / SVG del Equipo con opción de Visor PACS -->
+              <div id="doc-foto-preview-container" onclick="previsualizarFotoActual()" class="w-full h-56 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2 cursor-pointer hover:border-blue-400 transition group relative" title="Clic para abrir en Visor PACS con herramientas">
                 <div class="text-slate-500 text-xs">Cargando visualización del equipo...</div>
+                <div class="absolute bottom-2 right-2 px-2 py-1 bg-slate-900/70 hover:bg-slate-900 text-white rounded text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <span>Abrir Visor PACS</span>
+                </div>
               </div>
             </div>
 
             <div class="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
               <span id="doc-foto-nombre-archivo" class="text-slate-500 font-mono text-[11px] truncate max-w-[200px]">foto_activo.svg</span>
-              <button type="button" onclick="abrirModalSubirFotoEquipo()" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition">
-                Actualizar Foto
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="previsualizarFotoActual()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-semibold transition">
+                  Visor PACS
+                </button>
+                <button type="button" onclick="abrirModalSubirFotoEquipo()" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition">
+                  Actualizar Foto
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1095,11 +1129,11 @@
               <div class="space-y-2.5 text-xs">
                 <div class="flex justify-between py-1 border-b border-slate-200/60">
                   <span class="text-slate-500">N° de Certificado:</span>
-                  <span id="doc-cert-numero" class="text-sky-300 font-mono font-bold">CAL-2026-BVOL-0042</span>
+                  <span id="doc-cert-numero" class="text-sky-700 font-mono font-bold">CAL-2026-BVOL-0042</span>
                 </div>
                 <div class="flex justify-between py-1 border-b border-slate-200/60">
                   <span class="text-slate-500">Entidad Acreditadora:</span>
-                  <span id="doc-cert-entidad" class="text-slate-800">Laboratorio Metrológico Biomédico S.A.S. (ONAC 19-LAB-058)</span>
+                  <span id="doc-cert-entidad" class="text-slate-800 font-medium">Laboratorio Metrológico Biomédico S.A.S. (ONAC 19-LAB-058)</span>
                 </div>
                 <div class="grid grid-cols-2 gap-3 py-1 border-b border-slate-200/60">
                   <div class="flex justify-between">
@@ -1108,7 +1142,7 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-slate-500">Fecha Vencimiento:</span>
-                    <span id="doc-cert-fecha-vencimiento" class="text-emerald-400 font-mono font-bold">2027-02-15</span>
+                    <span id="doc-cert-fecha-vencimiento" class="text-emerald-700 font-mono font-bold">2027-02-15</span>
                   </div>
                 </div>
                 <div class="py-1">
@@ -1125,7 +1159,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 <span>Ver Certificado Digital</span>
               </button>
-              <button type="button" onclick="abrirModalSubirDocumento('CERTIFICADO_CALIBRACION')" class="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold transition flex items-center gap-1.5">
+              <button type="button" onclick="abrirModalSubirDocumento('CERTIFICADO_CALIBRACION')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition flex items-center gap-1.5 shadow-sm shadow-blue-500/25">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span>+ Nuevo Certificado</span>
               </button>
@@ -1133,10 +1167,25 @@
           </div>
         </div>
 
+        <!-- Galería de Packs Tecnológicos (Fotos + Certificados por Tecnología) -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Catálogo Visual por Tecnologías Hospitalarias:</h4>
+              <p class="text-[11px] text-slate-500">Haz clic en cualquier tecnología para cargar su unidad y visualizar su pack fotográfico y certificados de calibración</p>
+            </div>
+            <span class="text-xs text-slate-500 font-mono">10 tecnologías activas</span>
+          </div>
+
+          <div id="galeria-pacs-tecnologias" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <!-- Renderizado dinámico de tarjetas de tecnologías -->
+          </div>
+        </div>
+
         <!-- Tabla Completa de Documentos del Expediente -->
         <div>
           <div class="flex items-center justify-between mb-3">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Documentos Registrados en Expediente:</h4>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Documentos Registrados en Expediente:</h4>
             <span id="doc-conteo-total" class="text-xs text-slate-500 font-mono">-- documentos</span>
           </div>
 
@@ -1156,13 +1205,12 @@
                   <th class="py-2.5 px-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="tabla-documentos-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+              <tbody id="tabla-documentos-body" class="divide-y divide-slate-100 font-mono text-[11px]">
                 <!-- Filas dinámicas -->
               </tbody>
             </table>
           </div>
         </div>
-
       </div>
     </section>
 
@@ -1897,27 +1945,80 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: VISOR DE DOCUMENTO / CERTIFICADO DIGITAL -->
+  <!-- MODAL: VISOR PACS CLÍNICO Y DE CERTIFICADOS METROLÓGICOS -->
   <!-- ========================================================================= -->
-  <div id="modal-ver-documento" class="fixed inset-0 z-50 hidden bg-slate-50/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+  <div id="modal-ver-documento" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[94vh] flex flex-col">
+      <!-- Encabezado PACS -->
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-        <div>
-          <h4 id="visor-doc-titulo" class="font-bold text-slate-900 text-sm">Certificado de Calibración Metrológica</h4>
-          <p id="visor-doc-subtitulo" class="text-xs text-slate-500 font-mono">CAL-2026-0042 • ACTIVO: BVOL-01</p>
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 id="visor-doc-titulo" class="font-bold text-slate-900 text-sm">Visor PACS Clínico & Metrológico</h4>
+              <span id="visor-doc-pk-badge" class="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">PK: --</span>
+            </div>
+            <p id="visor-doc-subtitulo" class="text-xs text-slate-500 font-mono">Estudio de Activo Biomédico • Protocolo PACS</p>
+          </div>
         </div>
-        <button type="button" onclick="cerrarModal('modal-ver-documento')" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+        <button type="button" onclick="cerrarModal('modal-ver-documento')" class="text-slate-400 hover:text-slate-700 text-xl font-bold p-1 rounded-lg hover:bg-slate-100 transition">&times;</button>
       </div>
 
-      <div id="visor-doc-content" class="w-full h-80 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden p-2">
-        <!-- Renderizado dinámico -->
+      <!-- Barra de Herramientas PACS (Zoom, Brillo, Contraste, Invertir) -->
+      <div id="pacs-toolbar" class="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Herramientas PACS:</span>
+          <button type="button" onclick="pacsAjustarZoom(0.2)" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Zoom +</span>
+          </button>
+          <button type="button" onclick="pacsAjustarZoom(-0.2)" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+            <span>Zoom -</span>
+          </button>
+          <button type="button" onclick="pacsAlternarInversion()" id="btn-pacs-invert" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <span>Invertir (Negativo)</span>
+          </button>
+          <button type="button" onclick="pacsRestablecer()" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium transition">
+            Restablecer
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5 text-[11px] text-slate-600">
+            <span>Brillo:</span>
+            <input type="range" id="pacs-slider-brillo" min="50" max="150" value="100" oninput="pacsAplicarFiltros()" class="w-16 sm:w-20 accent-blue-600">
+          </div>
+          <div class="flex items-center gap-1.5 text-[11px] text-slate-600">
+            <span>Contraste:</span>
+            <input type="range" id="pacs-slider-contraste" min="50" max="200" value="100" oninput="pacsAplicarFiltros()" class="w-16 sm:w-20 accent-blue-600">
+          </div>
+        </div>
       </div>
 
-      <div class="flex justify-between items-center pt-3 border-t border-slate-200 text-xs">
-        <span id="visor-doc-footer-info" class="text-slate-500">Acreditación ONAC ISO/IEC 17025</span>
-        <button type="button" onclick="cerrarModal('modal-ver-documento')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
-          Cerrar
-        </button>
+      <!-- Área de Visualización Central -->
+      <div id="visor-doc-content" class="w-full flex-1 min-h-[380px] max-h-[58vh] rounded-xl bg-slate-900 border border-slate-200 flex items-center justify-center overflow-auto p-3 relative">
+        <!-- Renderizado dinámico de imagen PACS o Iframe de PDF -->
+      </div>
+
+      <!-- Pie del Visor -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 text-xs">
+        <div class="flex items-center gap-2">
+          <span id="visor-doc-footer-info" class="text-slate-600 font-medium">Acreditación ONAC ISO/IEC 17025 • Trazabilidad Hospitalaria</span>
+          <span id="visor-pacs-zoom-indicator" class="font-mono text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">100%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="visor-doc-descargar-btn" href="#" download class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Descargar Archivo</span>
+          </a>
+          <button type="button" onclick="cerrarModal('modal-ver-documento')" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition shadow-sm shadow-blue-500/25">
+            Cerrar Visor
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -4844,24 +4945,159 @@
     }
 
     // ==========================================
-    // SECCIÓN 8: EXPEDIENTE, FOTOGRAFÍAS Y CERTIFICADOS DE CALIBRACIÓN
+    // SECCIÓN 8: EXPEDIENTE, PACS FOTOGRÁFICO Y CERTIFICADOS DE CALIBRACIÓN
     // ==========================================
+
+    let pacsCurrentZoom = 1.0;
+    let pacsBrightness = 100;
+    let pacsContrast = 100;
+    let pacsInverted = false;
+    let pacsCurrentUrl = "";
+
+    const CATALOGO_TECNOLOGIAS_PACS = [
+      { id_equipo: "VENT-01", tipo: "VENT", nombre: "Ventilador Mecánico C3", marca: "Hamilton Medical", modelo: "C3", img: "/static/equipos/vent_hamilton_c3.jpeg", cert: "CAL-2026-HV-001" },
+      { id_equipo: "VENT-02", tipo: "VENT", nombre: "Ventilador Evita V800", marca: "Dräger", modelo: "Evita V800", img: "/static/equipos/vent_drager_evita_v800.png", cert: "CAL-2026-HV-002" },
+      { id_equipo: "MON-01", tipo: "MON", nombre: "Monitor BeneVision N17", marca: "Mindray", modelo: "BeneVision N17", img: "/static/equipos/mon_mindray_n17.png", cert: "CAL-2026-HV-003" },
+      { id_equipo: "MON-02", tipo: "MON", nombre: "Monitor IntelliVue MX800", marca: "Philips", modelo: "IntelliVue MX800", img: "/static/equipos/mon_philips_mx800.png", cert: "CAL-2026-HV-004" },
+      { id_equipo: "BVOL-01", tipo: "BVOL", nombre: "Bomba Volumétrica Space", marca: "BBraun", modelo: "Space P", img: "/static/equipos/bvol_bbraun_space.jpg", cert: "CAL-2026-HV-005" },
+      { id_equipo: "BJER-01", tipo: "BJER", nombre: "Bomba Injectomat Agilia", marca: "Fresenius Kabi", modelo: "Injectomat Agilia", img: "/static/equipos/bjer_fresenius_agilia.png", cert: "CAL-2026-HV-006" },
+      { id_equipo: "CRRT-01", tipo: "CRRT", nombre: "Terapia Renal PrisMax", marca: "Baxter", modelo: "PrisMax", img: "/static/equipos/crrt_baxter_prismax.jpeg", cert: "CAL-2026-HV-007" },
+      { id_equipo: "POCT-01", tipo: "POCT", nombre: "Analizador Gases ABL90", marca: "Radiometer", modelo: "ABL90 FLEX", img: "/static/equipos/poct_radiometer_abl90.jpg", cert: "CAL-2026-HV-008" },
+      { id_equipo: "DEF-01", tipo: "DEF", nombre: "Desfibrilador BeneHeart D3", marca: "Mindray / Zoll", modelo: "BeneHeart D3", img: "/static/equipos/def_mindray_beneheart_d3.jpeg", cert: "CAL-2026-HV-009" },
+      { id_equipo: "ECG-01", tipo: "ECG", nombre: "Electrocardiógrafo MAC 2000", marca: "GE Healthcare", modelo: "MAC 2000", img: "/static/equipos/ecg_ge_mac2000.jpeg", cert: "CAL-2026-HV-010" }
+    ];
+
+    function renderizarGaleriaPacs(filtroTec = "todos") {
+      const container = document.getElementById("galeria-pacs-tecnologias");
+      if (!container) return;
+
+      let items = CATALOGO_TECNOLOGIAS_PACS;
+      if (filtroTec && filtroTec !== "todos") {
+        items = items.filter(t => t.tipo === filtroTec);
+      }
+
+      container.innerHTML = items.map(t => {
+        const esSeleccionado = (t.id_equipo === cacheDocumentacionEquipoId);
+        return `
+          <div onclick="seleccionarEquipoDocumentacion('${t.id_equipo}')" class="p-3 bg-white border ${esSeleccionado ? 'border-blue-600 ring-2 ring-blue-500/20 shadow-md' : 'border-slate-200 hover:border-blue-300 shadow-2xs'} rounded-xl cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="h-28 w-full bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center p-1.5 mb-2 group-hover:scale-[1.02] transition">
+                <img src="${t.img}" alt="${t.nombre}" class="max-h-full max-w-full object-contain">
+              </div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="font-mono text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${t.id_equipo}</span>
+                <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">ONAC</span>
+              </div>
+              <div class="font-bold text-slate-800 text-xs truncate" title="${t.nombre}">${t.nombre}</div>
+              <div class="text-[10px] text-slate-500 truncate">${t.marca} ${t.modelo}</div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+              <span class="font-mono truncate">${t.cert}</span>
+              <span class="text-blue-600 font-medium group-hover:underline">Ver Pack &rarr;</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function seleccionarEquipoDocumentacion(idEquipo) {
+      if (!idEquipo) return;
+      const inp = document.getElementById("doc-input-pk");
+      if (inp) inp.value = idEquipo;
+      const sel = document.getElementById("doc-selector-equipo");
+      if (sel) sel.value = idEquipo;
+      cargarDocumentacionEquipos(idEquipo);
+    }
+
+    function alCambiarPkDocumentos(valor) {
+      if (!valor) return;
+      const val = valor.trim().toUpperCase();
+      const sel = document.getElementById("doc-selector-equipo");
+      if (sel) {
+        for (let opt of sel.options) {
+          if (opt.value.toUpperCase() === val) {
+            sel.value = opt.value;
+            cargarDocumentacionEquipos(opt.value);
+            return;
+          }
+        }
+      }
+      if (val.length >= 6) {
+        cargarDocumentacionEquipos(val);
+      }
+    }
+
+    function filtrarPorTecnologia(tipoTec) {
+      renderizarGaleriaPacs(tipoTec);
+      const sel = document.getElementById("doc-selector-equipo");
+      if (sel && cacheEquiposDocumentosLista) {
+        let lista = cacheEquiposDocumentosLista;
+        if (tipoTec && tipoTec !== "todos") {
+          lista = lista.filter(e => e.tipo === tipoTec || (e.id_equipo && e.id_equipo.startsWith(tipoTec)));
+        }
+        sel.innerHTML = lista.map(e => `
+          <option value="${e.id_equipo}" ${e.id_equipo === cacheDocumentacionEquipoId ? 'selected' : ''}>PK: ${e.id_equipo} • ${e.tipo_nombre || e.nombre || ''}</option>
+        `).join("");
+        if (lista.length > 0 && !lista.some(e => e.id_equipo === cacheDocumentacionEquipoId)) {
+          seleccionarEquipoDocumentacion(lista[0].id_equipo);
+        }
+      }
+    }
+
+    let cacheEquiposDocumentosLista = [];
 
     async function cargarDocumentacionEquipos(equipoId = cacheDocumentacionEquipoId) {
       if (!equipoId) equipoId = "BVOL-01";
       cacheDocumentacionEquipoId = equipoId;
 
-      // Actualizar selectores
+      // Obtener lista completa de equipos de flota si aún no existe
+      if (!cacheEquiposDocumentosLista || cacheEquiposDocumentosLista.length === 0) {
+        if (cacheEquiposEstado && cacheEquiposEstado.equipos && cacheEquiposEstado.equipos.length > 0) {
+          cacheEquiposDocumentosLista = cacheEquiposEstado.equipos;
+        } else if (cachePrediccionResumen && cachePrediccionResumen.equipos_priorizados) {
+          cacheEquiposDocumentosLista = cachePrediccionResumen.equipos_priorizados;
+        } else {
+          cacheEquiposDocumentosLista = CATALOGO_TECNOLOGIAS_PACS.map(c => ({
+            id_equipo: c.id_equipo,
+            tipo_nombre: c.nombre,
+            tipo: c.tipo
+          }));
+        }
+      }
+
+      // Actualizar selector y datalist de PK
+      const datalist = document.getElementById("doc-datalist-pks");
+      if (datalist && cacheEquiposDocumentosLista.length > 0) {
+        datalist.innerHTML = cacheEquiposDocumentosLista.map(e => `<option value="${e.id_equipo}">${e.tipo_nombre || e.nombre || ''}</option>`).join("");
+      }
+
+      const inpPk = document.getElementById("doc-input-pk");
+      if (inpPk) inpPk.value = equipoId;
+
       const sel = document.getElementById("doc-selector-equipo");
-      if (sel && cachePrediccionResumen && cachePrediccionResumen.equipos_priorizados) {
-        const lista = cachePrediccionResumen.equipos_priorizados;
-        sel.innerHTML = lista.map(e => `
-          <option value="${e.id_equipo}" ${e.id_equipo === equipoId ? 'selected' : ''}>PK: ${e.id_equipo} • ${e.tipo_nombre}</option>
-        `).join("");
+      if (sel && cacheEquiposDocumentosLista.length > 0) {
+        const existeEnSel = Array.from(sel.options).some(o => o.value === equipoId);
+        if (!existeEnSel) {
+          sel.innerHTML = cacheEquiposDocumentosLista.map(e => `
+            <option value="${e.id_equipo}" ${e.id_equipo === equipoId ? 'selected' : ''}>PK: ${e.id_equipo} • ${e.tipo_nombre || e.nombre || ''}</option>
+          `).join("");
+        } else {
+          sel.value = equipoId;
+        }
       }
 
       const pkHero = document.getElementById("doc-hero-pk");
       if (pkHero) pkHero.innerText = equipoId;
+
+      // Encontrar nombre tecnológico
+      const tecEncontrada = CATALOGO_TECNOLOGIAS_PACS.find(t => t.id_equipo === equipoId) || 
+                            (cacheEquiposDocumentosLista ? cacheEquiposDocumentosLista.find(e => e.id_equipo === equipoId) : null);
+      const heroNom = document.getElementById("doc-hero-nombre-tec");
+      if (heroNom) {
+        heroNom.innerText = tecEncontrada ? (tecEncontrada.nombre || tecEncontrada.tipo_nombre || `Equipo ${equipoId}`) : `Activo Biomédico ${equipoId}`;
+      }
+
+      renderizarGaleriaPacs(document.getElementById("doc-filtro-tecnologia")?.value || "todos");
 
       try {
         const res = await fetch(`/api/equipos-documentos/${encodeURIComponent(equipoId)}`, { headers: getAuthHeaders() });
@@ -4888,7 +5124,13 @@
         const nomFoto = document.getElementById("doc-foto-nombre-archivo");
         if (containerFoto) {
           if (foto && foto.archivo_url) {
-            containerFoto.innerHTML = `<img src="${foto.archivo_url}" alt="Foto de ${equipoId}" class="max-h-full max-w-full object-contain rounded-lg">`;
+            containerFoto.innerHTML = `
+              <img src="${foto.archivo_url}" alt="Foto de ${equipoId}" class="max-h-full max-w-full object-contain rounded-lg">
+              <div class="absolute bottom-2 right-2 px-2 py-1 bg-slate-900/75 text-white rounded text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>Visor PACS</span>
+              </div>
+            `;
             if (nomFoto) nomFoto.innerText = foto.archivo_nombre || `${equipoId}_foto.jpg`;
           } else {
             containerFoto.innerHTML = `<div class="text-slate-500 text-xs">Sin fotografía oficial registrada</div>`;
@@ -4930,42 +5172,55 @@
 
         if (tbodyDocs) {
           if (cacheDocumentosActuales.length === 0) {
-            tbodyDocs.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No hay documentos registrados para esta unidad.</td></tr>`;
+            tbodyDocs.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-500">No hay documentos registrados para esta unidad.</td></tr>`;
           } else {
             tbodyDocs.innerHTML = cacheDocumentosActuales.map(d => {
-              let badgeTipo = "bg-sky-950 text-sky-300 border-sky-800";
+              const docPk = d.pk_documento || `DOC-${String(d.id).padStart(4, '0')}`;
+              const eqPk = d.equipo_id || cacheDocumentacionEquipoId;
+              let badgeTipo = "bg-sky-50 text-sky-700 border-sky-200";
               let labelTipo = d.tipo_documento;
               if (d.tipo_documento === "CERTIFICADO_CALIBRACION") {
-                badgeTipo = "bg-emerald-950 text-emerald-300 border-emerald-800";
+                badgeTipo = "bg-emerald-50 text-emerald-700 border-emerald-200";
                 labelTipo = "Certificado Calibración";
               } else if (d.tipo_documento === "FOTO_EQUIPO") {
-                badgeTipo = "bg-purple-950 text-purple-300 border-purple-800";
-                labelTipo = "Foto de Identificación";
+                badgeTipo = "bg-purple-50 text-purple-700 border-purple-200";
+                labelTipo = "Fotografía Oficial";
               } else if (d.tipo_documento === "FICHA_TECNICA") {
-                badgeTipo = "bg-indigo-950 text-indigo-300 border-indigo-800";
+                badgeTipo = "bg-slate-100 text-slate-700 border-slate-200";
                 labelTipo = "Ficha Técnica";
               }
 
+              let badgeVig = "bg-emerald-50 text-emerald-700 border-emerald-200";
+              if (d.estado_vigencia === "VENCIDO") badgeVig = "bg-rose-50 text-rose-700 border-rose-200";
+              if (d.estado_vigencia === "PROXIMO_VENCER") badgeVig = "bg-amber-50 text-amber-700 border-amber-200";
+
               return `
-                <tr class="hover:bg-slate-100/40 transition">
-                  <td class="py-2.5 px-3 whitespace-nowrap">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeTipo}">${labelTipo}</span>
+                <tr class="hover:bg-sky-50/50 transition border-b border-slate-100">
+                  <td class="py-2.5 px-3">
+                    <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 text-xs">${docPk}</span>
                   </td>
-                  <td class="py-2.5 px-3 font-sans text-slate-800">${d.titulo || '-'}</td>
-                  <td class="py-2.5 px-3 text-sky-300 font-mono">${d.numero_certificado || '-'}</td>
-                  <td class="py-2.5 px-3 text-slate-500 truncate max-w-xs" title="${d.entidad_emisora}">${d.entidad_emisora || '-'}</td>
-                  <td class="py-2.5 px-3 text-slate-500 whitespace-nowrap">${d.fecha_emision || '-'}</td>
-                  <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${d.fecha_vencimiento || '-'}</td>
+                  <td class="py-2.5 px-3">
+                    <span class="font-mono font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">${eqPk}</span>
+                  </td>
                   <td class="py-2.5 px-3 whitespace-nowrap">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      d.estado_vigencia === 'VENCIDO' ? 'bg-rose-50 text-rose-700 border border-rose-200 font-semibold' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold'
-                    }">${d.estado_vigencia || 'VIGENTE'}</span>
+                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeTipo}">${labelTipo}</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-slate-800 font-medium">
+                    <div>${d.titulo || '-'}</div>
+                    <div class="text-[10px] text-slate-500 font-mono">${d.archivo_nombre || ''} (${d.archivo_tamano_kb || 0} KB)</div>
+                  </td>
+                  <td class="py-2.5 px-3 font-mono text-slate-700">${d.numero_certificado || '-'}</td>
+                  <td class="py-2.5 px-3 text-slate-600 text-[11px]">${d.entidad_emisora || 'Institucional'}</td>
+                  <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_emision || '-'}</td>
+                  <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_vencimiento || '-'}</td>
+                  <td class="py-2.5 px-3 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeVig}">${d.estado_vigencia || 'VIGENTE'}</span>
                   </td>
                   <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                    <button onclick="abrirVisorDocumentoPorId(${d.id})" class="px-2 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-semibold transition mr-1">
-                      Ver
+                    <button onclick="abrirVisorDocumentoPorId(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] font-semibold transition mr-1">
+                      Visor PACS
                     </button>
-                    <button onclick="eliminarDocumentoPorId(${d.id})" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-semibold transition">
+                    <button onclick="eliminarDocumentoPorId(${d.id})" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold transition">
                       Eliminar
                     </button>
                   </td>
@@ -4980,94 +5235,29 @@
       }
     }
 
-        function manejarBusquedaDocumentos(e) {
-      const q = document.getElementById("doc-busqueda-input")?.value?.trim().toLowerCase() || "";
-      filtrarDocumentosUI(q);
-    }
-
-    function aplicarFiltrosDocumentos() {
-      const tipo = document.getElementById("doc-filtro-tipo")?.value || "todos";
-      const q = document.getElementById("doc-busqueda-input")?.value?.trim().toLowerCase() || "";
-      filtrarDocumentosUI(q, tipo);
-    }
-
-    function filtrarDocumentosUI(query = "", tipoFiltro = "todos") {
-      if (!cacheDocumentosActuales) return;
-      const tbodyDocs = document.getElementById("tabla-documentos-body");
-      if (!tbodyDocs) return;
-
-      let filtrados = cacheDocumentosActuales;
-      if (tipoFiltro !== "todos") {
-        filtrados = filtrados.filter(d => d.tipo_documento === tipoFiltro);
-      }
-      if (query) {
-        filtrados = filtrados.filter(d => {
-          const docPk = (d.pk_documento || `DOC-${String(d.id).padStart(4, '0')}`).toLowerCase();
-          const eqPk = (d.equipo_id || "").toLowerCase();
-          const tit = (d.titulo || "").toLowerCase();
-          const cert = (d.numero_certificado || "").toLowerCase();
-          return docPk.includes(query) || eqPk.includes(query) || tit.includes(query) || cert.includes(query);
-        });
-      }
-
-      if (filtrados.length === 0) {
-        tbodyDocs.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-500">No se encontraron documentos con los criterios de búsqueda.</td></tr>`;
-        return;
-      }
-
-      tbodyDocs.innerHTML = filtrados.map(d => {
-        const docPk = d.pk_documento || `DOC-${String(d.id).padStart(4, '0')}`;
-        const eqPk = d.equipo_id || cacheDocumentacionEquipoId;
-        let badgeTipo = "bg-sky-50 text-sky-700 border-sky-200";
-        let labelTipo = d.tipo_documento;
-        if (d.tipo_documento === "CERTIFICADO_CALIBRACION") {
-          badgeTipo = "bg-emerald-50 text-emerald-700 border-emerald-200";
-          labelTipo = "Certificado Calibración";
-        } else if (d.tipo_documento === "FOTO_EQUIPO") {
-          badgeTipo = "bg-purple-50 text-purple-700 border-purple-200";
-          labelTipo = "Fotografía Activo";
-        } else if (d.tipo_documento === "FICHA_TECNICA") {
-          badgeTipo = "bg-slate-100 text-slate-700 border-slate-200";
-          labelTipo = "Ficha Técnica";
+    function previsualizarFotoActual() {
+      const foto = cacheDocumentosActuales.find(d => d.tipo_documento === "FOTO_EQUIPO");
+      if (foto && foto.archivo_url) {
+        abrirVisorDocumento(
+          foto.archivo_url,
+          foto.titulo || `Fotografía Oficial - ${cacheDocumentacionEquipoId}`,
+          `PLACA / PK: ${cacheDocumentacionEquipoId} • ARCHIVO: ${foto.archivo_nombre || 'imagen'}`,
+          foto.pk_documento
+        );
+      } else {
+        // Buscar en catálogo de tecnologías estático
+        const fallback = CATALOGO_TECNOLOGIAS_PACS.find(t => t.id_equipo === cacheDocumentacionEquipoId);
+        if (fallback) {
+          abrirVisorDocumento(
+            fallback.img,
+            `Fotografía Oficial - ${fallback.nombre}`,
+            `PLACA / PK: ${fallback.id_equipo} • ${fallback.marca} ${fallback.modelo}`,
+            `DOC-${fallback.id_equipo}-FOTO`
+          );
+        } else {
+          showToast("No hay fotografía oficial registrada para esta unidad", "warning");
         }
-
-        let badgeVig = "bg-emerald-50 text-emerald-700 border-emerald-200";
-        if (d.estado_vigencia === "VENCIDO") badgeVig = "bg-rose-50 text-rose-700 border-rose-200";
-        if (d.estado_vigencia === "PROXIMO_VENCER") badgeVig = "bg-amber-50 text-amber-700 border-amber-200";
-
-        return `
-          <tr class="hover:bg-sky-50/50 transition border-b border-slate-100">
-            <td class="py-2.5 px-3">
-              <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 text-xs">${docPk}</span>
-            </td>
-            <td class="py-2.5 px-3">
-              <span class="font-mono font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">${eqPk}</span>
-            </td>
-            <td class="py-2.5 px-3 whitespace-nowrap">
-              <span class="px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeTipo}">${labelTipo}</span>
-            </td>
-            <td class="py-2.5 px-3 text-slate-800 font-medium">
-              <div>${d.titulo || '-'}</div>
-              <div class="text-[10px] text-slate-500 font-mono">${d.archivo_nombre || ''} (${d.archivo_tamano_kb || 0} KB)</div>
-            </td>
-            <td class="py-2.5 px-3 font-mono text-slate-700">${d.numero_certificado || '-'}</td>
-            <td class="py-2.5 px-3 text-slate-600 text-[11px]">${d.entidad_emisora || 'Institucional'}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_emision || '-'}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_vencimiento || '-'}</td>
-            <td class="py-2.5 px-3 whitespace-nowrap">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeVig}">${d.estado_vigencia || 'VIGENTE'}</span>
-            </td>
-            <td class="py-2.5 px-3 text-right whitespace-nowrap">
-              <button onclick="abrirVisorDocumentoPorId(${d.id})" class="px-3 py-1 rounded-lg bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-700 border border-teal-200 text-[11px] font-bold transition mr-1.5 shadow-2xs transform hover:-translate-y-0.5">
-                Ver Documento
-              </button>
-              <button onclick="eliminarDocumentoPorId(${d.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 border border-rose-200 text-[11px] font-bold transition shadow-2xs transform hover:-translate-y-0.5">
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join("");
+      }
     }
 
     function previsualizarCertificadoActual() {
@@ -5075,7 +5265,8 @@
         abrirVisorDocumento(
           cacheCertificadoSeleccionado.archivo_url,
           cacheCertificadoSeleccionado.titulo,
-          `${cacheCertificadoSeleccionado.numero_certificado} • ACTIVO PK: ${cacheDocumentacionEquipoId}`
+          `${cacheCertificadoSeleccionado.numero_certificado || 'CAL'} • ACTIVO PK: ${cacheDocumentacionEquipoId}`,
+          cacheCertificadoSeleccionado.pk_documento
         );
       } else {
         showToast("No hay certificado cargado para este equipo", "warning");
@@ -5088,28 +5279,106 @@
         abrirVisorDocumento(
           doc.archivo_url,
           doc.titulo,
-          `${doc.numero_certificado || doc.tipo_documento} • ACTIVO PK: ${doc.equipo_id}`
+          `${doc.numero_certificado || doc.tipo_documento} • ACTIVO PK: ${doc.equipo_id}`,
+          doc.pk_documento
         );
       }
     }
 
-    function abrirVisorDocumento(url, titulo, sub) {
+    function abrirVisorDocumento(url, titulo, sub, pkDoc = "") {
+      pacsCurrentUrl = url || "";
       const tit = document.getElementById("visor-doc-titulo");
-      if (tit) tit.innerText = titulo || "Documento Digital";
+      if (tit) tit.innerText = titulo || "Estudio de Activo Biomédico";
       const subElem = document.getElementById("visor-doc-subtitulo");
-      if (subElem) subElem.innerText = sub || "Expediente Digital";
+      if (subElem) subElem.innerText = sub || "Expediente Digital Hospitalario";
+      const badgePk = document.getElementById("visor-doc-pk-badge");
+      if (badgePk) badgePk.innerText = pkDoc ? `PK: ${pkDoc}` : `PK: ${cacheDocumentacionEquipoId}`;
+
+      const dlBtn = document.getElementById("visor-doc-descargar-btn");
+      if (dlBtn) dlBtn.href = url || "#";
 
       const container = document.getElementById("visor-doc-content");
+      const toolbar = document.getElementById("pacs-toolbar");
+
+      pacsRestablecer();
+
       if (container) {
-        if (url && (url.startsWith("data:image/") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".svg") || url.endsWith(".webp"))) {
-          container.innerHTML = `<img src="${url}" class="max-h-full max-w-full object-contain rounded-lg">`;
-        } else if (url && (url.startsWith("data:application/pdf") || url.endsWith(".pdf"))) {
-          container.innerHTML = `<iframe src="${url}" class="w-full h-full rounded-lg border-0"></iframe>`;
+        const esImagen = url && (
+          url.startsWith("data:image/") || 
+          url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg") || 
+          url.endsWith(".svg") || url.endsWith(".webp") || url.includes("/static/equipos/")
+        );
+        const esPdf = url && (url.startsWith("data:application/pdf") || url.endsWith(".pdf") || url.includes("/static/certificados/"));
+
+        if (esImagen) {
+          if (toolbar) toolbar.classList.remove("hidden");
+          container.innerHTML = `
+            <div id="pacs-viewport" class="w-full h-full flex items-center justify-center overflow-hidden transition-all duration-150">
+              <img id="pacs-image-target" src="${url}" alt="${titulo}" class="max-h-full max-w-full object-contain rounded-lg transition-transform duration-150" style="transform: scale(1.0); filter: brightness(100%) contrast(100%);">
+            </div>
+          `;
+        } else if (esPdf) {
+          if (toolbar) toolbar.classList.add("hidden");
+          container.innerHTML = `<iframe src="${url}" class="w-full h-full min-h-[460px] rounded-lg border-0 bg-white"></iframe>`;
         } else {
-          container.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs">Visualización no disponible directamente. <br><a href="${url}" download class="text-sky-400 underline mt-2 inline-block">Descargar Archivo</a></div>`;
+          if (toolbar) toolbar.classList.add("hidden");
+          container.innerHTML = `<div class="p-8 text-center text-slate-300 text-xs">Visualización directa no soportada.<br><a href="${url}" download class="text-blue-400 underline mt-2 inline-block">Descargar Archivo</a></div>`;
         }
       }
       abrirModal("modal-ver-documento");
+    }
+
+    // Herramientas de Manipulación de Imagen PACS
+    function pacsAjustarZoom(delta) {
+      pacsCurrentZoom = Math.max(0.4, Math.min(3.5, pacsCurrentZoom + delta));
+      pacsActualizarEstilos();
+    }
+
+    function pacsAlternarInversion() {
+      pacsInverted = !pacsInverted;
+      const btn = document.getElementById("btn-pacs-invert");
+      if (btn) {
+        btn.classList.toggle("bg-purple-100", pacsInverted);
+        btn.classList.toggle("text-purple-800", pacsInverted);
+      }
+      pacsActualizarEstilos();
+    }
+
+    function pacsAplicarFiltros() {
+      pacsBrightness = parseInt(document.getElementById("pacs-slider-brillo")?.value || 100);
+      pacsContrast = parseInt(document.getElementById("pacs-slider-contraste")?.value || 100);
+      pacsActualizarEstilos();
+    }
+
+    function pacsRestablecer() {
+      pacsCurrentZoom = 1.0;
+      pacsBrightness = 100;
+      pacsContrast = 100;
+      pacsInverted = false;
+
+      const slBrillo = document.getElementById("pacs-slider-brillo");
+      if (slBrillo) slBrillo.value = 100;
+      const slContraste = document.getElementById("pacs-slider-contraste");
+      if (slContraste) slContraste.value = 100;
+
+      const btn = document.getElementById("btn-pacs-invert");
+      if (btn) {
+        btn.classList.remove("bg-purple-100", "text-purple-800");
+      }
+      pacsActualizarEstilos();
+    }
+
+    function pacsActualizarEstilos() {
+      const img = document.getElementById("pacs-image-target");
+      const indicator = document.getElementById("visor-pacs-zoom-indicator");
+      if (indicator) {
+        indicator.innerText = `${Math.round(pacsCurrentZoom * 100)}%`;
+      }
+      if (img) {
+        const invertFilter = pacsInverted ? "invert(100%) hue-rotate(180deg)" : "invert(0%)";
+        img.style.transform = `scale(${pacsCurrentZoom})`;
+        img.style.filter = `brightness(${pacsBrightness}%) contrast(${pacsContrast}%) ${invertFilter}`;
+      }
     }
 
     function abrirModalSubirDocumento(tipoDoc = "CERTIFICADO_CALIBRACION") {
