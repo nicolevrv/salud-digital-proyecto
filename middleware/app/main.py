@@ -691,9 +691,12 @@ def ensure_security_tables_and_roles(conn = None):
                 archivo_tamano_kb INT DEFAULT 0,
                 observaciones TEXT,
                 created_by VARCHAR(100) DEFAULT 'Sistema Biomédico',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                pk_documento VARCHAR(50)
             );
+            ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS pk_documento VARCHAR(50);
             CREATE INDEX IF NOT EXISTS idx_equipos_docs_equipo ON equipos_documentos(equipo_id);
+            CREATE INDEX IF NOT EXISTS idx_equipos_docs_pk ON equipos_documentos(pk_documento);
         """)
         conn.commit()
         print("Esquema de seguridad y roles inicializados correctamente (sin JEFE_AREA).")
@@ -1873,6 +1876,7 @@ FAMILIAS_DATASET_MAP = {
 
 DATASET_COLUMNS = [
     "id",
+    "ID_Registro",
     "ID_Equipo",
     "Tipo_Equipo",
     "Clasificacion_Riesgo",
@@ -1882,7 +1886,10 @@ DATASET_COLUMNS = [
     "Fallas_Acumuladas",
     "MTBF_Promedio_Dias",
     "Variable_Target_Falla",
-    "Descripcion_Evento"
+    "Descripcion_Evento",
+    "Desviacion_Calibracion_Pct",
+    "Estado_IEC62353",
+    "Accion_Recomendada"
 ]
 
 def obtener_slug_tipo(tipo_str: str) -> str:
@@ -2140,8 +2147,10 @@ def get_equipos_dataset(
         rows = cursor.fetchall()
         cursor.close()
 
-        # Format dates
+        # Format dates and ensure primary key ID_Registro
         for r in rows:
+            if not r.get("ID_Registro"):
+                r["ID_Registro"] = f"REG-{r['id']:05d}"
             if isinstance(r.get("Fecha_Reporte"), datetime):
                 r["Fecha_Reporte"] = r["Fecha_Reporte"].strftime("%Y-%m-%d")
 
@@ -2751,6 +2760,7 @@ def listar_documentos_equipos(
     tipo: Optional[str] = None,
     vigencia: Optional[str] = None,
     search: Optional[str] = None,
+    q: Optional[str] = None,
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
@@ -2772,18 +2782,21 @@ def listar_documentos_equipos(
             query += ' AND UPPER(estado_vigencia) = UPPER(%s)'
             params.append(vigencia.strip())
 
-        if search:
-            query += ' AND (titulo ILIKE %s OR equipo_id ILIKE %s OR numero_certificado ILIKE %s OR entidad_emisora ILIKE %s)'
-            term = f"%{search.strip()}%"
-            params.extend([term, term, term, term])
+        search_term = (search or q or "").strip()
+        if search_term:
+            query += ' AND (titulo ILIKE %s OR equipo_id ILIKE %s OR numero_certificado ILIKE %s OR entidad_emisora ILIKE %s OR pk_documento ILIKE %s)'
+            term = f"%{search_term}%"
+            params.extend([term, term, term, term, term])
 
         query += ' ORDER BY fecha_emision DESC NULLS LAST, id DESC;'
         cursor.execute(query, tuple(params))
         docs = cursor.fetchall()
         cursor.close()
 
-        # Formatear fechas
+        # Formatear fechas y PK de documento
         for d in docs:
+            if not d.get("pk_documento"):
+                d["pk_documento"] = f"DOC-{d['id']:04d}"
             if isinstance(d.get("fecha_emision"), (datetime, date)):
                 d["fecha_emision"] = d["fecha_emision"].strftime("%Y-%m-%d")
             if isinstance(d.get("fecha_vencimiento"), (datetime, date)):
@@ -2806,14 +2819,22 @@ def get_documentos_equipo_individual(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Obtiene el pack documental completo (foto, certificado de calibración y ficha técnica) de una unidad por su Primary Key (ID_Equipo)."""
+    """Obtiene el pack documental completo (foto, certificado de calibración y ficha técnica) de una unidad por su Primary Key (ID_Equipo) o por PK Documento."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute(
-            'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = UPPER(%s) ORDER BY id ASC;',
-            (equipo_id.strip(),)
-        )
-        docs = cursor.fetchall()
+        # Si equipo_id parece un PK Documento (ej. DOC-0001)
+        if equipo_id.strip().upper().startswith("DOC-"):
+            cursor.execute(
+                'SELECT * FROM equipos_documentos WHERE UPPER(pk_documento) = UPPER(%s) OR id = %s ORDER BY id ASC;',
+                (equipo_id.strip(), int(equipo_id.replace("DOC-", "")) if equipo_id.replace("DOC-", "").isdigit() else -1)
+            )
+            docs = cursor.fetchall()
+        else:
+            cursor.execute(
+                'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = UPPER(%s) ORDER BY id ASC;',
+                (equipo_id.strip(),)
+            )
+            docs = cursor.fetchall()
 
         # Si no tiene documentos específicos asignados, generar plantilla predeterminada con su tecnología
         if not docs:
@@ -2835,6 +2856,8 @@ def get_documentos_equipo_individual(
         cursor.close()
 
         for d in docs:
+            if not d.get("pk_documento"):
+                d["pk_documento"] = f"DOC-{d['id']:04d}"
             d["equipo_id"] = equipo_id.upper()
             if isinstance(d.get("fecha_emision"), (datetime, date)):
                 d["fecha_emision"] = d["fecha_emision"].strftime("%Y-%m-%d")
@@ -2910,6 +2933,9 @@ def registrar_documento_equipo(
             user.get("nombre") or user.get("email")
         ))
         nuevo_doc = cursor.fetchone()
+        new_pk = f"DOC-{nuevo_doc['id']:04d}"
+        cursor.execute('UPDATE equipos_documentos SET pk_documento = %s WHERE id = %s', (new_pk, nuevo_doc['id']))
+        nuevo_doc['pk_documento'] = new_pk
         conn.commit()
         cursor.close()
 
