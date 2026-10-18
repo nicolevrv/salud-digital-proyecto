@@ -469,7 +469,7 @@
     <!-- ========================================================================= -->
     <section id="tab-monitoreo" class="tab-content space-y-6">
       
-      <!-- Selector Desplegable de Equipos Biomédicos (Pestaña Desplegable de Equipos) -->
+      <!-- Selector Desplegable de Equipos Biomédicos (Pestaña Desplegable de Equipos y Llave Primaria) -->
       <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
         
         <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
@@ -478,13 +478,24 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
             </div>
             <div>
-              <label for="select-equipo-desplegable" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Equipos Hospitalarios (Pestaña Desplegable):</label>
-              <span class="text-xs text-slate-800 font-semibold">Selecciona el equipo para auditar y ver su gráfica:</span>
+              <label for="input-buscar-pk-equipo" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Equipos Hospitalarios (Pestaña Desplegable):</label>
+              <span class="text-xs text-slate-800 font-semibold">Busca por Llave Primaria (PK) o selecciona de la lista:</span>
             </div>
           </div>
 
+          <!-- Input para escribir / buscar directamente por Llave Primaria (PK) -->
+          <div class="relative w-40 sm:w-48">
+            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-sky-600 font-bold font-mono text-xs">
+              PK:
+            </div>
+            <input type="text" id="input-buscar-pk-equipo" list="lista-pks-equipos" placeholder="Ej: MON-09" oninput="buscarYSeleccionarPorPK(this.value)" class="w-full pl-9 pr-3 py-2 bg-sky-50/60 hover:bg-white focus:bg-white border border-sky-300 hover:border-sky-500 focus:border-sky-600 rounded-xl text-xs font-mono font-bold text-slate-900 placeholder-slate-400 shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500/20 uppercase transition" title="Ingresa o selecciona la Llave Primaria (PK) del equipo" autocomplete="off" />
+            <datalist id="lista-pks-equipos">
+              <!-- Opciones dinámicas de PKs -->
+            </datalist>
+          </div>
+
           <!-- Selector Desplegable Universal de Equipos (Optgroups por Tecnología Biomédica) -->
-          <div class="flex-1 min-w-[260px] max-w-lg">
+          <div class="flex-1 min-w-[240px] max-w-md">
             <select id="select-equipo-desplegable" onchange="seleccionarEquipoDesdeDesplegable(this.value)" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 hover:border-sky-400 focus:border-sky-600 rounded-xl px-3.5 py-2 text-xs font-mono font-semibold text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition cursor-pointer">
               <option value="">Cargando equipos biomédicos...</option>
             </select>
@@ -3804,6 +3815,21 @@
       }
 
       select.innerHTML = html;
+
+      // Poblar datalist de Llaves Primarias (PKs) para autocompletado y búsqueda rápida
+      const datalist = document.getElementById("lista-pks-equipos");
+      if (datalist) {
+        datalist.innerHTML = equipos.map(e => `
+          <option value="${e.id_equipo}">${e.id_equipo} • ${e.tipo_nombre || e.tipo}</option>
+        `).join("");
+      }
+
+      // Sincronizar input de PK
+      const inPk = document.getElementById("input-buscar-pk-equipo");
+      if (inPk && cacheEquipoSeleccionadoId && !inPk.value) {
+        inPk.value = cacheEquipoSeleccionadoId;
+      }
+
       if (cacheEquipoSeleccionadoId && equipos.some(e => e.id_equipo === cacheEquipoSeleccionadoId && (!filtro || e.tipo === filtro))) {
         select.value = cacheEquipoSeleccionadoId;
       } else if (select.options.length > 0 && select.options[0].value) {
@@ -3811,7 +3837,25 @@
       }
     }
 
-    function seleccionarEquipoDesdeDesplegable(equipoId) {
+    function buscarYSeleccionarPorPK(valor) {
+      if (!valor || !cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
+      const limpio = valor.trim().toUpperCase();
+      if (!limpio) return;
+
+      // Buscar coincidencia exacta de ID_Equipo
+      let eq = cacheEquiposEstado.equipos.find(e => (e.id_equipo || "").toUpperCase() === limpio);
+      
+      // Si no es exacta, probar sin guiones (ej: MON09 -> MON-09)
+      if (!eq) {
+        eq = cacheEquiposEstado.equipos.find(e => (e.id_equipo || "").toUpperCase().replace(/-/g, '') === limpio.replace(/-/g, ''));
+      }
+
+      if (eq) {
+        seleccionarEquipoGlobal(eq.id_equipo);
+      }
+    }
+
+    function seleccionarEquipoGlobal(equipoId) {
       if (!equipoId || !cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
       const eq = cacheEquiposEstado.equipos.find(e => e.id_equipo === equipoId);
       if (!eq) return;
@@ -3819,7 +3863,25 @@
       cacheFamiliaSeleccionada = eq.tipo;
       cacheEquipoSeleccionadoId = eq.id_equipo;
 
-      // Sincronizar select interno de la unidad
+      // 1. Sincronizar campo de texto / búsqueda de PK arriba
+      const inPk = document.getElementById("input-buscar-pk-equipo");
+      if (inPk && inPk.value !== eq.id_equipo) {
+        inPk.value = eq.id_equipo;
+      }
+
+      // 2. Sincronizar desplegable superior de equipos
+      const selDesp = document.getElementById("select-equipo-desplegable");
+      if (selDesp && selDesp.value !== eq.id_equipo) {
+        // Si el filtro de familia actual no contiene el equipo, restablecer a TODAS
+        const filtroSel = document.getElementById("select-filtro-tecnologia");
+        if (filtroSel && filtroSel.value !== 'TODAS' && filtroSel.value !== eq.tipo) {
+          filtroSel.value = 'TODAS';
+          poblarDropdownDesplegableEquipos('TODAS');
+        }
+        selDesp.value = eq.id_equipo;
+      }
+
+      // 3. Sincronizar menú inferior de "Cambiar Unidad" para que muestre el equipo seleccionado
       const selEsp = document.getElementById("select-equipo-especifico");
       if (selEsp) {
         const unidadesFam = cacheEquiposEstado.equipos.filter(e => e.tipo === eq.tipo);
@@ -3829,16 +3891,29 @@
         selEsp.value = eq.id_equipo;
       }
 
+      // 4. Actualizar badge de PK
+      const pkBadge = document.getElementById("badge-equipo-pk");
+      if (pkBadge) pkBadge.innerText = eq.id_equipo;
+
+      // 5. Renderizar variables, grid de unidades y gráfico histórico
       renderizarVariablesEquipo(eq);
       renderizarGridUnidadesParque(cacheEquiposEstado.equipos.filter(e => e.tipo === eq.tipo));
       cargarHistorialEquipo(eq.tipo, eq.id_equipo);
+    }
+
+    function seleccionarEquipoDesdeDesplegable(equipoId) {
+      seleccionarEquipoGlobal(equipoId);
+    }
+
+    function seleccionarEquipoEspecifico(equipoId) {
+      seleccionarEquipoGlobal(equipoId);
     }
 
     function filtrarEquiposPorTecnologia(tipoSlug) {
       poblarDropdownDesplegableEquipos(tipoSlug);
       const select = document.getElementById("select-equipo-desplegable");
       if (select && select.value) {
-        seleccionarEquipoDesdeDesplegable(select.value);
+        seleccionarEquipoGlobal(select.value);
       }
     }
 
@@ -3879,27 +3954,8 @@
         const conteoParque = document.getElementById("conteo-unidades-parque");
         if (conteoParque) conteoParque.innerText = unidades.length;
 
-        const select = document.getElementById("select-equipo-especifico");
-        if (select) {
-          select.innerHTML = unidades.map(u => `
-            <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || u.meses_mtto || 0}m sin mtto)</option>
-          `).join("");
-
-          if (unidades.length > 0) {
-            cacheEquipoSeleccionadoId = unidades[0].id_equipo;
-            select.value = cacheEquipoSeleccionadoId;
-          }
-        }
-        const selDesp = document.getElementById("select-equipo-desplegable");
-        if (selDesp && cacheEquipoSeleccionadoId) {
-          selDesp.value = cacheEquipoSeleccionadoId;
-        }
-
-        const equipoActivo = unidades[0];
-        renderizarVariablesEquipo(equipoActivo);
-        renderizarGridUnidadesParque(unidades);
-        if (equipoActivo) {
-          cargarHistorialEquipo(tipo, equipoActivo.id_equipo);
+        if (unidades.length > 0) {
+          seleccionarEquipoGlobal(unidades[0].id_equipo);
         }
       }
 
@@ -3913,7 +3969,7 @@
         const data = await res.json();
         cacheEquiposEstado = data;
 
-        // Poblar pestaña desplegable de equipos
+        // Poblar pestaña desplegable de equipos y datalist de PKs
         const filtroSel = document.getElementById("select-filtro-tecnologia");
         poblarDropdownDesplegableEquipos(filtroSel ? filtroSel.value : 'TODAS');
         renderizarPillsFamiliasMonitoreo();
@@ -3922,58 +3978,12 @@
         const conteoParque = document.getElementById("conteo-unidades-parque");
         if (conteoParque) conteoParque.innerText = unidades.length;
 
-        const select = document.getElementById("select-equipo-especifico");
-        if (select) {
-          if (unidades.length > 0) {
-            select.innerHTML = unidades.map(u => `
-              <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || u.meses_mtto || 0}m sin mtto)</option>
-            `).join("");
-
-            if (!cacheEquipoSeleccionadoId || !unidades.some(u => u.id_equipo === cacheEquipoSeleccionadoId)) {
-              cacheEquipoSeleccionadoId = unidades[0].id_equipo;
-            }
-            select.value = cacheEquipoSeleccionadoId;
-          } else {
-            select.innerHTML = '<option value="">Sin unidades registradas</option>';
-            cacheEquipoSeleccionadoId = null;
-          }
-        }
-
-        const selDesp = document.getElementById("select-equipo-desplegable");
-        if (selDesp && cacheEquipoSeleccionadoId) {
-          selDesp.value = cacheEquipoSeleccionadoId;
-        }
-
         const equipoActivo = (data.equipos || []).find(u => u.id_equipo === cacheEquipoSeleccionadoId) || unidades[0] || (data.equipos || [])[0];
         if (equipoActivo) {
-          cacheFamiliaSeleccionada = equipoActivo.tipo;
-          renderizarVariablesEquipo(equipoActivo);
-          renderizarGridUnidadesParque((data.equipos || []).filter(e => e.tipo === equipoActivo.tipo));
-          cargarHistorialEquipo(equipoActivo.tipo, equipoActivo.id_equipo);
+          seleccionarEquipoGlobal(equipoActivo.id_equipo);
         }
       } catch (err) {
         console.error("Error al cargar estado de equipos:", err);
-      }
-    }
-
-    function seleccionarEquipoEspecifico(equipoId) {
-      cacheEquipoSeleccionadoId = equipoId;
-      const select = document.getElementById("select-equipo-especifico");
-      if (select && select.value !== equipoId) {
-        select.value = equipoId;
-      }
-      const selDesp = document.getElementById("select-equipo-desplegable");
-      if (selDesp && selDesp.value !== equipoId) {
-        selDesp.value = equipoId;
-      }
-      if (!cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
-      const equipoActivo = cacheEquiposEstado.equipos.find(u => u.id_equipo === equipoId);
-      if (equipoActivo) {
-        cacheFamiliaSeleccionada = equipoActivo.tipo;
-        renderizarVariablesEquipo(equipoActivo);
-        const unidades = cacheEquiposEstado.equipos.filter(e => e.tipo === equipoActivo.tipo);
-        renderizarGridUnidadesParque(unidades);
-        cargarHistorialEquipo(equipoActivo.tipo, equipoId);
       }
     }
 
