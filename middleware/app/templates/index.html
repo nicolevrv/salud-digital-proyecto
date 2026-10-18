@@ -469,17 +469,52 @@
     <!-- ========================================================================= -->
     <section id="tab-monitoreo" class="tab-content space-y-6">
       
-      <!-- Selector de Tecnologías Biomédicas Hospitalarias (10 Familias) -->
-      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-1.5" id="familia-equipos-pills">
-          <!-- Renderizado dinámicamente con las 10 tecnologías y SVGs clínicos -->
+      <!-- Selector Desplegable de Equipos Biomédicos (Pestaña Desplegable de Equipos) -->
+      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        
+        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <div>
+              <label for="select-equipo-desplegable" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Equipos Hospitalarios (Pestaña Desplegable):</label>
+              <span class="text-xs text-slate-800 font-semibold">Selecciona el equipo para auditar y ver su gráfica:</span>
+            </div>
+          </div>
+
+          <!-- Selector Desplegable Universal de Equipos (Optgroups por Tecnología Biomédica) -->
+          <div class="flex-1 min-w-[260px] max-w-lg">
+            <select id="select-equipo-desplegable" onchange="seleccionarEquipoDesdeDesplegable(this.value)" class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 hover:border-sky-400 focus:border-sky-600 rounded-xl px-3.5 py-2 text-xs font-mono font-semibold text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition cursor-pointer">
+              <option value="">Cargando equipos biomédicos...</option>
+            </select>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button onclick="cargarEstadoEquipos(cacheFamiliaSeleccionada)" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition" title="Refrescar estado de equipos">
+        <!-- Filtro Rápido por Tecnología y Botón Refrescar -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 text-xs">
+            <label for="select-filtro-tecnologia" class="text-slate-500 hidden sm:inline font-medium">Familia / Tipo:</label>
+            <select id="select-filtro-tecnologia" onchange="filtrarEquiposPorTecnologia(this.value)" class="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-sky-500 cursor-pointer">
+              <option value="TODAS">Todas las Tecnologías (10)</option>
+              <option value="bombas-volumetricas">Bombas Volumétricas (BVOL)</option>
+              <option value="bombas-jeringa">Bombas de Jeringa (BJER)</option>
+              <option value="ventiladores">Ventiladores Mecánicos (VENT)</option>
+              <option value="monitores">Monitores Multiparámetro (MON)</option>
+              <option value="desfibriladores">Desfibriladores Bifásicos (DEF)</option>
+              <option value="crrt">Máquinas CRRT (CRRT)</option>
+              <option value="ecg">Electrocardiógrafos 12D (ECG)</option>
+              <option value="poct">Analizadores POCT (POCT)</option>
+              <option value="ecografos">Ecógrafos Doppler (ECO)</option>
+              <option value="rayos-x">Rayos X Portátiles (RX)</option>
+            </select>
+          </div>
+
+          <button onclick="cargarEstadoEquipos(cacheFamiliaSeleccionada)" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition shadow-2xs cursor-pointer" title="Refrescar estado de equipos">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </button>
         </div>
+
       </div>
 
       <!-- Ficha de la Unidad Seleccionada con LLAVE PRIMARIA (PK) Destacada -->
@@ -3733,6 +3768,80 @@
 
     // Estado de Confiabilidad y Expedientes inicializado globalmente
 
+    function poblarDropdownDesplegableEquipos(filtroFamilia = 'TODAS') {
+      const select = document.getElementById("select-equipo-desplegable");
+      if (!select || !cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
+
+      const equipos = cacheEquiposEstado.equipos;
+      const filtro = (filtroFamilia && filtroFamilia !== 'TODAS') ? filtroFamilia : null;
+      
+      const grupos = {};
+      equipos.forEach(eq => {
+        if (filtro && eq.tipo !== filtro) return;
+        const nombreGrupo = eq.tipo_nombre || FAMILIAS_MAP[eq.tipo]?.nombre || eq.tipo;
+        if (!grupos[nombreGrupo]) {
+          grupos[nombreGrupo] = [];
+        }
+        grupos[nombreGrupo].push(eq);
+      });
+
+      let html = "";
+      const nombresGrupos = Object.keys(grupos);
+      if (nombresGrupos.length === 0) {
+        html = '<option value="">No hay equipos para la tecnología seleccionada</option>';
+      } else {
+        nombresGrupos.forEach(grupo => {
+          html += `<optgroup label="${grupo} (${grupos[grupo].length} unidades)">`;
+          grupos[grupo].forEach(eq => {
+            const pred = eq.prediccion || {};
+            const estado = eq.falla_actual === 1 
+              ? "FALLA ACTIVA" 
+              : ((pred.probabilidad_falla || 0) > 70 ? "ALERTA MTTO" : "OPERATIVO");
+            html += `<option value="${eq.id_equipo}">PK: ${eq.id_equipo} • ${eq.tipo_nombre || eq.tipo} • ${estado} • Riesgo: ${eq.clasificacion_riesgo || 'IIB'}</option>`;
+          });
+          html += `</optgroup>`;
+        });
+      }
+
+      select.innerHTML = html;
+      if (cacheEquipoSeleccionadoId && equipos.some(e => e.id_equipo === cacheEquipoSeleccionadoId && (!filtro || e.tipo === filtro))) {
+        select.value = cacheEquipoSeleccionadoId;
+      } else if (select.options.length > 0 && select.options[0].value) {
+        select.value = select.options[0].value;
+      }
+    }
+
+    function seleccionarEquipoDesdeDesplegable(equipoId) {
+      if (!equipoId || !cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
+      const eq = cacheEquiposEstado.equipos.find(e => e.id_equipo === equipoId);
+      if (!eq) return;
+
+      cacheFamiliaSeleccionada = eq.tipo;
+      cacheEquipoSeleccionadoId = eq.id_equipo;
+
+      // Sincronizar select interno de la unidad
+      const selEsp = document.getElementById("select-equipo-especifico");
+      if (selEsp) {
+        const unidadesFam = cacheEquiposEstado.equipos.filter(e => e.tipo === eq.tipo);
+        selEsp.innerHTML = unidadesFam.map(u => `
+          <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || u.meses_mtto || 0}m sin mtto)</option>
+        `).join("");
+        selEsp.value = eq.id_equipo;
+      }
+
+      renderizarVariablesEquipo(eq);
+      renderizarGridUnidadesParque(cacheEquiposEstado.equipos.filter(e => e.tipo === eq.tipo));
+      cargarHistorialEquipo(eq.tipo, eq.id_equipo);
+    }
+
+    function filtrarEquiposPorTecnologia(tipoSlug) {
+      poblarDropdownDesplegableEquipos(tipoSlug);
+      const select = document.getElementById("select-equipo-desplegable");
+      if (select && select.value) {
+        seleccionarEquipoDesdeDesplegable(select.value);
+      }
+    }
+
     function renderizarPillsFamiliasMonitoreo() {
       const container = document.getElementById("familia-equipos-pills");
       if (!container) return;
@@ -3761,11 +3870,9 @@
       cacheEquipoSeleccionadoId = null;
       renderizarPillsFamiliasMonitoreo();
 
-      const infoFam = FAMILIAS_MAP[tipo] || { nombre: tipo };
-      const titParque = document.getElementById("titulo-parque-activo");
-      if (titParque) titParque.innerText = infoFam.nombre;
-      const titChart = document.getElementById("chart-equipo-titulo");
-      if (titChart) titChart.innerText = `Evolución de Confiabilidad Metrológica: ${infoFam.nombre}`;
+      const filtroSel = document.getElementById("select-filtro-tecnologia");
+      if (filtroSel) filtroSel.value = tipo;
+      poblarDropdownDesplegableEquipos(tipo);
 
       if (cacheEquiposEstado && cacheEquiposEstado.equipos) {
         const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === tipo);
@@ -3775,7 +3882,7 @@
         const select = document.getElementById("select-equipo-especifico");
         if (select) {
           select.innerHTML = unidades.map(u => `
-            <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
+            <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || u.meses_mtto || 0}m sin mtto)</option>
           `).join("");
 
           if (unidades.length > 0) {
@@ -3783,6 +3890,11 @@
             select.value = cacheEquipoSeleccionadoId;
           }
         }
+        const selDesp = document.getElementById("select-equipo-desplegable");
+        if (selDesp && cacheEquipoSeleccionadoId) {
+          selDesp.value = cacheEquipoSeleccionadoId;
+        }
+
         const equipoActivo = unidades[0];
         renderizarVariablesEquipo(equipoActivo);
         renderizarGridUnidadesParque(unidades);
@@ -3801,6 +3913,9 @@
         const data = await res.json();
         cacheEquiposEstado = data;
 
+        // Poblar pestaña desplegable de equipos
+        const filtroSel = document.getElementById("select-filtro-tecnologia");
+        poblarDropdownDesplegableEquipos(filtroSel ? filtroSel.value : 'TODAS');
         renderizarPillsFamiliasMonitoreo();
 
         const unidades = (data.equipos || []).filter(e => e.tipo === tipo);
@@ -3811,7 +3926,7 @@
         if (select) {
           if (unidades.length > 0) {
             select.innerHTML = unidades.map(u => `
-              <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || 0}m sin mtto)</option>
+              <option value="${u.id_equipo}">PK: ${u.id_equipo} • Riesgo: ${u.clasificacion_riesgo || 'IIB'} (${u.meses_sin_mtto || u.meses_mtto || 0}m sin mtto)</option>
             `).join("");
 
             if (!cacheEquipoSeleccionadoId || !unidades.some(u => u.id_equipo === cacheEquipoSeleccionadoId)) {
@@ -3824,12 +3939,17 @@
           }
         }
 
-        const equipoActivo = unidades.find(u => u.id_equipo === cacheEquipoSeleccionadoId) || unidades[0];
-        renderizarVariablesEquipo(equipoActivo);
-        renderizarGridUnidadesParque(unidades);
+        const selDesp = document.getElementById("select-equipo-desplegable");
+        if (selDesp && cacheEquipoSeleccionadoId) {
+          selDesp.value = cacheEquipoSeleccionadoId;
+        }
 
+        const equipoActivo = (data.equipos || []).find(u => u.id_equipo === cacheEquipoSeleccionadoId) || unidades[0] || (data.equipos || [])[0];
         if (equipoActivo) {
-          cargarHistorialEquipo(tipo, equipoActivo.id_equipo);
+          cacheFamiliaSeleccionada = equipoActivo.tipo;
+          renderizarVariablesEquipo(equipoActivo);
+          renderizarGridUnidadesParque((data.equipos || []).filter(e => e.tipo === equipoActivo.tipo));
+          cargarHistorialEquipo(equipoActivo.tipo, equipoActivo.id_equipo);
         }
       } catch (err) {
         console.error("Error al cargar estado de equipos:", err);
@@ -3842,13 +3962,18 @@
       if (select && select.value !== equipoId) {
         select.value = equipoId;
       }
-      if (!cacheEquiposEstado) return;
-      const unidades = (cacheEquiposEstado.equipos || []).filter(e => e.tipo === cacheFamiliaSeleccionada);
-      const equipoActivo = unidades.find(u => u.id_equipo === equipoId);
+      const selDesp = document.getElementById("select-equipo-desplegable");
+      if (selDesp && selDesp.value !== equipoId) {
+        selDesp.value = equipoId;
+      }
+      if (!cacheEquiposEstado || !cacheEquiposEstado.equipos) return;
+      const equipoActivo = cacheEquiposEstado.equipos.find(u => u.id_equipo === equipoId);
       if (equipoActivo) {
+        cacheFamiliaSeleccionada = equipoActivo.tipo;
         renderizarVariablesEquipo(equipoActivo);
+        const unidades = cacheEquiposEstado.equipos.filter(e => e.tipo === equipoActivo.tipo);
         renderizarGridUnidadesParque(unidades);
-        cargarHistorialEquipo(cacheFamiliaSeleccionada, equipoId);
+        cargarHistorialEquipo(equipoActivo.tipo, equipoId);
       }
     }
 
@@ -3900,26 +4025,26 @@
         },
         {
           label: "Meses sin Mtto",
-          valor: `${equipo.meses_sin_mtto ?? 0} m`,
-          sub: (equipo.meses_sin_mtto || 0) > 6 ? "Mtto pendiente" : "En intervalo seguro",
-          color: (equipo.meses_sin_mtto || 0) > 8 ? "text-rose-600" : ((equipo.meses_sin_mtto || 0) > 4 ? "text-amber-600" : "text-sky-700")
+          valor: `${equipo.meses_sin_mtto ?? equipo.meses_mtto ?? 0} m`,
+          sub: (equipo.meses_sin_mtto ?? equipo.meses_mtto ?? 0) > 6 ? "Mtto pendiente" : "En intervalo seguro",
+          color: (equipo.meses_sin_mtto ?? equipo.meses_mtto ?? 0) > 8 ? "text-rose-600" : ((equipo.meses_sin_mtto ?? equipo.meses_mtto ?? 0) > 4 ? "text-amber-600" : "text-sky-700")
         },
         {
           label: "MTBF Promedio",
-          valor: `${Math.round(equipo.mtbf_dias || 0)} d`,
+          valor: `${Math.round(equipo.mtbf_dias ?? equipo.MTBF_Promedio_Dias ?? 0)} d`,
           sub: "Días medios entre fallas",
-          color: (equipo.mtbf_dias || 0) < 60 ? "text-amber-600" : "text-slate-800"
+          color: (equipo.mtbf_dias ?? equipo.MTBF_Promedio_Dias ?? 0) < 60 ? "text-amber-600" : "text-slate-800"
         },
         {
           label: "Fallas Acumuladas",
-          valor: `${equipo.fallas_acumuladas ?? 0}`,
+          valor: `${equipo.fallas_acumuladas ?? equipo.fallas_acum ?? 0}`,
           sub: "Historial acumulado",
-          color: (equipo.fallas_acumuladas || 0) > 5 ? "text-rose-600" : "text-slate-800"
+          color: (equipo.fallas_acumuladas ?? equipo.fallas_acum ?? 0) > 5 ? "text-rose-600" : "text-slate-800"
         },
         {
           label: "Edad del Activo",
-          valor: `${Math.round(equipo.edad_meses || 0)} m`,
-          sub: `${((equipo.edad_meses || 0) / 12).toFixed(1)} años en servicio`,
+          valor: `${Math.round(equipo.edad_meses ?? equipo.Edad_Equipo_Meses ?? 0)} m`,
+          sub: `${(((equipo.edad_meses ?? equipo.Edad_Equipo_Meses ?? 0)) / 12).toFixed(1)} años en servicio`,
           color: "text-slate-800"
         },
         {
@@ -3937,7 +4062,7 @@
         {
           label: "Último Reporte",
           valor: equipo.fecha_reporte ? equipo.fecha_reporte.slice(0, 10) : "Actual",
-          sub: (equipo.descripcion_evento || "Operación Normal").slice(0, 24) + "...",
+          sub: (equipo.descripcion_evento || equipo.evento || "Operación Normal").slice(0, 24) + "...",
           color: "text-slate-700"
         }
       ];
@@ -4040,6 +4165,56 @@
         const data = await res.json();
         const puntos = data.puntos || [];
 
+        // Si la respuesta trae el último registro de Neon, actualizar las métricas del activo
+        if (data.ultimo_registro) {
+          const ult = data.ultimo_registro;
+          const pred = data.prediccion_actual || {};
+          const equipoActualizado = {
+            id_equipo: ult.ID_Equipo || equipoId,
+            tipo: tipo,
+            tipo_nombre: data.tipo_nombre || ult.Tipo_Equipo,
+            clasificacion_riesgo: ult.Clasificacion_Riesgo,
+            fecha_reporte: ult.Fecha_Reporte,
+            edad_meses: ult.Edad_Equipo_Meses,
+            meses_sin_mtto: ult.Meses_Desde_Ultimo_Mtto,
+            meses_mtto: ult.Meses_Desde_Ultimo_Mtto,
+            fallas_acumuladas: ult.Fallas_Acumuladas,
+            fallas_acum: ult.Fallas_Acumuladas,
+            mtbf_dias: ult.MTBF_Promedio_Dias,
+            falla_actual: pred.falla_actual || (ult.Variable_Target_Falla === 1.0 ? 1 : 0),
+            descripcion_evento: ult.Descripcion_Evento,
+            evento: ult.Descripcion_Evento,
+            prediccion: pred
+          };
+          renderizarVariablesEquipo(equipoActualizado);
+        }
+
+        // Actualizar título y subtítulo dinámico del gráfico
+        const titChart = document.getElementById("chart-equipo-titulo");
+        if (titChart) {
+          titChart.innerText = `Evolución Histórica de Confiabilidad: ${data.tipo_nombre || tipo} [PK: ${equipoId}]`;
+        }
+        const subChart = document.getElementById("chart-equipo-subtitulo");
+        if (subChart) {
+          subChart.innerText = `Histórico real de Neon (${data.total_muestras || puntos.length} reportes): MTBF real en días, meses sin mantenimiento y fallas acumuladas.`;
+        }
+
+        // Actualizar badge de estado en el encabezado del gráfico
+        const badgeEstado = document.getElementById("badge-estado-operativo-equipo");
+        if (badgeEstado && data.prediccion_actual) {
+          const p = data.prediccion_actual;
+          if (p.falla_actual === 1) {
+            badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 animate-pulse";
+            badgeEstado.innerText = "Falla Reportada";
+          } else if (p.probabilidad_falla > 70) {
+            badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 animate-pulse";
+            badgeEstado.innerText = `Atención Prioritaria (${p.probabilidad_falla}%)`;
+          } else {
+            badgeEstado.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200";
+            badgeEstado.innerText = "Operativo / Calibrado";
+          }
+        }
+
         // Renderizar Gráfico Histórico en Tab 1
         const ctx = document.getElementById("equipoTelemetriaChart")?.getContext("2d");
         if (!ctx) return;
@@ -4047,10 +4222,21 @@
           chartEquipoInstance.destroy();
         }
 
-        const labels = puntos.map(p => p.Fecha_Reporte ? p.Fecha_Reporte.slice(0, 10) : `R-${p.id}`);
-        const dataMTBF = puntos.map(p => p.MTBF_Promedio_Dias ?? 0);
-        const dataMesesMtto = puntos.map(p => p.Meses_Desde_Ultimo_Mtto ?? 0);
-        const dataFallas = puntos.map(p => p.Fallas_Acumuladas ?? 0);
+        const labels = (data.labels && data.labels.length > 0)
+          ? data.labels
+          : puntos.map(p => p.fecha || p.Fecha_Reporte || `R-${p.id}`);
+
+        const dataMTBF = (data.series && data.series.MTBF_Promedio_Dias && data.series.MTBF_Promedio_Dias.length > 0)
+          ? data.series.MTBF_Promedio_Dias
+          : puntos.map(p => Number(p.mtbf_dias ?? p.MTBF_Promedio_Dias ?? 0));
+
+        const dataMesesMtto = (data.series && data.series.Meses_Desde_Ultimo_Mtto && data.series.Meses_Desde_Ultimo_Mtto.length > 0)
+          ? data.series.Meses_Desde_Ultimo_Mtto
+          : puntos.map(p => Number(p.meses_mtto ?? p.Meses_Desde_Ultimo_Mtto ?? 0));
+
+        const dataFallas = (data.series && data.series.Fallas_Acumuladas && data.series.Fallas_Acumuladas.length > 0)
+          ? data.series.Fallas_Acumuladas
+          : puntos.map(p => Number(p.fallas_acum ?? p.Fallas_Acumuladas ?? 0));
 
         chartEquipoInstance = new Chart(ctx, {
           type: 'line',
@@ -4061,9 +4247,14 @@
                 label: 'MTBF Promedio (días)',
                 data: dataMTBF,
                 borderColor: '#0284c7',
-                backgroundColor: 'rgba(2, 132, 199, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
+                backgroundColor: 'rgba(2, 132, 199, 0.08)',
+                borderWidth: 2.5,
+                pointBackgroundColor: '#0284c7',
+                pointBorderColor: '#ffffff',
+                pointHoverRadius: 6,
+                pointRadius: 3.5,
+                fill: true,
+                tension: 0.25,
                 yAxisID: 'y'
               },
               {
@@ -4072,7 +4263,9 @@
                 borderColor: '#f59e0b',
                 backgroundColor: 'rgba(245, 158, 11, 0.05)',
                 borderWidth: 2,
-                borderDash: [4, 4],
+                borderDash: [5, 4],
+                pointBackgroundColor: '#f59e0b',
+                pointRadius: 3,
                 tension: 0.2,
                 yAxisID: 'y1'
               },
@@ -4080,9 +4273,11 @@
                 label: 'Fallas Acumuladas',
                 data: dataFallas,
                 borderColor: '#f43f5e',
-                backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                borderWidth: 1.5,
-                tension: 0.1,
+                backgroundColor: 'rgba(244, 63, 94, 0.08)',
+                borderWidth: 2,
+                pointBackgroundColor: '#f43f5e',
+                pointRadius: 3,
+                tension: 0.15,
                 yAxisID: 'y1'
               }
             ]
@@ -4092,20 +4287,42 @@
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-              legend: { labels: { color: '#334155', font: { size: 11, family: 'Inter', weight: '500' } } }
+              legend: { 
+                position: 'top',
+                labels: { color: '#334155', font: { size: 11, family: 'Inter', weight: '600' }, usePointStyle: true, boxWidth: 8 } 
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                titleFont: { size: 12, weight: 'bold' },
+                bodyFont: { size: 11 },
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  afterBody: function(context) {
+                    const idx = context[0]?.dataIndex;
+                    if (idx !== undefined && puntos[idx]?.evento) {
+                      return `\nEvento Registrado:\n${puntos[idx].evento}`;
+                    }
+                    return '';
+                  }
+                }
+              }
             },
             scales: {
-              x: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { size: 10 } } },
+              x: { 
+                grid: { color: '#f1f5f9' }, 
+                ticks: { color: '#64748b', font: { size: 10, family: 'monospace' } } 
+              },
               y: { 
                 grid: { color: '#f1f5f9' }, 
-                ticks: { color: '#0284c7', font: { size: 10 } },
-                title: { display: true, text: 'MTBF (Días)', color: '#0284c7', font: { size: 10, weight: '600' } }
+                ticks: { color: '#0284c7', font: { size: 10, weight: '600' } },
+                title: { display: true, text: 'MTBF (Días)', color: '#0284c7', font: { size: 11, weight: '700' } }
               },
               y1: {
                 position: 'right',
                 grid: { drawOnChartArea: false },
-                ticks: { color: '#d97706', font: { size: 10 } },
-                title: { display: true, text: 'Meses / Fallas', color: '#d97706', font: { size: 10, weight: '600' } }
+                ticks: { color: '#d97706', font: { size: 10, weight: '600' } },
+                title: { display: true, text: 'Meses sin Mtto / Fallas', color: '#d97706', font: { size: 11, weight: '700' } }
               }
             }
           }

@@ -2385,10 +2385,14 @@ def get_equipos_estado_completo(
                 "fecha_reporte": fecha_str,
                 "edad_meses": r.get("Edad_Equipo_Meses") or 0.0,
                 "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
+                "meses_sin_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
                 "fallas_acum": r.get("Fallas_Acumuladas") or 0,
+                "fallas_acumuladas": r.get("Fallas_Acumuladas") or 0,
                 "mtbf_dias": r.get("MTBF_Promedio_Dias") or 0.0,
                 "target_falla": r.get("Variable_Target_Falla"),
+                "falla_actual": 1 if es_falla else 0,
                 "evento": r.get("Descripcion_Evento") or "Operación Normal",
+                "descripcion_evento": r.get("Descripcion_Evento") or "Operación Normal",
                 "estado_operativo": estado_operativo,
                 "prediccion": pred
             })
@@ -2448,12 +2452,19 @@ def get_equipo_historial(
             puntos.append({
                 "id": r["id"],
                 "fecha": f_str,
+                "Fecha_Reporte": f_str,
                 "edad_meses": r.get("Edad_Equipo_Meses"),
+                "Edad_Equipo_Meses": r.get("Edad_Equipo_Meses"),
                 "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto"),
+                "Meses_Desde_Ultimo_Mtto": r.get("Meses_Desde_Ultimo_Mtto"),
                 "fallas_acum": r.get("Fallas_Acumuladas"),
+                "Fallas_Acumuladas": r.get("Fallas_Acumuladas"),
                 "mtbf_dias": r.get("MTBF_Promedio_Dias"),
+                "MTBF_Promedio_Dias": r.get("MTBF_Promedio_Dias"),
                 "target_falla": r.get("Variable_Target_Falla"),
-                "evento": r.get("Descripcion_Evento")
+                "Variable_Target_Falla": r.get("Variable_Target_Falla"),
+                "evento": r.get("Descripcion_Evento"),
+                "Descripcion_Evento": r.get("Descripcion_Evento")
             })
 
         ultimo = rows[-1]
