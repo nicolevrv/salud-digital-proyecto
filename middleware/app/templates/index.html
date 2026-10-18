@@ -1167,18 +1167,28 @@
           </div>
         </div>
 
-        <!-- Galería de Packs Tecnológicos (Fotos + Certificados por Tecnología) -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Catálogo Visual por Tecnologías Hospitalarias:</h4>
-              <p class="text-[11px] text-slate-500">Haz clic en cualquier tecnología para cargar su unidad y visualizar su pack fotográfico y certificados de calibración</p>
+        <!-- Catálogo Desplegable Opcional de Flota (Colapsado por defecto para máxima limpieza visual) -->
+        <div class="mb-6 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+          <button type="button" onclick="alternarDespliegueCatalogo()" class="w-full px-4 py-3 bg-white hover:bg-slate-50 transition flex items-center justify-between text-left cursor-pointer border-b border-slate-200">
+            <div class="flex items-center gap-2.5">
+              <div class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-800">Ver Catálogo Rápido de Flota (10 Tecnologías)</span>
+                <span class="text-[11px] text-slate-500 block">Haz clic para desplegar u ocultar miniaturas de referencia</span>
+              </div>
             </div>
-            <span class="text-xs text-slate-500 font-mono">10 tecnologías activas</span>
-          </div>
+            <div class="flex items-center gap-2">
+              <span id="badge-estado-despliegue" class="text-[11px] font-medium text-slate-500">Mostrar</span>
+              <svg id="icono-flecha-despliegue" class="w-4 h-4 text-slate-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </button>
 
-          <div id="galeria-pacs-tecnologias" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            <!-- Renderizado dinámico de tarjetas de tecnologías -->
+          <div id="contenedor-despliegue-catalogo" class="hidden p-4 bg-slate-50">
+            <div id="galeria-pacs-tecnologias" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <!-- Renderizado dinámico de tarjetas de tecnologías -->
+            </div>
           </div>
         </div>
 
@@ -4967,6 +4977,21 @@
       { id_equipo: "ECG-01", tipo: "ECG", nombre: "Electrocardiógrafo MAC 2000", marca: "GE Healthcare", modelo: "MAC 2000", img: "/static/equipos/ecg_ge_mac2000.jpeg", cert: "CAL-2026-HV-010" }
     ];
 
+    function alternarDespliegueCatalogo() {
+      const cont = document.getElementById("contenedor-despliegue-catalogo");
+      const badge = document.getElementById("badge-estado-despliegue");
+      const flecha = document.getElementById("icono-flecha-despliegue");
+      if (!cont) return;
+
+      const estaOculto = cont.classList.contains("hidden");
+      cont.classList.toggle("hidden", !estaOculto);
+      if (badge) badge.innerText = estaOculto ? "Ocultar" : "Mostrar";
+      if (flecha) flecha.style.transform = estaOculto ? "rotate(180deg)" : "rotate(0deg)";
+      if (estaOculto) {
+        renderizarGaleriaPacs(document.getElementById("doc-filtro-tecnologia")?.value || "todos");
+      }
+    }
+
     function renderizarGaleriaPacs(filtroTec = "todos") {
       const container = document.getElementById("galeria-pacs-tecnologias");
       if (!container) return;
@@ -5469,6 +5494,106 @@
       } catch (err) {
         showToast(`Error de red: ${err.message}`, "error");
       }
+    }
+
+    function manejarBusquedaDocumentos(e) {
+      const q = document.getElementById("doc-busqueda-input")?.value?.trim().toLowerCase() || "";
+      // Si el usuario escribe una PK o tecnología (ej: VENT, BVOL-01), también sincronizar con el visor principal
+      if (q.length >= 3) {
+        const coincidencia = (cacheEquiposDocumentosLista || []).find(eq => 
+          (eq.id_equipo && eq.id_equipo.toLowerCase() === q) || 
+          (eq.id_equipo && eq.id_equipo.toLowerCase().startsWith(q))
+        );
+        if (coincidencia && coincidencia.id_equipo !== cacheDocumentacionEquipoId) {
+          cargarDocumentacionEquipos(coincidencia.id_equipo);
+        }
+      }
+      filtrarDocumentosUI(q);
+    }
+
+    function aplicarFiltrosDocumentos() {
+      const tipo = document.getElementById("doc-filtro-tipo")?.value || "todos";
+      const q = document.getElementById("doc-busqueda-input")?.value?.trim().toLowerCase() || "";
+      filtrarDocumentosUI(q, tipo);
+    }
+
+    function filtrarDocumentosUI(query = "", tipoFiltro = "todos") {
+      if (!cacheDocumentosActuales) return;
+      const tbodyDocs = document.getElementById("tabla-documentos-body");
+      if (!tbodyDocs) return;
+
+      let filtrados = cacheDocumentosActuales;
+      if (tipoFiltro !== "todos") {
+        filtrados = filtrados.filter(d => d.tipo_documento === tipoFiltro);
+      }
+      if (query) {
+        filtrados = filtrados.filter(d => {
+          const docPk = (d.pk_documento || `DOC-${String(d.id).padStart(4, '0')}`).toLowerCase();
+          const eqPk = (d.equipo_id || "").toLowerCase();
+          const tit = (d.titulo || "").toLowerCase();
+          const cert = (d.numero_certificado || "").toLowerCase();
+          return docPk.includes(query) || eqPk.includes(query) || tit.includes(query) || cert.includes(query);
+        });
+      }
+
+      if (filtrados.length === 0) {
+        tbodyDocs.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-500">No se encontraron documentos con los criterios de búsqueda.</td></tr>`;
+        return;
+      }
+
+      tbodyDocs.innerHTML = filtrados.map(d => {
+        const docPk = d.pk_documento || `DOC-${String(d.id).padStart(4, '0')}`;
+        const eqPk = d.equipo_id || cacheDocumentacionEquipoId;
+        let badgeTipo = "bg-sky-50 text-sky-700 border-sky-200";
+        let labelTipo = d.tipo_documento;
+        if (d.tipo_documento === "CERTIFICADO_CALIBRACION") {
+          badgeTipo = "bg-emerald-50 text-emerald-700 border-emerald-200";
+          labelTipo = "Certificado Calibración";
+        } else if (d.tipo_documento === "FOTO_EQUIPO") {
+          badgeTipo = "bg-purple-50 text-purple-700 border-purple-200";
+          labelTipo = "Fotografía Oficial";
+        } else if (d.tipo_documento === "FICHA_TECNICA") {
+          badgeTipo = "bg-slate-100 text-slate-700 border-slate-200";
+          labelTipo = "Ficha Técnica";
+        }
+
+        let badgeVig = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        if (d.estado_vigencia === "VENCIDO") badgeVig = "bg-rose-50 text-rose-700 border-rose-200";
+        if (d.estado_vigencia === "PROXIMO_VENCER") badgeVig = "bg-amber-50 text-amber-700 border-amber-200";
+
+        return `
+          <tr class="hover:bg-sky-50/50 transition border-b border-slate-100">
+            <td class="py-2.5 px-3">
+              <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 text-xs">${docPk}</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="font-mono font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">${eqPk}</span>
+            </td>
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeTipo}">${labelTipo}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-800 font-medium">
+              <div>${d.titulo || '-'}</div>
+              <div class="text-[10px] text-slate-500 font-mono">${d.archivo_nombre || ''} (${d.archivo_tamano_kb || 0} KB)</div>
+            </td>
+            <td class="py-2.5 px-3 font-mono text-slate-700">${d.numero_certificado || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600 text-[11px]">${d.entidad_emisora || 'Institucional'}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_emision || '-'}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-600">${d.fecha_vencimiento || '-'}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeVig}">${d.estado_vigencia || 'VIGENTE'}</span>
+            </td>
+            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+              <button onclick="abrirVisorDocumentoPorId(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] font-semibold transition mr-1">
+                Visor PACS
+              </button>
+              <button onclick="eliminarDocumentoPorId(${d.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold transition">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
     }
 
     // CRUD DE REGISTROS TÉCNICOS EN DATASET_EVENTOS
