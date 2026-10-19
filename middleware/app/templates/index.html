@@ -2737,7 +2737,7 @@
       }
     }
 
-    function cargarPerfilDemo(email, pass) {
+    function cargarPerfilDemo(email, pass, autoSubmit = true) {
       // 1. Campos del portal de inicio
       const pEmail = document.getElementById("portal-email");
       const pPass = document.getElementById("portal-password");
@@ -2762,7 +2762,11 @@
       const errM = document.getElementById("login-error-alert");
       if (errM) errM.classList.add("hidden");
 
-      showToast(`Credenciales cargadas para ${email}. Clic en 'Ingresar al Sistema' para acceder.`, "info");
+      if (autoSubmit) {
+        ejecutarLogin(email, pass);
+      } else {
+        showToast(`Credenciales cargadas para ${email}. Clic en 'Ingresar al Sistema' para acceder.`, "info");
+      }
     }
 
     function ejecutarLoginPortal(e) {
@@ -3080,6 +3084,7 @@
 
       const tabBtnMonitoreo = document.getElementById("tab-btn-monitoreo");
       const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
+      const tabBtnGobernanzaIA = document.getElementById("tab-btn-gobernanza-ia");
       const tabBtnRegistros = document.getElementById("tab-btn-registros");
       const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
       const tabBtnPacientes = document.getElementById("tab-btn-pacientes");
@@ -3127,6 +3132,8 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.remove("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.remove("hidden");
           if (tabBtnContabilidad) tabBtnContabilidad.classList.remove("hidden");
+          if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.remove("hidden");
+          if (tabBtnPrediccion) tabBtnPrediccion.classList.remove("hidden");
 
         } else if (sesionActiva.rol === "Contable UCI") {
           if (avatar) {
@@ -3182,6 +3189,8 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
           if (tabBtnContabilidad) tabBtnContabilidad.classList.add("hidden");
+          if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
+          if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.remove("hidden");
 
           ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
@@ -3211,6 +3220,8 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
           if (tabBtnContabilidad) tabBtnContabilidad.classList.add("hidden");
+          if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
+          if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.add("hidden");
 
           ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
@@ -3240,6 +3251,7 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.toggle("hidden", !esAdminSistema);
           if (tabBtnSeguridad) tabBtnSeguridad.classList.toggle("hidden", !esAdminSistema);
           if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esAdminSistema);
+          if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esAdminSistema);
 
           if (!esAdminSistema) {
             ["tab-auditoria", "tab-seguridad", "tab-contabilidad"].forEach(idTab => {
@@ -3385,13 +3397,16 @@
         const data = await res.json();
         const dot = document.getElementById("db-status-dot");
         const text = document.getElementById("db-status-text");
+        const pill = document.getElementById("db-status-pill");
 
         if (data.database && data.database.connected) {
-          if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-emerald-400";
-          if (text) text.innerHTML = `<span class="text-emerald-400">${data.database.provider}</span>: Conectado (${data.database.tables_found} tablas)`;
+          if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-emerald-500";
+          if (text) text.innerHTML = `<span class="text-emerald-700 font-bold">${data.database.provider}</span>: Conectado (${data.database.tables_found} tablas)`;
+          if (pill) pill.className = "hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-800";
         } else {
-          if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-rose-400";
-          if (text) text.innerHTML = `<span class="text-rose-400">DB Desconectada</span>`;
+          if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-rose-500";
+          if (text) text.innerHTML = `<span class="text-rose-600 font-bold">DB Desconectada</span>`;
+          if (pill) pill.className = "hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800";
         }
       } catch (err) {
         console.error("Error en health check:", err);
