@@ -1193,6 +1193,19 @@
                   <span>Abrir Visor PACS</span>
                 </div>
               </div>
+
+              <!-- Metadatos del Dataset Público Real (R06) -->
+              <div id="doc-foto-dataset-info" class="mt-2.5 p-2.5 rounded-xl bg-white border border-slate-200 text-[11px] space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-bold text-slate-700">Dataset Público (R06):</span>
+                  <span id="doc-foto-licencia" class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] font-bold">CC BY 4.0</span>
+                </div>
+                <div id="doc-foto-dataset-nombre" class="text-slate-600 font-medium truncate">Roboflow Universe / Wikimedia Medical Equipment</div>
+                <div class="flex items-center justify-between gap-2 pt-0.5">
+                  <a id="doc-foto-fuente-url" href="https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-mono text-[10px] truncate max-w-[230px]">Ver fuente del dataset público &rarr;</a>
+                  <a id="doc-foto-descarga-directa" href="/pacs/imagenes/VENT-01/descargar" download class="text-emerald-700 hover:underline font-semibold text-[10px]">Descargar PACS</a>
+                </div>
+              </div>
             </div>
 
             <div class="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
@@ -1321,16 +1334,20 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- TAB 2: PACIENTES Y ENCUENTROS CLÍNICOS -->
+    <!-- TAB 2: PACIENTES Y ENCUENTROS CLÍNICOS (FICHA DEL PACIENTE + PACS R06 + CLUSTERS R07) -->
     <!-- ========================================================================= -->
     <section id="tab-pacientes" class="tab-content hidden space-y-6">
       <div class="bg-white/80 border border-slate-200 rounded-2xl p-5 shadow-lg">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
-            <h3 class="text-base font-bold text-slate-900">Directorio de Pacientes y Encuentros Clínicos</h3>
-            <p class="text-xs text-slate-500">Asignación de camas, médicos tratantes e inicio de encuentros</p>
+            <h3 class="text-base font-bold text-slate-900">Directorio de Pacientes UCI, Imágenes PACS (R06) y Clusters Biomédicos (R07)</h3>
+            <p class="text-xs text-slate-500">Ficha clínica con imágenes PACS descargables de equipos asignados y agrupamiento K-Means (<code class="font-mono text-sky-700">origen = sintetico</code>)</p>
           </div>
-          <div id="pacientes-action-buttons" class="flex items-center gap-2">
+          <div id="pacientes-action-buttons" class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="alternarPanelClustersR07()" class="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>
+              <span>Ver Clusters K-Means & Zona de Confusión (R07)</span>
+            </button>
             <button id="btn-nuevo-paciente" onclick="abrirModalNuevoPaciente()" class="hidden px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
               <span>+ Nuevo Paciente</span>
@@ -1342,16 +1359,28 @@
           </div>
         </div>
 
+        <!-- Panel Desplegable de Clusters K-Means (k=4), Codo/Silueta y Zona de Confusión (R07) -->
+        <div id="panel-clusters-r07" class="hidden mb-5 p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
+            <div>
+              <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">R07 · Agrupamiento K-Means ($k=4$) sobre Base Tabular y Registros Sintéticos (<code class="font-mono text-purple-700">origen = sintetico</code>)</h4>
+              <p class="text-[11px] text-slate-600">Base teórica de referencia: <strong>Kaggle Medical Device Failure Dataset</strong> &amp; <strong>UCI AI4I 2020 Predictive Maintenance Dataset</strong> + Norma <strong>IEC 62353</strong>. Selección óptima $k=4$: WCSS = <span class="font-mono font-bold">36,276.72</span> | Coeficiente de Silueta Máximo = <span class="font-mono font-bold text-emerald-700">0.2364</span>.</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-mono text-[11px] font-bold">25 Pacientes · 7,631 Eventos (100% origen = sintetico)</span>
+          </div>
+          <div id="contenedor-tarjetas-clusters-r07" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs"></div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-700">
             <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
               <tr>
                 <th class="py-3 px-4">Doc. Identidad</th>
-                <th class="py-3 px-4">Nombre Completo</th>
+                <th class="py-3 px-4">Ficha del Paciente &amp; Origen (R07)</th>
                 <th class="py-3 px-4">Cama UCI</th>
-                <th class="py-3 px-4">Encuentro Activo</th>
-                <th class="py-3 px-4">Equipo Biomédico Asignado</th>
-                <th class="py-3 px-4 text-right">Acciones</th>
+                <th class="py-3 px-4">Cluster Biomédico (R07)</th>
+                <th class="py-3 px-4">Equipos Conectados (5)</th>
+                <th class="py-3 px-4 text-right">Imágenes PACS (R06) &amp; Acciones</th>
               </tr>
             </thead>
             <tbody id="tabla-pacientes-body" class="divide-y divide-slate-200">
@@ -1360,7 +1389,22 @@
           </table>
         </div>
       </div>
+
+      <!-- Modal / Visor de Imágenes PACS desde la Ficha del Paciente (R06) -->
+      <div id="modal-imagenes-paciente" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+          <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <h4 id="modal-pacs-pac-titulo" class="text-sm font-bold text-slate-900">Ficha de Imágenes PACS del Paciente</h4>
+              <p id="modal-pacs-pac-subtitulo" class="text-xs text-slate-500">Fotografías reales almacenadas en PACS provenientes de Datasets Públicos (Roboflow Universe &amp; Wikimedia Commons)</p>
+            </div>
+            <button type="button" onclick="cerrarModal('modal-imagenes-paciente')" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold cursor-pointer">&times; Cerrar</button>
+          </div>
+          <div id="modal-pacs-pac-grid" class="p-5 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/50"></div>
+        </div>
+      </div>
     </section>
+
 
     <!-- ========================================================================= -->
     <!-- TAB 3: EQUIPOS UCI & GESTIÓN BIOMÉDICA -->
@@ -3284,6 +3328,7 @@
 
         cachePacientes.forEach(p => {
           const equiposList = p.equipos_asignados || [];
+          const imgsList = p.imagenes || p.imagenes_pacs || [];
           const tieneEncuentros = equiposList.length > 0;
           const tr = document.createElement("tr");
           tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
@@ -3319,41 +3364,58 @@
             `;
           }
 
-          let estadoEncuentroHtml = "";
-          if (tieneEncuentros) {
-            estadoEncuentroHtml = `
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>${equiposList.length} ${equiposList.length === 1 ? 'equipo activo' : 'equipos activos'}</span>
-              </span>
-            `;
-          } else {
-            estadoEncuentroHtml = `<span class="text-slate-400 text-[11px]">En espera</span>`;
-          }
+          const cid = (p.cluster_id !== undefined && p.cluster_id !== null) ? Number(p.cluster_id) : 2;
+          const cnom = p.cluster_nombre || `Cluster ${cid}`;
+          let clusterBadgeCls = "bg-emerald-50 text-emerald-800 border-emerald-200";
+          if (cid === 1) clusterBadgeCls = "bg-rose-50 text-rose-800 border-rose-200";
+          else if (cid === 2) clusterBadgeCls = "bg-amber-50 text-amber-800 border-amber-200";
+          else if (cid === 3) clusterBadgeCls = "bg-sky-50 text-sky-800 border-sky-200";
 
-          let accionesHtml = `<span class="text-xs text-slate-400 font-mono">Solo lectura</span>`;
+          const clusterHtml = `
+            <div class="space-y-1">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold border ${clusterBadgeCls}" title="${escapeHtml(cnom)}">
+                <span>Cluster ${cid}${cid === 2 ? ' · Zona Confusión' : (cid === 1 ? ' · Riesgo Crítico' : '')}</span>
+              </span>
+              <div class="text-[10px] text-slate-500 max-w-[200px] truncate" title="${escapeHtml(cnom)}">${escapeHtml(cnom)}</div>
+            </div>
+          `;
+
+          const btnImgsPacs = `
+            <button type="button" onclick="abrirModalImagenesPaciente(${p.id})" class="px-2.5 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Imágenes PACS (${imgsList.length || 5})</span>
+            </button>
+          `;
+
+          let btnAgregarEq = "";
           if (sesionActiva && sesionActiva.rol === 'Medico') {
-            accionesHtml = `
-              <div class="flex items-center justify-end gap-1.5">
-                <button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold transition flex items-center gap-1 shadow-2xs">
-                  <span>+ Agregar Equipo</span>
-                </button>
-              </div>
+            btnAgregarEq = `
+              <button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer">
+                <span>+ Equipo</span>
+              </button>
             `;
           }
 
           tr.innerHTML = `
             <td class="py-3 px-4 font-mono text-slate-700 font-semibold">${p.documento_identidad}</td>
             <td class="py-3 px-4">
-              <div class="font-bold text-slate-900">${p.nombre}</div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-900">${p.nombre}</span>
+                <span class="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-mono text-[9px] font-bold">origen: ${escapeHtml(p.origen || 'sintetico')}</span>
+              </div>
               <div class="text-[10px] text-slate-400">ID Paciente: #${p.id} · Dotación: 1 VENT · 1 MON · 2 BVOL · 1 BJER</div>
             </td>
             <td class="py-3 px-4">
               <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono font-bold text-xs border border-sky-200 shadow-2xs">${p.cama_uci}</span>
             </td>
-            <td class="py-3 px-4">${estadoEncuentroHtml}</td>
+            <td class="py-3 px-4">${clusterHtml}</td>
             <td class="py-3 px-4">${equiposHtml}</td>
-            <td class="py-3 px-4 text-right">${accionesHtml}</td>
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                ${btnImgsPacs}
+                ${btnAgregarEq}
+              </div>
+            </td>
           `;
           tbody.appendChild(tr);
         });
@@ -3362,6 +3424,98 @@
         console.error("Error pacientes:", err);
       }
     }
+
+    async function alternarPanelClustersR07() {
+      const panel = document.getElementById("panel-clusters-r07");
+      const cont = document.getElementById("contenedor-tarjetas-clusters-r07");
+      if (!panel) return;
+      const oculto = panel.classList.toggle("hidden");
+      if (oculto || !cont) return;
+      try {
+        const res = await fetch("/api/clusters-resumen");
+        if (!res.ok) return;
+        const data = await res.json();
+        const clusters = data.clusters || [];
+        cont.innerHTML = clusters.map(c => {
+          const esConf = Number(c.cluster_id) === 2;
+          const esCrit = Number(c.cluster_id) === 1;
+          const borderCls = esConf ? "border-amber-300 bg-amber-50/50" : (esCrit ? "border-rose-300 bg-rose-50/40" : "border-slate-200 bg-white");
+          return `
+            <div class="p-3 rounded-xl border ${borderCls} space-y-1.5 shadow-2xs">
+              <div class="flex items-center justify-between gap-1">
+                <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold ${esConf ? 'bg-amber-100 text-amber-900' : (esCrit ? 'bg-rose-100 text-rose-900' : 'bg-slate-100 text-slate-800')}">
+                  Cluster ${c.cluster_id} (${c.porcentaje_dataset}%)
+                </span>
+                <span class="font-mono text-[10px] text-slate-500">${c.total_registros} eventos</span>
+              </div>
+              <div class="font-bold text-slate-900 text-[11px] leading-snug">${escapeHtml(c.cluster_nombre)}</div>
+              <div class="grid grid-cols-2 gap-1 text-[10px] font-mono text-slate-600 bg-white/80 p-1.5 rounded border border-slate-100">
+                <div>Edad: <strong>${c.edad_media_meses}m</strong></div>
+                <div>Sin Mtto: <strong>${c.meses_mtto_medio}m</strong></div>
+                <div>Fuga: <strong>${c.corriente_fuga_media_ua} µA</strong></div>
+                <div>Falla: <strong>${c.tasa_falla_pct}%</strong></div>
+              </div>
+              <p class="text-[10px] text-slate-600 leading-relaxed">${escapeHtml(c.interpretacion_clinica || '')}</p>
+            </div>
+          `;
+        }).join("");
+      } catch (e) {
+        console.error("Error cargando clusters R07:", e);
+      }
+    }
+
+    async function abrirModalImagenesPaciente(pacienteId) {
+      const tit = document.getElementById("modal-pacs-pac-titulo");
+      const sub = document.getElementById("modal-pacs-pac-subtitulo");
+      const grid = document.getElementById("modal-pacs-pac-grid");
+      if (!grid) return;
+      grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-500">Cargando imágenes PACS del paciente #${pacienteId}...</div>`;
+      abrirModal("modal-imagenes-paciente");
+
+      try {
+        const res = await fetch(`/pacientes/${pacienteId}/imagenes`);
+        if (!res.ok) {
+          grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-rose-600">No se pudieron cargar las imágenes del paciente.</div>`;
+          return;
+        }
+        const data = await res.json();
+        if (tit) tit.innerText = `Imágenes PACS en Ficha del Paciente: ${data.paciente_nombre} (${data.cama_uci})`;
+        if (sub) sub.innerText = `Origen: ${data.origen || 'sintetico'} · ${data.cluster_nombre || ''} · ${data.total || 0} imágenes reales de equipos conectados`;
+        const imgs = data.imagenes || [];
+        grid.innerHTML = imgs.map(img => `
+          <div class="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-2">
+                <span class="px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono text-[11px] font-bold">${escapeHtml(img.equipo_id)}</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] font-bold">${escapeHtml(img.licencia || 'CC BY 4.0')}</span>
+              </div>
+              <div class="h-36 w-full rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden p-2 mb-2">
+                <img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.titulo)}" class="max-h-full max-w-full object-contain">
+              </div>
+              <div class="font-bold text-slate-900 text-xs">${escapeHtml(img.tipo_equipo)}</div>
+              <div class="text-[11px] text-slate-600 mb-1.5">${escapeHtml(img.marca)} <strong>${escapeHtml(img.modelo)}</strong></div>
+              <div class="text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 space-y-1">
+                <div><strong>Dataset:</strong> ${escapeHtml(img.dataset_nombre)}</div>
+                <div>
+                  <a href="${escapeHtml(img.fuente_url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-mono break-all">Fuente original del dataset &rarr;</a>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button type="button" onclick="cerrarModal('modal-imagenes-paciente'); abrirVisorDocumento('${escapeHtml(img.url)}', '${escapeHtml(img.titulo)}', 'PACIENTE: ${escapeHtml(data.paciente_nombre)} (${escapeHtml(data.cama_uci)})', '${escapeHtml(img.pk_documento)}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-[11px] font-semibold cursor-pointer">
+                Abrir Visor PACS
+              </button>
+              <a href="${escapeHtml(img.download_url)}" download class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition">
+                Descargar Imagen
+              </a>
+            </div>
+          </div>
+        `).join("");
+      } catch (err) {
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-rose-600">Error de red al consultar imágenes PACS.</div>`;
+      }
+    }
+
 
     function alternarDespliegueTablaEquiposUCI() {
       const cont = document.getElementById("contenedor-tabla-equipos-uci");
@@ -5728,9 +5882,24 @@
           certPkBadge.innerText = (cert && cert.pk_documento) ? `PK: ${cert.pk_documento}` : (cert ? `PK: DOC-${String(cert.id).padStart(4, '0')}` : "--");
         }
 
-        // Renderizar Foto Oficial del Activo
+        // Renderizar Foto Oficial del Activo y Metadatos del Dataset Público Real (R06)
         const containerFoto = document.getElementById("doc-foto-preview-container");
         const nomFoto = document.getElementById("doc-foto-nombre-archivo");
+        const fotoLic = document.getElementById("doc-foto-licencia");
+        const fotoDsNom = document.getElementById("doc-foto-dataset-nombre");
+        const fotoUrl = document.getElementById("doc-foto-fuente-url");
+        const fotoDl = document.getElementById("doc-foto-descarga-directa");
+        if (foto) {
+          if (fotoLic) fotoLic.innerText = foto.licencia || "CC BY 4.0";
+          if (fotoDsNom) fotoDsNom.innerText = foto.dataset_nombre || "Roboflow Universe / Wikimedia Medical Equipment";
+          if (fotoUrl) {
+            fotoUrl.href = foto.fuente_url || "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection";
+            fotoUrl.innerText = foto.fuente_url || "Ver fuente del dataset público";
+          }
+          if (fotoDl) {
+            fotoDl.href = foto.download_url || `/pacs/imagenes/${encodeURIComponent(equipoId)}/descargar`;
+          }
+        }
         if (containerFoto) {
           if (foto && foto.archivo_url) {
             containerFoto.innerHTML = `
@@ -5745,6 +5914,7 @@
             containerFoto.innerHTML = `<div class="text-slate-500 text-xs">Sin fotografía oficial registrada</div>`;
           }
         }
+
 
         // Renderizar Certificado de Calibración
         if (cert) {

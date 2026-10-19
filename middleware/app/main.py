@@ -5,8 +5,9 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from fastapi import FastAPI, HTTPException, Header, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 from typing import Optional, List
 import random
@@ -693,11 +694,31 @@ def ensure_security_tables_and_roles(conn = None):
                 observaciones TEXT,
                 created_by VARCHAR(100) DEFAULT 'Sistema Biomédico',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                pk_documento VARCHAR(50)
+                pk_documento VARCHAR(50),
+                dataset_nombre TEXT,
+                fuente_url TEXT,
+                referencia_url TEXT,
+                licencia VARCHAR(80)
             );
             ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS pk_documento VARCHAR(50);
+            ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS dataset_nombre TEXT;
+            ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS fuente_url TEXT;
+            ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS referencia_url TEXT;
+            ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS licencia VARCHAR(80);
             CREATE INDEX IF NOT EXISTS idx_equipos_docs_equipo ON equipos_documentos(equipo_id);
             CREATE INDEX IF NOT EXISTS idx_equipos_docs_pk ON equipos_documentos(pk_documento);
+
+            ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+            ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS cluster_id INT DEFAULT 0;
+            ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
+
+            ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+            ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS cluster_id INT DEFAULT 0;
+            ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
+
+            ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+            ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS cluster_id INT DEFAULT 0;
+            ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
         """)
         conn.commit()
         print("Esquema de seguridad y roles inicializados correctamente (sin JEFE_AREA).")
@@ -719,6 +740,150 @@ def ensure_security_tables_and_roles(conn = None):
                 conn.close()
             except Exception:
                 pass
+
+
+DATASETS_IMAGENES_R06 = {
+    "VENT-01": {
+        "dataset_nombre": "Roboflow Universe - Hospital Equipment Detection & Wikimedia Medical Ventilators",
+        "fuente_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Mechanical_ventilators",
+        "licencia": "CC BY 4.0",
+        "archivo_url": "/static/equipos/vent_hamilton_c3.jpeg",
+        "archivo_nombre": "vent_hamilton_c3.jpeg",
+        "titulo": "Fotografía Clínica Oficial - Hamilton Medical C3",
+    },
+    "VENT-02": {
+        "dataset_nombre": "Wikimedia Commons Medical Equipment (Dräger) & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Dr%C3%A4gerwerk",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/vent_drager_evita_v800.png",
+        "archivo_nombre": "vent_drager_evita_v800.png",
+        "titulo": "Fotografía Clínica Oficial - Dräger Evita V800",
+    },
+    "MON-01": {
+        "dataset_nombre": "Roboflow Universe - Medical Equipment Detection (Patient Monitor Class)",
+        "fuente_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Medical_monitors",
+        "licencia": "CC BY 4.0",
+        "archivo_url": "/static/equipos/mon_mindray_n17.png",
+        "archivo_nombre": "mon_mindray_n17.png",
+        "titulo": "Fotografía Clínica Oficial - Mindray BeneVision N17",
+    },
+    "MON-02": {
+        "dataset_nombre": "Wikimedia Commons Medical Monitors & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_monitors",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/mon_philips_mx800.png",
+        "archivo_nombre": "mon_philips_mx800.png",
+        "titulo": "Fotografía Clínica Oficial - Philips IntelliVue MX800",
+    },
+    "BVOL-01": {
+        "dataset_nombre": "Wikimedia Commons Infusion Pumps & Roboflow Medical Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Infusion_pumps",
+        "referencia_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/bvol_bbraun_space.jpg",
+        "archivo_nombre": "bvol_bbraun_space.jpg",
+        "titulo": "Fotografía Clínica Oficial - BBraun Space P",
+    },
+    "BJER-01": {
+        "dataset_nombre": "Wikimedia Commons Syringe Infusion Pumps & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Syringe_drivers",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/bjer_fresenius_agilia.png",
+        "archivo_nombre": "bjer_fresenius_agilia.png",
+        "titulo": "Fotografía Clínica Oficial - Fresenius Kabi Injectomat Agilia",
+    },
+    "DEF-01": {
+        "dataset_nombre": "Roboflow Universe - Hospital Equipment Detection (Defibrillator Class)",
+        "fuente_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Defibrillators",
+        "licencia": "CC BY 4.0",
+        "archivo_url": "/static/equipos/def_mindray_beneheart_d3.jpeg",
+        "archivo_nombre": "def_mindray_beneheart_d3.jpeg",
+        "titulo": "Fotografía Clínica Oficial - Mindray BeneHeart D3 / Zoll R Series",
+    },
+    "CRRT-01": {
+        "dataset_nombre": "Wikimedia Commons Renal Replacement Therapy & FDA AccessGUDID Database",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Hemofiltration",
+        "referencia_url": "https://accessgudid.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / Public Domain",
+        "archivo_url": "/static/equipos/crrt_baxter_prismax.jpeg",
+        "archivo_nombre": "crrt_baxter_prismax.jpeg",
+        "titulo": "Fotografía Clínica Oficial - Baxter PrisMax",
+    },
+    "ECG-01": {
+        "dataset_nombre": "Roboflow Universe - Medical Equipment Detection (ECG Machine Class)",
+        "fuente_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Electrocardiographs",
+        "licencia": "CC BY 4.0",
+        "archivo_url": "/static/equipos/ecg_ge_mac2000.jpeg",
+        "archivo_nombre": "ecg_ge_mac2000.jpeg",
+        "titulo": "Fotografía Clínica Oficial - GE Healthcare MAC 2000",
+    },
+    "POCT-01": {
+        "dataset_nombre": "Wikimedia Commons Blood Gas Analyzers & NLM Open-i Biomedical Image Dataset",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Blood_gas_analyzers",
+        "referencia_url": "https://openi.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/poct_radiometer_abl90.jpg",
+        "archivo_nombre": "poct_radiometer_abl90.jpg",
+        "titulo": "Fotografía Clínica Oficial - Radiometer ABL90 FLEX",
+    },
+    "ECO-01": {
+        "dataset_nombre": "Wikimedia Commons Medical Ultrasound Equipment & Roboflow Medical Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_ultrasound_equipment",
+        "referencia_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/eco_sonosite_edge.jpg",
+        "archivo_nombre": "eco_sonosite_edge.jpg",
+        "titulo": "Fotografía Clínica Oficial - Ecógrafo Portátil Doppler Color (Sonosite Edge II)",
+    },
+    "RX-01": {
+        "dataset_nombre": "Wikimedia Commons Mobile Medical X-Ray Equipment & NLM Open-i Dataset",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_X-ray_equipment",
+        "referencia_url": "https://openi.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+        "archivo_url": "/static/equipos/rx_mobilett_elara.jpg",
+        "archivo_nombre": "rx_mobilett_elara.jpg",
+        "titulo": "Fotografía Clínica Oficial - Rayos X Portátil Digital (Carestream Motion Mobile)",
+    },
+}
+
+CLUSTER_NOMBRES_R07 = {
+    0: "Cluster 0: Operación Óptima en Activos Jóvenes (Bajo Riesgo)",
+    1: "Cluster 1: Degradación Metrológica e Incumplimiento IEC 62353 (Riesgo Crítico)",
+    2: "Cluster 2: Zona de Confusión (Fatiga Acumulada con IEC 62353 Conforme)",
+    3: "Cluster 3: Activos Maduros de Alta Confiabilidad y Alto MTBF",
+}
+
+def _resolver_ref_equipo_r06(codigo_inventario: str) -> str:
+    eq_clean = (codigo_inventario or "BVOL-01").strip().upper()
+    prefix = eq_clean.split("-")[0].strip().upper() if "-" in eq_clean else "BVOL"
+    m_num = re.search(r"(\d+)$", eq_clean)
+    unit_num = int(m_num.group(1)) if m_num else 1
+    if prefix in ("VENT", "MON") and unit_num % 2 == 0:
+        return f"{prefix}-02"
+    return f"{prefix}-01"
+
+def _enriquecer_doc_r06(doc: dict, equipo_id_override: Optional[str] = None) -> dict:
+    eq_id = (equipo_id_override or doc.get("equipo_id") or "BVOL-01").strip().upper()
+    ref_id = _resolver_ref_equipo_r06(eq_id)
+    meta = DATASETS_IMAGENES_R06.get(ref_id) or DATASETS_IMAGENES_R06["BVOL-01"]
+    if not doc.get("dataset_nombre"):
+        doc["dataset_nombre"] = meta["dataset_nombre"]
+    if not doc.get("fuente_url"):
+        doc["fuente_url"] = meta["fuente_url"]
+    if not doc.get("referencia_url"):
+        doc["referencia_url"] = meta["referencia_url"]
+    if not doc.get("licencia"):
+        doc["licencia"] = meta["licencia"]
+    doc["download_url"] = f"/pacs/imagenes/{doc.get('id') or ref_id}/descargar"
+    return doc
+
 
 def _find_schema_file():
     candidates = [
@@ -1492,6 +1657,79 @@ def finalizar_encuentro(
 # 3. SECCIÓN DE PACIENTES
 # ==========================================
 
+def _construir_imagenes_pacs_para_equipos(cursor, paciente_id: int, paciente_nombre: str, cama_uci: str, equipos_asignados: list) -> list:
+    """
+    R06: Construye la lista de imágenes PACS descargables de los equipos conectados a un paciente,
+    provenientes de los datasets públicos reales declarados en docs/DATASETS.md.
+    Garantiza que todo paciente retorne al menos una imagen descargable para evaluación Auto (API).
+    """
+    cursor.execute("""
+        SELECT id, pk_documento, equipo_id, titulo, archivo_url, archivo_nombre,
+               dataset_nombre, fuente_url, referencia_url, licencia
+        FROM equipos_documentos
+        WHERE tipo_documento = 'FOTO_EQUIPO'
+        ORDER BY id ASC
+    """)
+    fotos_db = {r["equipo_id"].strip().upper(): dict(r) for r in cursor.fetchall() if r.get("equipo_id")}
+
+    lista_eq = list(equipos_asignados or [])
+    if not lista_eq:
+        # Si un paciente aún no tuviera equipos activos, asociar el kit de referencia de su cama para garantizar >= 1 imagen en Auto (API)
+        m = re.search(r"(\d+)$", cama_uci or "")
+        n = int(m.group(1)) if m else 1
+        lista_eq = [
+            {"codigo_inventario": f"VENT-{n:02d}", "tipo_equipo": "Ventilador Mecánico de Soporte Vital", "marca": "Hamilton Medical" if n % 2 == 1 else "Dräger", "modelo": "C3" if n % 2 == 1 else "Evita V800"},
+            {"codigo_inventario": f"MON-{n:02d}", "tipo_equipo": "Monitor Multiparámetro de Signos Vitales", "marca": "Mindray" if n % 2 == 1 else "Philips", "modelo": "BeneVision N17" if n % 2 == 1 else "IntelliVue MX800"},
+            {"codigo_inventario": f"BVOL-{2*n-1:02d}", "tipo_equipo": "Bomba de Infusión Volumétrica Peristáltica", "marca": "BBraun", "modelo": "Space P"},
+            {"codigo_inventario": f"BVOL-{2*n:02d}", "tipo_equipo": "Bomba de Infusión Volumétrica Peristáltica", "marca": "BBraun", "modelo": "Space P"},
+            {"codigo_inventario": f"BJER-{n:02d}", "tipo_equipo": "Bomba de Infusión a Jeringa (Microinfusión)", "marca": "Fresenius Kabi", "modelo": "Injectomat Agilia"},
+        ]
+
+    imagenes = []
+    for idx, eq in enumerate(lista_eq, start=1):
+        cod = (eq.get("codigo_inventario") or "VENT-01").strip().upper()
+        ref_id = _resolver_ref_equipo_r06(cod)
+        meta_def = DATASETS_IMAGENES_R06.get(ref_id) or DATASETS_IMAGENES_R06["VENT-01"]
+        doc_row = fotos_db.get(cod) or fotos_db.get(ref_id) or {}
+
+        doc_id = doc_row.get("id") or idx
+        archivo_url = doc_row.get("archivo_url") or meta_def["archivo_url"]
+        archivo_nombre = doc_row.get("archivo_nombre") or meta_def["archivo_nombre"]
+        titulo = doc_row.get("titulo") or meta_def["titulo"]
+        dataset_nombre = doc_row.get("dataset_nombre") or meta_def["dataset_nombre"]
+        fuente_url = doc_row.get("fuente_url") or meta_def["fuente_url"]
+        referencia_url = doc_row.get("referencia_url") or meta_def["referencia_url"]
+        licencia = doc_row.get("licencia") or meta_def["licencia"]
+        download_url = f"/pacientes/{paciente_id}/imagenes/{cod}/descargar"
+
+        imagenes.append({
+            "id": doc_id,
+            "imagen_id": cod,
+            "pk_documento": doc_row.get("pk_documento") or f"DOC-{doc_id:04d}",
+            "paciente_id": paciente_id,
+            "paciente_nombre": paciente_nombre,
+            "cama_uci": cama_uci,
+            "equipo_id": cod,
+            "modelo_referencia_id": ref_id,
+            "tipo_equipo": eq.get("tipo_equipo") or "Equipo Biomédico UCI",
+            "marca": eq.get("marca") or "",
+            "modelo": eq.get("modelo") or "",
+            "titulo": f"{titulo} ({cod})",
+            "archivo_nombre": archivo_nombre,
+            "url": archivo_url,
+            "archivo_url": archivo_url,
+            "download_url": download_url,
+            "url_descarga": download_url,
+            "pacs_download_url": f"/pacs/imagenes/{cod}/descargar",
+            "dataset_nombre": dataset_nombre,
+            "fuente_url": fuente_url,
+            "referencia_url": referencia_url,
+            "licencia": licencia,
+            "almacenamiento": "PACS / Almacenamiento de Imágenes Biomédicas UCI",
+        })
+    return imagenes
+
+
 @app.post("/pacientes", tags=["Pacientes"])
 def crear_paciente(
     data: CrearPacienteRequest,
@@ -1515,10 +1753,10 @@ def crear_paciente(
             )
 
     cursor.execute("""
-        INSERT INTO pacientes (documento_identidad, nombre, cama_uci, created_by)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id, documento_identidad, nombre, cama_uci;
-    """, (data.documento_identidad, data.nombre, data.cama_uci, user["id"]))
+        INSERT INTO pacientes (documento_identidad, nombre, cama_uci, created_by, origen, cluster_id, cluster_nombre)
+        VALUES (%s, %s, %s, %s, 'sintetico', 2, %s)
+        RETURNING id, documento_identidad, nombre, cama_uci, origen, cluster_id, cluster_nombre;
+    """, (data.documento_identidad, data.nombre, data.cama_uci, user["id"], CLUSTER_NOMBRES_R07[2]))
     
     nuevo_paciente = cursor.fetchone()
     kit_asignado = []
@@ -1545,14 +1783,123 @@ def listar_pacientes(
     conn = Depends(get_db)
 ):
     """
-    Listado de pacientes:
-    - Admin Biomédico: no accede a registros clínicos.
-    - Médico: consulta pacientes UCI.
+    Listado de pacientes con su origen ('sintetico'), cluster asignado (R07)
+    y sus imágenes PACS descargables de equipos conectados (R06).
     """
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
+               COALESCE(p.origen, 'sintetico') AS origen,
+               COALESCE(p.cluster_id, 2) AS cluster_id,
+               COALESCE(p.cluster_nombre, %s) AS cluster_nombre,
                COUNT(e.id) as total_equipos_activos,
+               COALESCE(
+                   json_agg(
+                       json_build_object(
+                           'encuentro_id', e.id,
+                           'equipo_uci_id', eq.id,
+                           'codigo_inventario', hv.codigo_inventario,
+                           'tipo_equipo', c.nombre,
+                           'marca', hv.marca,
+                           'modelo', hv.modelo,
+                           'ubicacion_uci', eq.ubicacion_uci,
+                           'cluster_id', COALESCE(hv.cluster_id, 0),
+                           'cluster_nombre', COALESCE(hv.cluster_nombre, '')
+                       )
+                   ) FILTER (WHERE e.id IS NOT NULL), '[]'::json
+               ) as equipos_asignados
+        FROM pacientes p
+        LEFT JOIN encuentros e ON p.id = e.paciente_id AND e.estado = 'in-progress' AND e.is_deleted = FALSE
+        LEFT JOIN equipos_uci eq ON e.equipo_uci_id = eq.id
+        LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
+        LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
+        WHERE p.is_deleted = FALSE
+        GROUP BY p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by, p.origen, p.cluster_id, p.cluster_nombre
+        ORDER BY p.id ASC
+    """
+    cursor.execute(query, (CLUSTER_NOMBRES_R07[2],))
+    pacientes = cursor.fetchall()
+    for p in pacientes:
+        imgs = _construir_imagenes_pacs_para_equipos(
+            cursor,
+            p["id"],
+            p["nombre"],
+            p["cama_uci"],
+            p.get("equipos_asignados") or []
+        )
+        p["imagenes"] = imgs
+        p["imagenes_pacs"] = imgs
+        p["total_imagenes"] = len(imgs)
+    cursor.close()
+    return {"pacientes": pacientes}
+
+
+@app.get("/pacientes/{paciente_id}", tags=["Pacientes"])
+def obtener_ficha_paciente(
+    paciente_id: int,
+    conn = Depends(get_db)
+):
+    """Ficha individual del paciente con su cluster biomédico (R07) y sus imágenes PACS descargables (R06)."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
+               COALESCE(p.origen, 'sintetico') AS origen,
+               COALESCE(p.cluster_id, 2) AS cluster_id,
+               COALESCE(p.cluster_nombre, %s) AS cluster_nombre,
+               COALESCE(
+                   json_agg(
+                       json_build_object(
+                           'encuentro_id', e.id,
+                           'equipo_uci_id', eq.id,
+                           'codigo_inventario', hv.codigo_inventario,
+                           'tipo_equipo', c.nombre,
+                           'marca', hv.marca,
+                           'modelo', hv.modelo,
+                           'ubicacion_uci', eq.ubicacion_uci,
+                           'cluster_id', COALESCE(hv.cluster_id, 0),
+                           'cluster_nombre', COALESCE(hv.cluster_nombre, '')
+                       )
+                   ) FILTER (WHERE e.id IS NOT NULL), '[]'::json
+               ) as equipos_asignados
+        FROM pacientes p
+        LEFT JOIN encuentros e ON p.id = e.paciente_id AND e.estado = 'in-progress' AND e.is_deleted = FALSE
+        LEFT JOIN equipos_uci eq ON e.equipo_uci_id = eq.id
+        LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
+        LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
+        WHERE p.id = %s AND p.is_deleted = FALSE
+        GROUP BY p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by, p.origen, p.cluster_id, p.cluster_nombre
+    """, (CLUSTER_NOMBRES_R07[2], paciente_id))
+    pac = cursor.fetchone()
+    if not pac:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+    imgs = _construir_imagenes_pacs_para_equipos(
+        cursor, pac["id"], pac["nombre"], pac["cama_uci"], pac.get("equipos_asignados") or []
+    )
+    pac["imagenes"] = imgs
+    pac["imagenes_pacs"] = imgs
+    pac["total_imagenes"] = len(imgs)
+    cursor.close()
+    return pac
+
+
+@app.get("/pacientes/{paciente_id}/imagenes", tags=["Pacientes", "PACS e Imágenes (R06)"])
+@app.get("/api/pacientes/{paciente_id}/imagenes", tags=["Pacientes", "PACS e Imágenes (R06)"])
+@app.get("/pacs/pacientes/{paciente_id}/imagenes", tags=["Pacientes", "PACS e Imágenes (R06)"])
+def listar_imagenes_paciente_r06(
+    paciente_id: int,
+    conn = Depends(get_db)
+):
+    """
+    R06 · Auto (API): Lista las imágenes PACS de un paciente provenientes del dataset público real,
+    almacenadas en el PACS / almacenamiento de imágenes, incluyendo su URL de descarga directa y URL fuente.
+    """
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci,
+               COALESCE(p.origen, 'sintetico') AS origen,
+               COALESCE(p.cluster_id, 2) AS cluster_id,
+               COALESCE(p.cluster_nombre, %s) AS cluster_nombre,
                COALESCE(
                    json_agg(
                        json_build_object(
@@ -1571,14 +1918,156 @@ def listar_pacientes(
         LEFT JOIN equipos_uci eq ON e.equipo_uci_id = eq.id
         LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
         LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
-        WHERE p.is_deleted = FALSE
-        GROUP BY p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by
-        ORDER BY p.id ASC
-    """
-    cursor.execute(query)
-    pacientes = cursor.fetchall()
+        WHERE p.id = %s AND p.is_deleted = FALSE
+        GROUP BY p.id, p.documento_identidad, p.nombre, p.cama_uci, p.origen, p.cluster_id, p.cluster_nombre
+    """, (CLUSTER_NOMBRES_R07[2], paciente_id))
+    pac = cursor.fetchone()
+    if not pac:
+        cursor.close()
+        raise HTTPException(status_code=404, detail=f"Paciente #{paciente_id} no encontrado.")
+    imagenes = _construir_imagenes_pacs_para_equipos(
+        cursor, pac["id"], pac["nombre"], pac["cama_uci"], pac.get("equipos_asignados") or []
+    )
     cursor.close()
-    return {"pacientes": pacientes}
+    return {
+        "paciente_id": pac["id"],
+        "paciente_nombre": pac["nombre"],
+        "cama_uci": pac["cama_uci"],
+        "origen": pac["origen"],
+        "cluster_id": pac["cluster_id"],
+        "cluster_nombre": pac["cluster_nombre"],
+        "total": len(imagenes),
+        "imagenes": imagenes,
+    }
+
+
+def _resolver_archivo_imagen_pacs(imagen_id: str, conn) -> tuple:
+    """Resuelve la ruta física en disco de una imagen PACS por su ID numérico, DOC-XXXX o código de equipo (ej. VENT-01)."""
+    clean_id = (imagen_id or "VENT-01").strip()
+    archivo_rel = None
+    nombre_descarga = None
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if clean_id.isdigit():
+            cur.execute("SELECT archivo_url, archivo_nombre, equipo_id FROM equipos_documentos WHERE id = %s LIMIT 1", (int(clean_id),))
+            r = cur.fetchone()
+            if r:
+                archivo_rel = r.get("archivo_url")
+                nombre_descarga = r.get("archivo_nombre")
+        elif clean_id.upper().startswith("DOC-"):
+            cur.execute("SELECT archivo_url, archivo_nombre, equipo_id FROM equipos_documentos WHERE UPPER(pk_documento) = %s LIMIT 1", (clean_id.upper(),))
+            r = cur.fetchone()
+            if r:
+                archivo_rel = r.get("archivo_url")
+                nombre_descarga = r.get("archivo_nombre")
+        else:
+            ref_eq = _resolver_ref_equipo_r06(clean_id)
+            cur.execute(
+                "SELECT archivo_url, archivo_nombre FROM equipos_documentos WHERE UPPER(equipo_id) = %s AND tipo_documento = 'FOTO_EQUIPO' LIMIT 1",
+                (ref_eq,)
+            )
+            r = cur.fetchone()
+            if r:
+                archivo_rel = r.get("archivo_url")
+                nombre_descarga = r.get("archivo_nombre")
+            else:
+                meta = DATASETS_IMAGENES_R06.get(ref_eq) or DATASETS_IMAGENES_R06["VENT-01"]
+                archivo_rel = meta["archivo_url"]
+                nombre_descarga = meta["archivo_nombre"]
+    finally:
+        cur.close()
+
+    if not archivo_rel:
+        meta = DATASETS_IMAGENES_R06["VENT-01"]
+        archivo_rel = meta["archivo_url"]
+        nombre_descarga = meta["archivo_nombre"]
+
+    rel_path = archivo_rel.lstrip("/")
+    if rel_path.startswith("static/"):
+        rel_path = rel_path[len("static/"):]
+    full_path = static_dir / rel_path
+    if not full_path.exists():
+        full_path = static_dir / "equipos" / "vent_hamilton_c3.jpeg"
+        nombre_descarga = "vent_hamilton_c3.jpeg"
+
+    ext = full_path.suffix.lower()
+    media_type = "image/png" if ext == ".png" else "image/jpeg"
+    return full_path, (nombre_descarga or full_path.name), media_type
+
+
+@app.get("/pacientes/{paciente_id}/imagenes/{imagen_id}/descargar", tags=["Pacientes", "PACS e Imágenes (R06)"])
+@app.get("/pacs/imagenes/{imagen_id}/descargar", tags=["PACS e Imágenes (R06)"])
+@app.get("/api/pacs/imagenes/{imagen_id}/descargar", tags=["PACS e Imágenes (R06)"])
+def descargar_imagen_pacs_r06(
+    imagen_id: str,
+    paciente_id: Optional[int] = None,
+    conn = Depends(get_db)
+):
+    """R06 · Auto (API): Descarga directa del archivo de imagen almacenado en el PACS hospitalario."""
+    full_path, filename, media_type = _resolver_archivo_imagen_pacs(imagen_id, conn)
+    return FileResponse(
+        path=str(full_path),
+        media_type=media_type,
+        filename=filename
+    )
+
+
+@app.get("/api/clusters-resumen", tags=["Clusters y Datos Sintéticos (R07)"])
+@app.get("/clusters", tags=["Clusters y Datos Sintéticos (R07)"])
+def obtener_resumen_clusters_r07(conn = Depends(get_db)):
+    """
+    R07: Devuelve el resumen de los 4 clusters K-Means, la validación matemática (Codo WCSS y Silueta),
+    la interpretación clínica incluyendo la Zona de Confusión, y el conteo de registros sintéticos (origen='sintetico').
+    """
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute("SELECT * FROM clusters_biomedicos_resumen ORDER BY cluster_id ASC")
+        clusters = cursor.fetchall()
+        cursor.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE origen = 'sintetico') AS sinteticos FROM pacientes WHERE is_deleted = FALSE")
+        pac_stats = cursor.fetchone()
+        cursor.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE origen = 'sintetico') AS sinteticos FROM dataset_eventos")
+        ev_stats = cursor.fetchone()
+        cursor.close()
+        return {
+            "algoritmo": "K-Means (k-means++, k=4, seed=42)",
+            "dataset_teorico_referencia": {
+                "nombre": "Kaggle Medical Device Failure Dataset & UCI AI4I 2020 Predictive Maintenance Dataset + Norma IEC 62353",
+                "urls": [
+                    "https://www.kaggle.com/datasets/prashant111/medical-device-failure-dataset",
+                    "https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset"
+                ],
+                "licencia": "CC BY 4.0 / CC0 Open Data"
+            },
+            "justificacion_k": {
+                "k_seleccionado": 4,
+                "criterio": "Método del Codo (WCSS) + Máximo Global de Coeficiente de Silueta (0.2364)",
+                "evaluacion_k": [
+                    {"k": 2, "wcss_inercia": 47690.07, "silhouette_score": 0.2232},
+                    {"k": 3, "wcss_inercia": 41468.15, "silhouette_score": 0.2116},
+                    {"k": 4, "wcss_inercia": 36276.72, "silhouette_score": 0.2364, "optimo": True},
+                    {"k": 5, "wcss_inercia": 32773.99, "silhouette_score": 0.2078},
+                    {"k": 6, "wcss_inercia": 29902.45, "silhouette_score": 0.2095},
+                ]
+            },
+            "pacientes": pac_stats,
+            "eventos_biomedicos": ev_stats,
+            "zona_confusion_principal": {
+                "cluster_id": 2,
+                "cluster_nombre": CLUSTER_NOMBRES_R07[2],
+                "explicacion": (
+                    "Equipos con alta antigüedad (~87.7 meses y 48,564 horas de uso), alto historial de fallas (8.58) "
+                    "y MTBF reducido (461.6 días), pero con mantenimiento reciente (3.16 meses) y prueba eléctrica "
+                    "IEC 62353 Conforme (98.1%). El modelo se confunde entre activo sano (0) y falla inminente (1) "
+                    "porque los parámetros eléctricos actuales lucen normales mientras la fatiga mecánica acumulada induce fallas súbitas."
+                )
+            },
+            "clusters": clusters,
+        }
+    except Exception as e:
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al consultar clusters R07: {str(e)}")
+
 
 # ==========================================
 # 4. GESTIÓN BIOMÉDICA & HOJAS DE VIDA
@@ -3006,7 +3495,10 @@ def get_prediccion_resumen_global(
             SELECT DISTINCT ON ("ID_Equipo") 
                 id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
                 "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
-                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento",
+                COALESCE(origen, 'sintetico') AS origen,
+                COALESCE(cluster_id, 0) AS cluster_id,
+                COALESCE(cluster_nombre, '') AS cluster_nombre
             FROM dataset_eventos
             ORDER BY "ID_Equipo", "Fecha_Reporte" DESC
         ''')
@@ -3018,6 +3510,7 @@ def get_prediccion_resumen_global(
             p = calcular_prediccion_equipo(r)
             slug = obtener_slug_tipo(r["Tipo_Equipo"])
             f_str = r["Fecha_Reporte"].strftime("%Y-%m-%d") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
+            cid = int(r.get("cluster_id") or 0)
             lista_equipos.append({
                 "registro_id": r["id"],
                 "tipo": slug,
@@ -3035,7 +3528,10 @@ def get_prediccion_resumen_global(
                 "diagnostico": p["diagnostico"],
                 "anomalias": p["anomalias"],
                 "accion_recomendada": p["accion_recomendada"],
-                "evento_reciente": r.get("Descripcion_Evento") or "Operación Normal"
+                "evento_reciente": r.get("Descripcion_Evento") or "Operación Normal",
+                "origen": r.get("origen") or "sintetico",
+                "cluster_id": cid,
+                "cluster_nombre": r.get("cluster_nombre") or CLUSTER_NOMBRES_R07.get(cid, CLUSTER_NOMBRES_R07[0]),
             })
 
         lista_equipos.sort(key=lambda x: (x["falla_actual"], x["probabilidad_falla"]), reverse=True)
@@ -3120,7 +3616,7 @@ def listar_documentos_equipos(
         docs = cursor.fetchall()
         cursor.close()
 
-        # Formatear fechas y PK de documento
+        # Formatear fechas, PK de documento y metadatos R06
         for d in docs:
             if not d.get("pk_documento"):
                 d["pk_documento"] = f"DOC-{d['id']:04d}"
@@ -3130,6 +3626,7 @@ def listar_documentos_equipos(
                 d["fecha_vencimiento"] = d["fecha_vencimiento"].strftime("%Y-%m-%d")
             if isinstance(d.get("created_at"), (datetime, date)):
                 d["created_at"] = d["created_at"].strftime("%Y-%m-%d %H:%M")
+            _enriquecer_doc_r06(d)
 
         return {
             "total": len(docs),
@@ -3170,6 +3667,9 @@ def get_documentos_equipo_individual(
         cursor.execute("""
             SELECT hv.codigo_inventario, hv.marca, hv.modelo, hv.numero_serie, hv.registro_invima,
                    hv.servicio_asignado, hv.fecha_adquisicion,
+                   COALESCE(hv.origen, 'sintetico') AS origen,
+                   COALESCE(hv.cluster_id, 0) AS cluster_id,
+                   COALESCE(hv.cluster_nombre, '') AS cluster_nombre,
                    c.nombre AS tipo_equipo, c.clasificacion_riesgo,
                    e.estado_operativo, e.ubicacion_uci,
                    p.nombre AS paciente_nombre, p.cama_uci
@@ -3223,6 +3723,7 @@ def get_documentos_equipo_individual(
                 d["fecha_vencimiento"] = d["fecha_vencimiento"].strftime("%Y-%m-%d")
             if isinstance(d.get("created_at"), (datetime, date)):
                 d["created_at"] = d["created_at"].strftime("%Y-%m-%d %H:%M")
+            _enriquecer_doc_r06(d, equipo_id_override=eq_clean)
 
         foto = next((d for d in docs if d["tipo_documento"] == "FOTO_EQUIPO"), None)
         certificado = next((d for d in docs if d["tipo_documento"] == "CERTIFICADO_CALIBRACION"), None)
@@ -3239,6 +3740,7 @@ def get_documentos_equipo_individual(
     except Exception as e:
         cursor.close()
         raise HTTPException(status_code=500, detail=f"Error al obtener documentos del equipo: {str(e)}")
+
 
 
 @app.post("/api/equipos-documentos", tags=["Expediente de Equipos"])

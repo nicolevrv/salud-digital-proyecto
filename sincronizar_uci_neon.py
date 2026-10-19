@@ -21,6 +21,7 @@ import sys
 import argparse
 from datetime import datetime, timedelta
 
+import numpy as np
 import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values, RealDictCursor
@@ -81,6 +82,90 @@ REKEY_LEGACY = {
     "HV-UCI-005": "BVOL-01", "HV-UCI-006": "BJER-01", "HV-UCI-007": "CRRT-01", "HV-UCI-008": "POCT-01",
     "HV-HOSP-009": "ECG-01", "HV-URG-010": "DEF-01", "HV-IMG-011": "ECO-01", "HV-IMG-012": "RX-01",
 }
+
+# R06: Metadatos de Dataset Público Real para cada una de las 12 fotografías de equipos en PACS
+DATASETS_IMAGENES_R06 = {
+    "VENT-01": {
+        "dataset_nombre": "Roboflow Universe - Hospital Equipment Detection & Wikimedia Medical Ventilators",
+        "fuente_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Mechanical_ventilators",
+        "licencia": "CC BY 4.0",
+    },
+    "VENT-02": {
+        "dataset_nombre": "Wikimedia Commons Medical Equipment (Dräger) & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Dr%C3%A4gerwerk",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "MON-01": {
+        "dataset_nombre": "Roboflow Universe - Medical Equipment Detection (Patient Monitor Class)",
+        "fuente_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Medical_monitors",
+        "licencia": "CC BY 4.0",
+    },
+    "MON-02": {
+        "dataset_nombre": "Wikimedia Commons Medical Monitors & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_monitors",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "BVOL-01": {
+        "dataset_nombre": "Wikimedia Commons Infusion Pumps & Roboflow Medical Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Infusion_pumps",
+        "referencia_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "BJER-01": {
+        "dataset_nombre": "Wikimedia Commons Syringe Infusion Pumps & Roboflow Hospital Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Syringe_drivers",
+        "referencia_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "DEF-01": {
+        "dataset_nombre": "Roboflow Universe - Hospital Equipment Detection (Defibrillator Class)",
+        "fuente_url": "https://universe.roboflow.com/hospitalequipmentdetection/hospital-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Defibrillators",
+        "licencia": "CC BY 4.0",
+    },
+    "CRRT-01": {
+        "dataset_nombre": "Wikimedia Commons Renal Replacement Therapy & FDA AccessGUDID Database",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Hemofiltration",
+        "referencia_url": "https://accessgudid.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / Public Domain",
+    },
+    "ECG-01": {
+        "dataset_nombre": "Roboflow Universe - Medical Equipment Detection (ECG Machine Class)",
+        "fuente_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "referencia_url": "https://commons.wikimedia.org/wiki/Category:Electrocardiographs",
+        "licencia": "CC BY 4.0",
+    },
+    "POCT-01": {
+        "dataset_nombre": "Wikimedia Commons Blood Gas Analyzers & NLM Open-i Biomedical Image Dataset",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Blood_gas_analyzers",
+        "referencia_url": "https://openi.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "ECO-01": {
+        "dataset_nombre": "Wikimedia Commons Medical Ultrasound Equipment & Roboflow Medical Equipment Detection",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_ultrasound_equipment",
+        "referencia_url": "https://universe.roboflow.com/bsbi/medical-equipment-detection",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+    "RX-01": {
+        "dataset_nombre": "Wikimedia Commons Mobile Medical X-Ray Equipment & NLM Open-i Dataset",
+        "fuente_url": "https://commons.wikimedia.org/wiki/Category:Medical_X-ray_equipment",
+        "referencia_url": "https://openi.nlm.nih.gov/",
+        "licencia": "CC BY-SA 4.0 / CC BY 4.0",
+    },
+}
+
+CLUSTER_NOMBRES_R07 = {
+    0: "Cluster 0: Operación Óptima en Activos Jóvenes (Bajo Riesgo)",
+    1: "Cluster 1: Degradación Metrológica e Incumplimiento IEC 62353 (Riesgo Crítico)",
+    2: "Cluster 2: Zona de Confusión (Fatiga Acumulada con IEC 62353 Conforme)",
+    3: "Cluster 3: Activos Maduros de Alta Confiabilidad y Alto MTBF",
+}
+
 
 
 # Columnas de dataset_eventos: (columna en Excel, columna en Neon, tipo SQL)
@@ -372,6 +457,222 @@ def sincronizar_equipos(cur, df):
     cur.execute("INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id) VALUES (%s,'SINCRONIZAR_DOTACION_UCI','equipos_uci',0)", (ADMIN_ID,))
 
 
+def _kmeans_deterministico(X_scaled, k=4, seed=42, max_iter=100):
+    rng = np.random.default_rng(seed)
+    n = X_scaled.shape[0]
+    centers = np.empty((k, X_scaled.shape[1]))
+    centers[0] = X_scaled[rng.integers(0, n)]
+    for c in range(1, k):
+        dist_sq = np.min(np.sum((X_scaled[:, None, :] - centers[None, :c, :]) ** 2, axis=2), axis=1)
+        probs = dist_sq / dist_sq.sum()
+        centers[c] = X_scaled[rng.choice(n, p=probs)]
+    for _ in range(max_iter):
+        dists = np.sum((X_scaled[:, None, :] - centers[None, :, :]) ** 2, axis=2)
+        labels = np.argmin(dists, axis=1)
+        new_centers = np.array([
+            X_scaled[labels == j].mean(axis=0) if np.any(labels == j) else centers[j]
+            for j in range(k)
+        ])
+        if np.allclose(centers, new_centers, atol=1e-6):
+            break
+        centers = new_centers
+    wcss = float(np.sum(np.min(np.sum((X_scaled[:, None, :] - centers[None, :, :]) ** 2, axis=2), axis=1)))
+    return labels, centers, wcss
+
+
+def configurar_r06_y_r07(cur):
+    """
+    R06: Agrega metadatos de Dataset Público Real (URL fuente, referencia y licencia)
+         a las 12 fotografías oficiales almacenadas en equipos_documentos (PACS).
+    R07: Marca todos los registros de dataset_eventos, hoja_vida_equipos y pacientes
+         con origen = 'sintetico' y los vincula a su respectivo cluster K-Means (k=4).
+    """
+    # --- R06: Metadatos de Dataset Público en equipos_documentos ---
+    cur.execute("""
+        ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS dataset_nombre TEXT;
+        ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS fuente_url TEXT;
+        ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS referencia_url TEXT;
+        ALTER TABLE equipos_documentos ADD COLUMN IF NOT EXISTS licencia VARCHAR(80);
+    """)
+    actualizados_r06 = 0
+    for eq_id, meta in DATASETS_IMAGENES_R06.items():
+        cur.execute("""
+            UPDATE equipos_documentos
+            SET dataset_nombre = %s,
+                fuente_url = %s,
+                referencia_url = %s,
+                licencia = %s
+            WHERE UPPER(equipo_id) = %s
+        """, (
+            meta["dataset_nombre"],
+            meta["fuente_url"],
+            meta["referencia_url"],
+            meta["licencia"],
+            eq_id.upper(),
+        ))
+        actualizados_r06 += cur.rowcount
+    log(f"[6] R06: Documentos/fotos PACS vinculados a URLs de datasets públicos reales: {actualizados_r06}")
+
+    # --- R07: Columnas origen y cluster en dataset_eventos, hoja_vida_equipos y pacientes ---
+    cur.execute("""
+        ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+        ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS cluster_id INT;
+        ALTER TABLE dataset_eventos ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
+
+        ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+        ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS cluster_id INT;
+        ALTER TABLE hoja_vida_equipos ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
+
+        ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS origen VARCHAR(30) DEFAULT 'sintetico';
+        ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS cluster_id INT;
+        ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS cluster_nombre VARCHAR(120);
+    """)
+
+    features = [
+        "Edad_Equipo_Meses",
+        "Meses_Desde_Ultimo_Mtto",
+        "Horas_Uso_Acumuladas",
+        "Fallas_Acumuladas",
+        "MTBF_Promedio_Dias",
+        "Corriente_Fuga_uA",
+        "Resistencia_Tierra_Ohms",
+        "Desviacion_Calibracion_Pct",
+    ]
+    cur.execute(f'''
+        SELECT id, "ID_Equipo", "Fecha_Reporte", {", ".join(f'"{c}"' for c in features)},
+               "Variable_Target_Falla", "Estado_IEC62353"
+        FROM dataset_eventos
+        ORDER BY id ASC
+    ''')
+    cols_q = ["id", "ID_Equipo", "Fecha_Reporte"] + features + ["Variable_Target_Falla", "Estado_IEC62353"]
+    df_ev = pd.DataFrame(cur.fetchall(), columns=cols_q)
+    for col in features:
+        df_ev[col] = pd.to_numeric(df_ev[col], errors="coerce")
+        med = df_ev[col].median() if not df_ev[col].dropna().empty else 0.0
+        df_ev[col] = df_ev[col].fillna(med)
+
+    X = df_ev[features].to_numpy(dtype=float)
+    mean = X.mean(axis=0)
+    std = X.std(axis=0)
+    std[std == 0] = 1.0
+    X_scaled = (X - mean) / std
+
+    labels, _, wcss4 = _kmeans_deterministico(X_scaled, k=4, seed=42)
+    df_ev["cluster_id"] = labels.astype(int)
+    df_ev["cluster_nombre"] = df_ev["cluster_id"].map(CLUSTER_NOMBRES_R07)
+
+    # Actualizar dataset_eventos en bloque
+    cur.execute("CREATE TEMP TABLE tmp_clusters_ev (id INT, cluster_id INT, cluster_nombre TEXT) ON COMMIT DROP")
+    pares_ev = [(int(r.id), int(r.cluster_id), str(r.cluster_nombre)) for r in df_ev[["id", "cluster_id", "cluster_nombre"]].itertuples(index=False)]
+    execute_values(cur, "INSERT INTO tmp_clusters_ev (id, cluster_id, cluster_nombre) VALUES %s", pares_ev, page_size=1000)
+    cur.execute("""
+        UPDATE dataset_eventos d
+        SET origen = 'sintetico',
+            cluster_id = t.cluster_id,
+            cluster_nombre = t.cluster_nombre
+        FROM tmp_clusters_ev t
+        WHERE d.id = t.id
+    """)
+    log(f"[7] R07: {cur.rowcount} registros en dataset_eventos marcados con origen='sintetico' y agrupados en 4 clusters K-Means (WCSS={wcss4:.2f})")
+
+    # Último cluster de cada uno de los 232 equipos -> hoja_vida_equipos
+    ult_eq = df_ev.sort_values(["ID_Equipo", "Fecha_Reporte", "id"]).groupby("ID_Equipo").tail(1)
+    cluster_por_eq = {r.ID_Equipo: (int(r.cluster_id), str(r.cluster_nombre)) for r in ult_eq.itertuples(index=False)}
+    for cod_eq, (cid, cnom) in cluster_por_eq.items():
+        cur.execute("""
+            UPDATE hoja_vida_equipos
+            SET origen = 'sintetico',
+                cluster_id = %s,
+                cluster_nombre = %s
+            WHERE codigo_inventario = %s
+        """, (cid, cnom, cod_eq))
+
+    # Asignar a cada paciente (origen='sintetico') el cluster dominante / de mayor atención de sus 5 equipos asignados
+    # Prioridad de interés clínico/biomédico: Cluster 1 (Crítico) > Cluster 2 (Zona de Confusión) > Cluster 3 (Maduro Alto MTBF) > Cluster 0 (Óptimo)
+    prioridad_cluster = {1: 4, 2: 3, 3: 2, 0: 1}
+    cur.execute("""
+        SELECT p.id,
+               COALESCE(array_agg(hv.cluster_id) FILTER (WHERE hv.cluster_id IS NOT NULL), ARRAY[0]) AS cids
+        FROM pacientes p
+        LEFT JOIN encuentros enc ON enc.paciente_id = p.id AND enc.estado = 'in-progress' AND enc.is_deleted = FALSE
+        LEFT JOIN equipos_uci eq ON eq.id = enc.equipo_uci_id AND eq.is_deleted = FALSE
+        LEFT JOIN hoja_vida_equipos hv ON hv.id = eq.hoja_vida_id AND hv.is_deleted = FALSE
+        WHERE p.is_deleted = FALSE
+        GROUP BY p.id
+        ORDER BY p.id ASC
+    """)
+    pacientes_clusters = cur.fetchall()
+    for pid, cids in pacientes_clusters:
+        lista_c = [int(x) for x in (cids or [0]) if x is not None]
+        if not lista_c:
+            elegido = 0
+        else:
+            # Si todos los equipos son Cluster 0/2/3, elegir el de mayor prioridad para reflejar el perfil de riesgo de su cama
+            elegido = sorted(lista_c, key=lambda c: (prioridad_cluster.get(c, 0), lista_c.count(c)), reverse=True)[0]
+        cur.execute("""
+            UPDATE pacientes
+            SET origen = 'sintetico',
+                cluster_id = %s,
+                cluster_nombre = %s
+            WHERE id = %s
+        """, (elegido, CLUSTER_NOMBRES_R07[elegido], pid))
+    log(f"    R07: {len(pacientes_clusters)} pacientes UCI marcados con origen='sintetico' y ligados a su cluster operativo.")
+
+    # Crear tabla resumen de clusters biomédicos para consulta rápida desde API
+    cur.execute("""
+        DROP TABLE IF EXISTS clusters_biomedicos_resumen;
+        CREATE TABLE clusters_biomedicos_resumen (
+            cluster_id INT PRIMARY KEY,
+            cluster_nombre VARCHAR(120) NOT NULL,
+            total_registros INT NOT NULL,
+            porcentaje_dataset NUMERIC(5,2) NOT NULL,
+            edad_media_meses NUMERIC(8,2),
+            meses_mtto_medio NUMERIC(8,2),
+            horas_uso_medias NUMERIC(12,2),
+            fallas_acumuladas_medias NUMERIC(8,2),
+            mtbf_medio_dias NUMERIC(10,2),
+            corriente_fuga_media_ua NUMERIC(8,2),
+            desviacion_calibracion_media_pct NUMERIC(8,2),
+            tasa_falla_pct NUMERIC(6,2),
+            es_zona_confusion BOOLEAN DEFAULT FALSE,
+            interpretacion_clinica TEXT
+        );
+    """)
+    interpretaciones = {
+        0: (False, "Equipos biomédicos jóvenes (~35 meses) con mantenimiento preventivo reciente (~3.3 meses), baja corriente de fuga (75.8 uA) y 99.3% de conformidad IEC 62353. Representa el régimen basal seguro de soporte vital."),
+        1: (True, "Activos con retraso de mantenimiento (~7.25 meses), corriente de fuga elevada (137.9 uA) y desviación metrológica alta (3.65%). Incluye 466 registros que aún marcan IEC 62353 Conforme pese a degradación severa (tasa de falla del 58%)."),
+        2: (True, "ZONA DE CONFUSIÓN PRINCIPAL DEL MODELO: Equipos de alta antigüedad (~87.7 meses y 48,564 h de uso) con alto historial de fallas (8.58) y menor MTBF (461.6 días), pero con mantenimiento reciente (3.16 meses) y prueba eléctrica IEC 62353 Conforme (98.1%). El modelo se confunde entre equipo sano (0) y falla súbita (1) porque los parámetros eléctricos actuales lucen normales mientras la fatiga mecánica acumulada induce fallas inesperadas."),
+        3: (False, "Equipos maduros (~80 meses) de alta estabilidad metrológica con apenas 1.01 fallas históricas y un MTBF sobresaliente (2,056 días), manteniendo riesgo bajo de falla (4%)."),
+    }
+    total_ev = len(df_ev)
+    for cid in range(4):
+        sub = df_ev[df_ev["cluster_id"] == cid]
+        es_conf, interp = interpretaciones[cid]
+        cur.execute("""
+            INSERT INTO clusters_biomedicos_resumen (
+                cluster_id, cluster_nombre, total_registros, porcentaje_dataset,
+                edad_media_meses, meses_mtto_medio, horas_uso_medias, fallas_acumuladas_medias,
+                mtbf_medio_dias, corriente_fuga_media_ua, desviacion_calibracion_media_pct,
+                tasa_falla_pct, es_zona_confusion, interpretacion_clinica
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            cid,
+            CLUSTER_NOMBRES_R07[cid],
+            len(sub),
+            round(len(sub) * 100.0 / total_ev, 2),
+            round(float(sub["Edad_Equipo_Meses"].mean()), 2),
+            round(float(sub["Meses_Desde_Ultimo_Mtto"].mean()), 2),
+            round(float(sub["Horas_Uso_Acumuladas"].mean()), 2),
+            round(float(sub["Fallas_Acumuladas"].mean()), 2),
+            round(float(sub["MTBF_Promedio_Dias"].mean()), 2),
+            round(float(sub["Corriente_Fuga_uA"].mean()), 2),
+            round(float(sub["Desviacion_Calibracion_Pct"].mean()), 2),
+            round(float(pd.to_numeric(sub["Variable_Target_Falla"], errors="coerce").fillna(0).mean() * 100.0), 2),
+            es_conf,
+            interp,
+        ))
+
+
 def reporte(cur):
     cur.execute("""
         SELECT (SELECT COUNT(*) FROM camas_uci WHERE activa) total,
@@ -425,6 +726,7 @@ def main():
         sincronizar_dataset(cur, hojas)
         crear_camas(cur)
         sincronizar_equipos(cur, df)
+        configurar_r06_y_r07(cur)
         reporte(cur)
         if args.dry_run:
             conn.rollback()
@@ -441,3 +743,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

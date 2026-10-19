@@ -12,6 +12,7 @@ services:
       - DB_USER=admin
       - DB_PASS=adminpassword
       - HAPI_FHIR_URL=http://hapi-fhir:8080/fhir
+      - ORTHANC_PACS_URL=http://orthanc-pacs:8042
       - PORT=8000
     depends_on:
       - app-db
@@ -75,6 +76,18 @@ services:
       - fhir-db
     restart: unless-stopped
 
+  # 6. Servidor PACS Orthanc (Almacenamiento de Imágenes Biomédicas R06)
+  orthanc-pacs:
+    image: jodogne/orthanc-plugins:latest
+    container_name: uci_orthanc_pacs
+    ports:
+      - "8042:8042"
+      - "4242:4242"
+    volumes:
+      - orthanc_pacs_data:/var/lib/orthanc/db
+    restart: unless-stopped
+
 volumes:
   app_db_data:
   fhir_db_data:
+  orthanc_pacs_data:
