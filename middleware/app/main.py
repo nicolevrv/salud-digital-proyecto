@@ -1,4 +1,5 @@
 import os
+import re
 import urllib.parse
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -1270,6 +1271,70 @@ def listar_encuentros(
     cursor.close()
     return {"encuentros": encuentros}
 
+LIMITE_KIT_POR_CATALOGO = {
+    1: (1, "Ventilador Mecánico"),
+    2: (1, "Monitor Multiparámetro"),
+    3: (2, "Bomba de Infusión Volumétrica"),
+    4: (1, "Bomba de Infusión a Jeringa"),
+}
+
+def _asignar_kit_basico_paciente(cursor, paciente_id: int, cama_uci: str, user_id: int):
+    """
+    Asigna automáticamente el kit básico irrepetible (1 VENT, 1 MON, 2 BVOL, 1 BJER)
+    a un paciente recién admitido en una cama UCI, priorizando las unidades naturales de su cama.
+    """
+    m = re.search(r"(\d+)$", cama_uci or "")
+    n = int(m.group(1)) if m else 0
+    preferidos_por_cat = {
+        1: ([f"VENT-{n:02d}"] if n else [], "VENT", 1),
+        2: ([f"MON-{n:02d}"] if n else [], "MON", 1),
+        3: ([f"BVOL-{2*n-1:02d}", f"BVOL-{2*n:02d}"] if n else [], "BVOL", 2),
+        4: ([f"BJER-{n:02d}"] if n else [], "BJER", 1),
+    }
+    asignados = []
+    for cat_id, (preferidos, pref, cantidad) in preferidos_por_cat.items():
+        seleccionados = []
+        if preferidos:
+            cursor.execute("""
+                SELECT e.id, hv.codigo_inventario
+                FROM equipos_uci e
+                JOIN hoja_vida_equipos hv ON hv.id = e.hoja_vida_id
+                WHERE e.is_deleted = FALSE
+                  AND e.estado_operativo = 'Disponible'
+                  AND hv.codigo_inventario = ANY(%s)
+                ORDER BY hv.codigo_inventario ASC
+                FOR UPDATE
+            """, (preferidos,))
+            seleccionados = cursor.fetchall()
+        faltan = cantidad - len(seleccionados)
+        if faltan > 0:
+            excluir_ids = [r["id"] for r in seleccionados] or [-1]
+            cursor.execute("""
+                SELECT e.id, hv.codigo_inventario
+                FROM equipos_uci e
+                JOIN hoja_vida_equipos hv ON hv.id = e.hoja_vida_id
+                WHERE e.is_deleted = FALSE
+                  AND e.estado_operativo = 'Disponible'
+                  AND hv.equipo_catalogo_id = %s
+                  AND e.id <> ALL(%s)
+                ORDER BY COALESCE(NULLIF(regexp_replace(hv.codigo_inventario, '\\D', '', 'g'), ''), '0')::int ASC
+                LIMIT %s
+                FOR UPDATE
+            """, (cat_id, excluir_ids, faltan))
+            seleccionados.extend(cursor.fetchall())
+        for eq in seleccionados[:cantidad]:
+            cursor.execute("""
+                INSERT INTO encuentros (paciente_id, equipo_uci_id, estado, created_by)
+                VALUES (%s, %s, 'in-progress', %s)
+            """, (paciente_id, eq["id"], user_id))
+            cursor.execute("""
+                UPDATE equipos_uci
+                SET estado_operativo = 'En Uso', ubicacion_uci = %s, ultima_inspeccion_biomedica = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (cama_uci, eq["id"]))
+            asignados.append(eq["codigo_inventario"])
+    return asignados
+
 @app.post("/encuentros", tags=["Encuentros"])
 def crear_encuentro(
     data: CrearEncuentroRequest,
@@ -1281,11 +1346,21 @@ def crear_encuentro(
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+    cursor.execute("SELECT id, nombre, cama_uci FROM pacientes WHERE id = %s AND is_deleted = FALSE", (data.paciente_id,))
+    paciente = cursor.fetchone()
+    if not paciente:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="El paciente seleccionado no existe o fue dado de baja.")
+
     if data.equipo_uci_id:
-        cursor.execute(
-            "SELECT estado_operativo FROM equipos_uci WHERE id = %s AND is_deleted = FALSE FOR UPDATE",
-            (data.equipo_uci_id,)
-        )
+        cursor.execute("""
+            SELECT e.id, e.estado_operativo, hv.equipo_catalogo_id, hv.codigo_inventario, c.nombre AS tipo_equipo
+            FROM equipos_uci e
+            JOIN hoja_vida_equipos hv ON hv.id = e.hoja_vida_id
+            JOIN catalogo_equipos c ON c.id = hv.equipo_catalogo_id
+            WHERE e.id = %s AND e.is_deleted = FALSE
+            FOR UPDATE
+        """, (data.equipo_uci_id,))
         equipo = cursor.fetchone()
         if not equipo:
             cursor.close()
@@ -1294,7 +1369,32 @@ def crear_encuentro(
             cursor.close()
             raise HTTPException(
                 status_code=409,
-                detail=f"El equipo no está disponible (estado actual: {equipo['estado_operativo']}). Seleccione un equipo disponible."
+                detail=f"El equipo {equipo['codigo_inventario']} no está disponible (estado actual: {equipo['estado_operativo']}). Seleccione un equipo disponible."
+            )
+
+        # Validar que no se dupliquen equipos ni se exceda el kit básico por paciente/cama
+        cat_id = equipo["equipo_catalogo_id"]
+        max_permitido, etiqueta_tipo = LIMITE_KIT_POR_CATALOGO.get(cat_id, (1, equipo["tipo_equipo"]))
+        cursor.execute("""
+            SELECT COUNT(*) AS actuales
+            FROM encuentros enc
+            JOIN equipos_uci eq ON eq.id = enc.equipo_uci_id
+            JOIN hoja_vida_equipos hv ON hv.id = eq.hoja_vida_id
+            WHERE enc.paciente_id = %s
+              AND enc.estado = 'in-progress'
+              AND enc.is_deleted = FALSE
+              AND hv.equipo_catalogo_id = %s
+        """, (data.paciente_id, cat_id))
+        actuales = cursor.fetchone()["actuales"]
+        if actuales >= max_permitido:
+            cursor.close()
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"El paciente {paciente['nombre']} ({paciente['cama_uci']}) ya cuenta con el cupo completo de "
+                    f"{etiqueta_tipo} ({actuales}/{max_permitido}). La dotación por cama ocupada es estrictamente: "
+                    f"1 ventilador, 1 monitor, 2 bombas volumétricas y 1 jeringa de infusión."
+                )
             )
 
     cursor.execute("""
@@ -1306,7 +1406,10 @@ def crear_encuentro(
     nuevo_encuentro = cursor.fetchone()
     
     if data.equipo_uci_id:
-        cursor.execute("UPDATE equipos_uci SET estado_operativo = 'En Uso' WHERE id = %s", (data.equipo_uci_id,))
+        cursor.execute(
+            "UPDATE equipos_uci SET estado_operativo = 'En Uso', ubicacion_uci = %s WHERE id = %s",
+            (paciente["cama_uci"], data.equipo_uci_id)
+        )
 
     conn.commit()
     cursor.close()
@@ -1357,11 +1460,11 @@ def finalizar_encuentro(
     """, (encuentro_id,))
     encuentro_finalizado = cursor.fetchone()
 
-    # Si tenía un equipo UCI asignado, liberarlo (volver a 'Disponible')
+    # Si tenía un equipo UCI asignado, liberarlo (volver a 'Disponible' en Almacén UCI)
     if encuentro["equipo_uci_id"]:
         cursor.execute("""
             UPDATE equipos_uci 
-            SET estado_operativo = 'Disponible' 
+            SET estado_operativo = 'Disponible', ubicacion_uci = 'Almacén UCI'
             WHERE id = %s
         """, (encuentro["equipo_uci_id"],))
 
@@ -1401,7 +1504,8 @@ def crear_paciente(
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute("SELECT 1 FROM camas_uci WHERE codigo = %s AND activa = TRUE", (data.cama_uci,))
-    if cursor.fetchone():
+    es_cama_uci = cursor.fetchone() is not None
+    if es_cama_uci:
         camas = calcular_camas_uci(cursor)
         if data.cama_uci not in camas["camas_libres"]:
             cursor.close()
@@ -1417,6 +1521,9 @@ def crear_paciente(
     """, (data.documento_identidad, data.nombre, data.cama_uci, user["id"]))
     
     nuevo_paciente = cursor.fetchone()
+    kit_asignado = []
+    if es_cama_uci:
+        kit_asignado = _asignar_kit_basico_paciente(cursor, nuevo_paciente["id"], data.cama_uci, user["id"])
     conn.commit()
     cursor.close()
 
@@ -1426,7 +1533,11 @@ def crear_paciente(
         except Exception:
             pass
 
-    return {"message": "Paciente registrado exitosamente", "paciente": nuevo_paciente}
+    return {
+        "message": "Paciente registrado exitosamente con su dotación básica UCI",
+        "paciente": nuevo_paciente,
+        "equipos_asignados": kit_asignado
+    }
 
 @app.get("/pacientes", tags=["Pacientes"])
 def listar_pacientes(
@@ -1623,11 +1734,13 @@ def calcular_camas_uci(cursor):
     Estado de las camas UCI en el instante de la consulta.
     Una cama está ocupada cuando tiene un paciente hospitalizado: con algún encuentro en curso
     o recién admitido (sin encuentros). Si todos sus encuentros ya finalizaron, la cama queda libre.
+    Incluye los equipos activos asignados a cada cama ocupada.
     """
     cursor.execute("""
         SELECT c.codigo,
                p.id AS paciente_id,
-               p.nombre AS paciente_nombre
+               p.nombre AS paciente_nombre,
+               COALESCE(eq_bed.equipos, '[]'::json) AS equipos_asignados
         FROM camas_uci c
         LEFT JOIN LATERAL (
             SELECT p.id, p.nombre
@@ -1640,6 +1753,27 @@ def calcular_camas_uci(cursor):
             ORDER BY p.id
             LIMIT 1
         ) p ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                json_build_object(
+                    'encuentro_id', enc.id,
+                    'equipo_uci_id', eq.id,
+                    'codigo_inventario', hv.codigo_inventario,
+                    'tipo_equipo', cat.nombre,
+                    'marca', hv.marca,
+                    'modelo', hv.modelo
+                )
+                ORDER BY hv.equipo_catalogo_id ASC, hv.codigo_inventario ASC
+            ) AS equipos
+            FROM encuentros enc
+            JOIN equipos_uci eq ON eq.id = enc.equipo_uci_id AND eq.is_deleted = FALSE
+            JOIN hoja_vida_equipos hv ON hv.id = eq.hoja_vida_id
+            JOIN catalogo_equipos cat ON cat.id = hv.equipo_catalogo_id
+            WHERE p.id IS NOT NULL
+              AND enc.paciente_id = p.id
+              AND enc.estado = 'in-progress'
+              AND enc.is_deleted = FALSE
+        ) eq_bed ON TRUE
         WHERE c.activa = TRUE
         ORDER BY c.codigo
     """)
@@ -1652,7 +1786,12 @@ def calcular_camas_uci(cursor):
         "disponibles": len(libres),
         "camas_libres": libres,
         "camas_ocupadas": [
-            {"cama": c["codigo"], "paciente_id": c["paciente_id"], "paciente_nombre": c["paciente_nombre"]}
+            {
+                "cama": c["codigo"],
+                "paciente_id": c["paciente_id"],
+                "paciente_nombre": c["paciente_nombre"],
+                "equipos_asignados": c["equipos_asignados"] or [],
+            }
             for c in ocupadas
         ],
     }
@@ -1667,7 +1806,7 @@ def listar_camas_uci(conn = Depends(get_db)):
 
 @app.get("/dashboard-stats", tags=["Dashboard"])
 def get_dashboard_stats(conn = Depends(get_db)):
-    """Estadísticas en tiempo real para las tarjetas KPI: camas y equipos disponibles/en uso."""
+    """Estadísticas en tiempo real para las tarjetas KPI: camas y equipos disponibles/en uso, incluyendo detalle por unidad."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("SELECT count(*) as total FROM pacientes WHERE is_deleted = FALSE")
@@ -1704,6 +1843,39 @@ def get_dashboard_stats(conn = Depends(get_db)):
     equipos_por_tipo = cursor.fetchall()
 
     cursor.execute("""
+        SELECT e.id AS equipo_uci_id,
+               hv.codigo_inventario,
+               hv.marca,
+               hv.modelo,
+               hv.numero_serie,
+               hv.registro_invima,
+               c.id AS catalogo_id,
+               c.nombre AS tipo_equipo,
+               c.clasificacion_riesgo,
+               e.estado_operativo,
+               e.ubicacion_uci,
+               e.bateria_backup_porcentaje,
+               p.id AS paciente_id,
+               p.nombre AS paciente_nombre,
+               p.cama_uci
+        FROM equipos_uci e
+        JOIN hoja_vida_equipos hv ON e.hoja_vida_id = hv.id
+        JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
+        LEFT JOIN encuentros enc ON e.id = enc.equipo_uci_id AND enc.estado = 'in-progress' AND enc.is_deleted = FALSE
+        LEFT JOIN pacientes p ON enc.paciente_id = p.id AND p.is_deleted = FALSE
+        WHERE e.is_deleted = FALSE
+        ORDER BY split_part(hv.codigo_inventario, '-', 1),
+                 COALESCE(NULLIF(regexp_replace(hv.codigo_inventario, '\\D', '', 'g'), ''), '0')::int
+    """)
+    equipos_detalle = cursor.fetchall()
+
+    unidades_por_tipo = {}
+    for eq in equipos_detalle:
+        unidades_por_tipo.setdefault(eq["tipo_equipo"], []).append(eq)
+    for grupo in equipos_por_tipo:
+        grupo["unidades"] = unidades_por_tipo.get(grupo["tipo"], [])
+
+    cursor.execute("""
         SELECT count(*) as total FROM observaciones 
         WHERE is_deleted = FALSE AND alerta_predictiva IS NOT NULL AND alerta_predictiva != ''
     """)
@@ -1719,6 +1891,7 @@ def get_dashboard_stats(conn = Depends(get_db)):
         "camas": camas,
         "equipos": equipos_stat,
         "equipos_por_tipo": equipos_por_tipo,
+        "equipos_detalle": equipos_detalle,
         "alertas_predictivas": alertas_count,
         "auditorias_totales": audits_count,
         "actualizado": datetime.now().isoformat(timespec="seconds")
@@ -2976,43 +3149,74 @@ def get_documentos_equipo_individual(
     """Obtiene el pack documental completo (foto, certificado de calibración y ficha técnica) de una unidad por su Primary Key (ID_Equipo) o por PK Documento."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
+        eq_clean = equipo_id.strip().upper()
         # Si equipo_id parece un PK Documento (ej. DOC-0001)
-        if equipo_id.strip().upper().startswith("DOC-"):
+        if eq_clean.startswith("DOC-"):
             cursor.execute(
                 'SELECT * FROM equipos_documentos WHERE UPPER(pk_documento) = UPPER(%s) OR id = %s ORDER BY id ASC;',
-                (equipo_id.strip(), int(equipo_id.replace("DOC-", "")) if equipo_id.replace("DOC-", "").isdigit() else -1)
+                (eq_clean, int(eq_clean.replace("DOC-", "")) if eq_clean.replace("DOC-", "").isdigit() else -1)
             )
             docs = cursor.fetchall()
+            if docs and docs[0].get("equipo_id"):
+                eq_clean = docs[0]["equipo_id"].strip().upper()
         else:
             cursor.execute(
                 'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = UPPER(%s) ORDER BY id ASC;',
-                (equipo_id.strip(),)
+                (eq_clean,)
             )
             docs = cursor.fetchall()
 
-        # Si no tiene documentos específicos asignados, generar plantilla predeterminada con su tecnología
+        # Consultar la hoja de vida oficial en Neon para conocer marca, modelo y serie exactos
+        cursor.execute("""
+            SELECT hv.codigo_inventario, hv.marca, hv.modelo, hv.numero_serie, hv.registro_invima,
+                   hv.servicio_asignado, hv.fecha_adquisicion,
+                   c.nombre AS tipo_equipo, c.clasificacion_riesgo,
+                   e.estado_operativo, e.ubicacion_uci,
+                   p.nombre AS paciente_nombre, p.cama_uci
+            FROM hoja_vida_equipos hv
+            JOIN catalogo_equipos c ON c.id = hv.equipo_catalogo_id
+            LEFT JOIN equipos_uci e ON e.hoja_vida_id = hv.id AND e.is_deleted = FALSE
+            LEFT JOIN encuentros enc ON enc.equipo_uci_id = e.id AND enc.estado = 'in-progress' AND enc.is_deleted = FALSE
+            LEFT JOIN pacientes p ON p.id = enc.paciente_id AND p.is_deleted = FALSE
+            WHERE UPPER(hv.codigo_inventario) = %s AND hv.is_deleted = FALSE
+            LIMIT 1
+        """, (eq_clean,))
+        hoja_vida = cursor.fetchone()
+        if hoja_vida and isinstance(hoja_vida.get("fecha_adquisicion"), (datetime, date)):
+            hoja_vida["fecha_adquisicion"] = hoja_vida["fecha_adquisicion"].strftime("%Y-%m-%d")
+
+        # Determinar la unidad de referencia documental según el modelo registrado (VENT-01/02, MON-01/02 o PREFIJO-01)
+        prefix = eq_clean.split("-")[0].strip().upper() if "-" in eq_clean else "BVOL"
+        m_num = re.search(r"(\d+)$", eq_clean)
+        unit_num = int(m_num.group(1)) if m_num else 1
+        if prefix in ("VENT", "MON") and unit_num % 2 == 0:
+            ref_id = f"{prefix}-02"
+        else:
+            ref_id = f"{prefix}-01"
+
         if not docs:
             cursor.execute(
-                'SELECT "Tipo_Equipo", "Clasificacion_Riesgo" FROM dataset_eventos WHERE UPPER("ID_Equipo") = UPPER(%s) LIMIT 1;',
-                (equipo_id.strip(),)
-            )
-            eq_info = cursor.fetchone()
-            tipo_nombre = eq_info["Tipo_Equipo"] if eq_info else "Equipo Biomédico"
-
-            # Intentar clonar del primer equipo con esa tecnología o prefijo
-            prefix = equipo_id.split("-")[0].strip().upper() if "-" in equipo_id else "BVOL"
-            cursor.execute(
-                'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) LIKE %s ORDER BY id ASC;',
-                (f"{prefix}-%",)
+                'SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = %s ORDER BY id ASC;',
+                (ref_id,)
             )
             docs = cursor.fetchall()
+
+        # Si falta FICHA_TECNICA (ej. en VENT-02 o MON-02), complementar con la ficha técnica de PREFIJO-01
+        if not any(d["tipo_documento"] == "FICHA_TECNICA" for d in docs):
+            cursor.execute(
+                "SELECT * FROM equipos_documentos WHERE UPPER(equipo_id) = %s AND tipo_documento = 'FICHA_TECNICA' ORDER BY id ASC LIMIT 1;",
+                (f"{prefix}-01",)
+            )
+            ficha_extra = cursor.fetchone()
+            if ficha_extra:
+                docs.append(ficha_extra)
 
         cursor.close()
 
         for d in docs:
             if not d.get("pk_documento"):
                 d["pk_documento"] = f"DOC-{d['id']:04d}"
-            d["equipo_id"] = equipo_id.upper()
+            d["equipo_id"] = eq_clean
             if isinstance(d.get("fecha_emision"), (datetime, date)):
                 d["fecha_emision"] = d["fecha_emision"].strftime("%Y-%m-%d")
             if isinstance(d.get("fecha_vencimiento"), (datetime, date)):
@@ -3025,7 +3229,8 @@ def get_documentos_equipo_individual(
         ficha = next((d for d in docs if d["tipo_documento"] == "FICHA_TECNICA"), None)
 
         return {
-            "equipo_id": equipo_id.upper(),
+            "equipo_id": eq_clean,
+            "hoja_vida": hoja_vida,
             "foto": foto,
             "certificado": certificado,
             "ficha_tecnica": ficha,

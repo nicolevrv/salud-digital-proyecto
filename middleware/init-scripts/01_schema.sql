@@ -163,59 +163,43 @@ INSERT INTO catalogo_equipos (id, nombre, tipo_servicio, clasificacion_riesgo, t
 (10, 'Equipo de Rayos X Portátil Digital', 'Imagenología', 'IIB', 'Radiación Ionizante')
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Insertar Hojas de Vida (Equipos de UCI y No-UCI)
+-- 4. Insertar Hojas de Vida (Equipos de UCI con modelos oficiales registrados)
 INSERT INTO hoja_vida_equipos (id, equipo_catalogo_id, codigo_inventario, marca, modelo, numero_serie, registro_invima, es_equipo_uci, servicio_asignado, fecha_adquisicion, created_by) VALUES
--- EQUIPOS ASIGNADOS A UCI (es_equipo_uci = TRUE)
-(1, 1, 'HV-UCI-001', 'Hamilton Medical', 'C3', 'HM-998231', 'INVIMA 2021EBC-00012', TRUE, 'UCI Adultos', '2023-05-10', 1),
-(2, 1, 'HV-UCI-002', 'Dräger', 'Evita V800', 'DR-884102', 'INVIMA 2022EBC-00094', TRUE, 'UCI Adultos', '2023-08-20', 1),
-(3, 2, 'HV-UCI-003', 'Mindray', 'BeneVision N17', 'MY-442109', 'INVIMA 2022EBC-00045', TRUE, 'UCI Adultos', '2023-06-15', 1),
-(4, 2, 'HV-UCI-004', 'Philips', 'IntelliVue MX800', 'PH-771203', 'INVIMA 2020EBC-00112', TRUE, 'UCI Adultos', '2022-11-05', 1),
-(5, 3, 'HV-UCI-005', 'BBraun', 'Space P', 'BB-102938', 'INVIMA 2020EBC-00088', TRUE, 'UCI Adultos', '2022-11-20', 1),
-(6, 4, 'HV-UCI-006', 'Fresenius Kabi', 'Injectomat Agilia', 'FK-332190', 'INVIMA 2021EBC-00341', TRUE, 'UCI Adultos', '2023-01-14', 1),
-(7, 5, 'HV-UCI-007', 'Baxter', 'PrisMax', 'BX-665412', 'INVIMA 2023EBC-00019', TRUE, 'UCI Adultos', '2024-02-01', 1),
-(8, 6, 'HV-UCI-008', 'Radiometer', 'ABL90 FLEX', 'RM-112094', 'INVIMA 2021EBC-00511', TRUE, 'UCI Adultos', '2023-09-30', 1),
-
--- EQUIPOS DE OTROS SERVICIOS DEL HOSPITAL (es_equipo_uci = FALSE)
-(9, 7, 'HV-HOSP-009', 'GE Healthcare', 'MAC 2000', 'GE-554109', 'INVIMA 2019EBC-00077', FALSE, 'Hospitalización Piso 3', '2021-04-12', 1),
-(10, 8, 'HV-URG-010', 'Zoll', 'R Series', 'ZL-883201', 'INVIMA 2019EBC-00033', FALSE, 'Urgencias', '2021-02-18', 1),
-(11, 9, 'HV-IMG-011', 'Sonoscape', 'S22', 'SS-901234', 'INVIMA 2022EBC-00812', FALSE, 'Imagenología', '2023-03-25', 1),
-(12, 10, 'HV-IMG-012', 'Siemens', 'Mobilett Elara Max', 'SM-441092', 'INVIMA 2020EBC-00451', FALSE, 'Imagenología', '2022-07-19', 1)
+(1, 1, 'VENT-01', 'Hamilton Medical', 'C3', 'HM-998231', 'INVIMA 2021EBC-00012', TRUE, 'UCI Adultos', '2023-05-10', 1),
+(2, 1, 'VENT-02', 'Dräger', 'Evita V800', 'DR-884102', 'INVIMA 2022EBC-00094', TRUE, 'UCI Adultos', '2023-08-20', 1),
+(3, 2, 'MON-01', 'Mindray', 'BeneVision N17', 'MY-442109', 'INVIMA 2022EBC-00045', TRUE, 'UCI Adultos', '2023-06-15', 1),
+(4, 2, 'MON-02', 'Philips', 'IntelliVue MX800', 'PH-771203', 'INVIMA 2020EBC-00112', TRUE, 'UCI Adultos', '2022-11-05', 1),
+(5, 3, 'BVOL-01', 'BBraun', 'Space P', 'BB-102938', 'INVIMA 2020EBC-00088', TRUE, 'UCI Adultos', '2022-11-20', 1),
+(6, 4, 'BJER-01', 'Fresenius Kabi', 'Injectomat Agilia', 'FK-332190', 'INVIMA 2021EBC-00341', TRUE, 'UCI Adultos', '2023-01-14', 1),
+(7, 5, 'CRRT-01', 'Baxter', 'PrisMax', 'BX-665412', 'INVIMA 2023EBC-00019', TRUE, 'UCI Adultos', '2024-02-01', 1),
+(8, 6, 'POCT-01', 'Radiometer', 'ABL90 FLEX', 'RM-112094', 'INVIMA 2021EBC-00511', TRUE, 'UCI Adultos', '2023-09-30', 1),
+(9, 7, 'ECG-01', 'GE Healthcare', 'MAC 2000', 'GE-554109', 'INVIMA 2019EBC-00077', TRUE, 'UCI Adultos', '2021-04-12', 1),
+(10, 8, 'DEF-01', 'Mindray / Zoll', 'BeneHeart D3', 'ZL-883201', 'INVIMA 2019EBC-00033', TRUE, 'UCI Adultos', '2021-02-18', 1),
+(11, 9, 'ECO-01', 'Sonosite', 'Edge II', 'SS-901234', 'INVIMA 2022EBC-00812', TRUE, 'UCI Adultos', '2023-03-25', 1),
+(12, 10, 'RX-01', 'Carestream', 'Motion Mobile', 'SM-441092', 'INVIMA 2020EBC-00451', TRUE, 'UCI Adultos', '2022-07-19', 1)
 ON CONFLICT (id) DO NOTHING;
 
--- 5. Insertar Equipos UCI (Ubicación física y Estado)
+-- 5. Insertar Equipos UCI (Ubicación física y Estado inicial sin sobrescribir estados reales)
 INSERT INTO equipos_uci (id, hoja_vida_id, ubicacion_uci, estado_operativo, bateria_backup_porcentaje, created_by) VALUES
 (1, 1, 'UCI-BED-01', 'En Uso', 98, 1),
 (2, 3, 'UCI-BED-01', 'En Uso', 100, 1),
 (3, 5, 'UCI-BED-01', 'En Uso', 85, 1),
-(4, 2, 'Cama 02 - Box B', 'Disponible', 100, 1),
-(5, 4, 'Cama 02 - Box B', 'Disponible', 92, 1),
-(6, 6, 'Cama 03 - Box C', 'En Uso', 95, 1),
-(7, 7, 'Módulo Diálisis UCI-1', 'Mantenimiento', 40, 1),
-(8, 8, 'Laboratorio Satélite UCI', 'Disponible', 100, 1)
-ON CONFLICT (id) DO UPDATE SET
-    hoja_vida_id = EXCLUDED.hoja_vida_id,
-    ubicacion_uci = EXCLUDED.ubicacion_uci,
-    estado_operativo = EXCLUDED.estado_operativo,
-    bateria_backup_porcentaje = EXCLUDED.bateria_backup_porcentaje;
+(4, 2, 'UCI-BED-02', 'En Uso', 100, 1),
+(5, 4, 'UCI-BED-02', 'En Uso', 92, 1),
+(6, 6, 'UCI-BED-01', 'En Uso', 95, 1),
+(7, 7, 'Equipo móvil UCI', 'Disponible', 100, 1),
+(8, 8, 'Taller Biomédico', 'Mantenimiento', 100, 1)
+ON CONFLICT (id) DO NOTHING;
 
--- 6. Insertar Paciente de Prueba
+-- 6. Insertar Paciente de Prueba (sin sobrescribir cambios posteriores)
 INSERT INTO pacientes (id, documento_identidad, nombre, cama_uci, created_by) VALUES
 (1, '1001234567', 'Carlos Mendoza', 'UCI-BED-01', 2)
-ON CONFLICT (id) DO UPDATE SET
-    documento_identidad = EXCLUDED.documento_identidad,
-    nombre = EXCLUDED.nombre,
-    cama_uci = EXCLUDED.cama_uci,
-    is_deleted = FALSE;
+ON CONFLICT (id) DO NOTHING;
 
--- 7. Insertar Encuentro Clínico
+-- 7. Insertar Encuentro Clínico (sin reactivar encuentros cerrados)
 INSERT INTO encuentros (id, paciente_id, equipo_uci_id, estado, created_by) VALUES
 (1, 1, 1, 'in-progress', 2)
-ON CONFLICT (id) DO UPDATE SET
-    paciente_id = EXCLUDED.paciente_id,
-    equipo_uci_id = EXCLUDED.equipo_uci_id,
-    estado = EXCLUDED.estado,
-    created_by = EXCLUDED.created_by,
-    is_deleted = FALSE;
+ON CONFLICT (id) DO NOTHING;
 
 -- 8. Insertar Observación Telemétrica
 INSERT INTO observaciones (id, encuentro_id, parametro, codigo_loinc, valor, unidad, alerta_predictiva, created_by) VALUES

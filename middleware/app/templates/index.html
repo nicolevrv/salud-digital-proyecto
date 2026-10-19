@@ -389,36 +389,91 @@
 
     </div>
 
-    <!-- DISPONIBILIDAD EN TIEMPO REAL: CAMAS Y EQUIPOS -->
+    <!-- DISPONIBILIDAD EN TIEMPO REAL: CAMAS Y EQUIPOS (DESPLEGABLE + BUSCADOR POR LLAVE PRIMARIA) -->
     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 class="text-sm font-bold text-slate-800">Disponibilidad en tiempo real</h3>
-          <p class="text-xs text-slate-500">Camas libres y equipos disponibles en este instante</p>
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <span>Disponibilidad en tiempo real</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">1 VENT · 1 MON · 2 BVOL · 1 BJER por cama</span>
+          </h3>
+          <p class="text-xs text-slate-500">Camas libres, dotación irrepetible por paciente y buscador de equipos por Llave Primaria (ID o nombre)</p>
         </div>
-        <span id="disp-actualizado" class="text-[11px] text-slate-400 font-mono">--</span>
+        <div class="flex items-center gap-2">
+          <span id="disp-actualizado" class="text-[11px] text-slate-400 font-mono">--</span>
+          <button type="button" onclick="alternarPanelDisponibilidadGeneral()" id="btn-toggle-panel-disp" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer">
+            <span id="txt-toggle-panel-disp">Ocultar panel</span>
+            <svg id="icon-toggle-panel-disp" class="w-3.5 h-3.5 text-slate-500 transition-transform duration-200" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-1">
-          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-            Camas disponibles: <span id="disp-camas-num" class="text-emerald-600 font-mono text-sm">--</span>
-            <span id="disp-camas-total" class="text-slate-400 normal-case"></span>
+
+      <div id="contenedor-panel-disponibilidad" class="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-1 space-y-3">
+          <div>
+            <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              Camas disponibles: <span id="disp-camas-num" class="text-emerald-600 font-mono text-sm">--</span>
+              <span id="disp-camas-total" class="text-slate-400 normal-case"></span>
+            </div>
+            <div id="disp-camas-libres" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div id="disp-camas-libres" class="flex flex-wrap gap-1.5"></div>
+
+          <!-- Visor desplegable de Camas Ocupadas y sus 5 equipos irrepetibles -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/60">
+            <button type="button" onclick="alternarDespliegueCamasOcupadas()" class="w-full px-3 py-2 bg-white hover:bg-slate-50 transition flex items-center justify-between text-left cursor-pointer">
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">Dotación por Cama Ocupada</span>
+                <span class="text-[10px] text-slate-500">1 Ventilador · 1 Monitor · 2 Bombas Vol. · 1 Jeringa</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span id="badge-toggle-camas-ocupadas" class="text-[10px] font-semibold text-blue-600">Desplegar</span>
+                <svg id="icon-toggle-camas-ocupadas" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </button>
+            <div id="disp-camas-ocupadas-box" class="hidden border-t border-slate-200 p-2.5 space-y-2 max-h-72 overflow-y-auto bg-slate-50">
+              <input type="text" id="disp-buscar-cama-input" oninput="renderizarCamasOcupadasDisponibilidad()" placeholder="Filtrar por cama (ej: UCI-BED-01), paciente o ID equipo..." class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] focus:ring-1 focus:ring-blue-500">
+              <div id="disp-camas-ocupadas-lista" class="space-y-1.5"></div>
+            </div>
+          </div>
         </div>
-        <div class="lg:col-span-2 overflow-x-auto">
-          <table class="w-full text-xs">
-            <thead>
-              <tr class="text-left text-slate-500 border-b border-slate-200">
-                <th class="py-1.5 pr-3 font-semibold">Tipo de equipo</th>
-                <th class="py-1.5 px-2 font-semibold text-right">Total</th>
-                <th class="py-1.5 px-2 font-semibold text-right text-emerald-700">Disponibles</th>
-                <th class="py-1.5 px-2 font-semibold text-right text-sky-700">En uso</th>
-                <th class="py-1.5 pl-2 font-semibold text-right text-amber-700">Mantenimiento</th>
-              </tr>
-            </thead>
-            <tbody id="disp-equipos-body"></tbody>
-          </table>
+
+        <div class="lg:col-span-2 space-y-2.5">
+          <!-- Barra de búsqueda por Llave Primaria (ID_Equipo) o Nombre y control desplegable -->
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="relative flex-1 min-w-[230px]">
+              <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="disp-busqueda-equipo" list="disp-datalist-equipos" oninput="filtrarTablaDisponibilidadEquipos()" placeholder="Buscar por Llave Primaria (ej: VENT-01, BVOL-01) o nombre del equipo / modelo / cama..." class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 shadow-2xs">
+              <button type="button" id="btn-limpiar-busqueda-disp" onclick="limpiarBusquedaDisponibilidad()" class="hidden absolute right-2 top-1.5 text-slate-400 hover:text-slate-700 font-bold text-sm" title="Limpiar búsqueda">&times;</button>
+              <datalist id="disp-datalist-equipos"></datalist>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <select id="disp-filtro-estado" onchange="filtrarTablaDisponibilidadEquipos()" class="bg-white border border-slate-300 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs">
+                <option value="todos">Todos los estados</option>
+                <option value="Disponible">Disponibles</option>
+                <option value="En Uso">En uso</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+              </select>
+              <button type="button" onclick="alternarDespliegueTodasCategoriasDisp()" id="btn-expandir-todas-disp" class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                <span id="txt-expandir-todas-disp">Desplegar equipos</span>
+                <svg id="icon-expandir-todas-disp" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-left text-slate-500 bg-slate-50 border-b border-slate-200">
+                  <th class="py-2 pl-3 pr-3 font-semibold">Tipo de equipo <span class="text-[10px] font-normal text-slate-400">(clic para desplegar unidades)</span></th>
+                  <th class="py-2 px-2 font-semibold text-right">Total</th>
+                  <th class="py-2 px-2 font-semibold text-right text-emerald-700">Disponibles</th>
+                  <th class="py-2 px-2 font-semibold text-right text-sky-700">En uso</th>
+                  <th class="py-2 pr-3 pl-2 font-semibold text-right text-amber-700">Mantenimiento</th>
+                </tr>
+              </thead>
+              <tbody id="disp-equipos-body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1328,15 +1383,35 @@
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- Buscador por Llave Primaria (Código/ID) o Nombre y control desplegable en Parque Tecnológico -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="relative flex-1 min-w-[240px]">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="equipos-uci-busqueda" oninput="renderizarTablaEquiposUCI()" placeholder="Buscar equipo por Llave Primaria (ej: VENT-01, BVOL-01), Nombre de Tecnología, Modelo o Cama..." class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-500">
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="equipos-uci-filtro-estado" onchange="renderizarTablaEquiposUCI()" class="bg-white border border-slate-300 text-slate-700 rounded-lg px-3 py-1.5 text-xs">
+              <option value="todos">Todos los estados (232)</option>
+              <option value="En Uso">En Uso (125)</option>
+              <option value="Disponible">Disponibles (79)</option>
+              <option value="Mantenimiento">Mantenimiento (28)</option>
+            </select>
+            <button type="button" onclick="alternarDespliegueTablaEquiposUCI()" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+              <span id="txt-toggle-tabla-equipos">Ocultar listado</span>
+              <svg id="icon-toggle-tabla-equipos" class="w-3.5 h-3.5 text-slate-500 transition-transform duration-200" style="transform: rotate(180deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="contenedor-tabla-equipos-uci" class="overflow-x-auto max-h-[540px] overflow-y-auto border border-slate-200 rounded-xl">
           <table class="w-full text-left text-xs text-slate-700">
-            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200 sticky top-0 z-10">
               <tr>
-                <th class="py-3 px-4">Código / Placa</th>
+                <th class="py-3 px-4">Llave Primaria (ID)</th>
                 <th class="py-3 px-4">Tipo de Tecnología</th>
-                <th class="py-3 px-4">Marca & Modelo</th>
+                <th class="py-3 px-4">Marca & Modelo Oficial</th>
                 <th class="py-3 px-4">Riesgo INVIMA</th>
-                <th class="py-3 px-4">Ubicación UCI</th>
+                <th class="py-3 px-4">Ubicación / Cama UCI</th>
                 <th class="py-3 px-4">Batería Backup</th>
                 <th class="py-3 px-4">Estado Operativo</th>
                 <th class="py-3 px-4 text-right">Acción</th>
@@ -2878,13 +2953,277 @@
       }
     }
 
+    let cacheDashboardStats = null;
+    let categoriasExpandidasDisp = new Set();
+
+    function alternarPanelDisponibilidadGeneral() {
+      const cont = document.getElementById("contenedor-panel-disponibilidad");
+      const txt = document.getElementById("txt-toggle-panel-disp");
+      const icon = document.getElementById("icon-toggle-panel-disp");
+      if (!cont) return;
+      const oculto = cont.classList.toggle("hidden");
+      if (txt) txt.innerText = oculto ? "Mostrar panel" : "Ocultar panel";
+      if (icon) icon.style.transform = oculto ? "rotate(0deg)" : "rotate(180deg)";
+    }
+
+    function alternarDespliegueCamasOcupadas() {
+      const box = document.getElementById("disp-camas-ocupadas-box");
+      const badge = document.getElementById("badge-toggle-camas-ocupadas");
+      const icon = document.getElementById("icon-toggle-camas-ocupadas");
+      if (!box) return;
+      const oculto = box.classList.toggle("hidden");
+      if (badge) badge.innerText = oculto ? "Desplegar" : "Ocultar";
+      if (icon) icon.style.transform = oculto ? "rotate(0deg)" : "rotate(180deg)";
+      if (!oculto) renderizarCamasOcupadasDisponibilidad();
+    }
+
+    function renderizarCamasOcupadasDisponibilidad() {
+      const cont = document.getElementById("disp-camas-ocupadas-lista");
+      if (!cont || !cacheDashboardStats || !cacheDashboardStats.camas) return;
+      const ocupadas = cacheDashboardStats.camas.camas_ocupadas || [];
+      const filtro = (document.getElementById("disp-buscar-cama-input")?.value || "").trim().toLowerCase();
+
+      const filtradas = ocupadas.filter(c => {
+        if (!filtro) return true;
+        const eqStr = (c.equipos_asignados || []).map(e => `${e.codigo_inventario} ${e.tipo_equipo} ${e.marca} ${e.modelo}`).join(" ").toLowerCase();
+        return (c.cama || "").toLowerCase().includes(filtro) ||
+               (c.paciente_nombre || "").toLowerCase().includes(filtro) ||
+               eqStr.includes(filtro);
+      });
+
+      if (filtradas.length === 0) {
+        cont.innerHTML = `<div class="text-[11px] text-slate-500 py-2 text-center">No se encontraron camas ocupadas con ese criterio.</div>`;
+        return;
+      }
+
+      cont.innerHTML = filtradas.map(c => {
+        const eqs = c.equipos_asignados || [];
+        const badges = eqs.map(e => {
+          let cls = "bg-blue-50 text-blue-800 border-blue-200";
+          if ((e.codigo_inventario || "").startsWith("VENT")) cls = "bg-sky-50 text-sky-800 border-sky-200";
+          else if ((e.codigo_inventario || "").startsWith("MON")) cls = "bg-emerald-50 text-emerald-800 border-emerald-200";
+          else if ((e.codigo_inventario || "").startsWith("BVOL")) cls = "bg-amber-50 text-amber-800 border-amber-200";
+          else if ((e.codigo_inventario || "").startsWith("BJER")) cls = "bg-purple-50 text-purple-800 border-purple-200";
+          return `<button type="button" onclick="seleccionarEquipoDesdeDisponibilidad('${escapeHtml(e.codigo_inventario)}')" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${cls} hover:underline cursor-pointer" title="${escapeHtml(e.tipo_equipo)} · ${escapeHtml(e.marca)} ${escapeHtml(e.modelo)}">${escapeHtml(e.codigo_inventario)}</button>`;
+        }).join("");
+        return `
+          <div class="bg-white border border-slate-200 rounded-lg p-2 shadow-2xs">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-mono text-[10px] font-bold shrink-0">${escapeHtml(c.cama)}</span>
+                <span class="text-[11px] font-bold text-slate-800 truncate">${escapeHtml(c.paciente_nombre)}</span>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">${eqs.length} equipos</span>
+            </div>
+            <div class="flex flex-wrap gap-1">${badges}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function seleccionarEquipoDesdeDisponibilidad(codigoInventario) {
+      if (!codigoInventario) return;
+      const inp = document.getElementById("disp-busqueda-equipo");
+      if (inp) {
+        inp.value = codigoInventario;
+        filtrarTablaDisponibilidadEquipos();
+      }
+      const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
+      if (esRolTecnico) {
+        cambiarTab("documentacion");
+        seleccionarEquipoDocumentacion(codigoInventario);
+      }
+    }
+
+    function limpiarBusquedaDisponibilidad() {
+      const inp = document.getElementById("disp-busqueda-equipo");
+      if (inp) inp.value = "";
+      filtrarTablaDisponibilidadEquipos();
+    }
+
+    function alternarCategoriaDisp(tipoNombre) {
+      if (categoriasExpandidasDisp.has(tipoNombre)) {
+        categoriasExpandidasDisp.delete(tipoNombre);
+      } else {
+        categoriasExpandidasDisp.add(tipoNombre);
+      }
+      renderizarTablaDisponibilidadEquipos();
+    }
+
+    function alternarDespliegueTodasCategoriasDisp() {
+      if (!cacheDashboardStats || !cacheDashboardStats.equipos_por_tipo) return;
+      const todosTipos = cacheDashboardStats.equipos_por_tipo.map(t => t.tipo);
+      const estanTodas = todosTipos.length > 0 && todosTipos.every(t => categoriasExpandidasDisp.has(t));
+      if (estanTodas) {
+        categoriasExpandidasDisp.clear();
+      } else {
+        todosTipos.forEach(t => categoriasExpandidasDisp.add(t));
+      }
+      renderizarTablaDisponibilidadEquipos();
+    }
+
+    function filtrarTablaDisponibilidadEquipos() {
+      renderizarTablaDisponibilidadEquipos();
+    }
+
+    function renderizarTablaDisponibilidadEquipos() {
+      const tbody = document.getElementById("disp-equipos-body");
+      if (!tbody || !cacheDashboardStats) return;
+
+      const grupos = cacheDashboardStats.equipos_por_tipo || [];
+      const eqGlobal = cacheDashboardStats.equipos || {};
+      const queryRaw = (document.getElementById("disp-busqueda-equipo")?.value || "").trim();
+      const query = queryRaw.toLowerCase();
+      const estadoFiltro = document.getElementById("disp-filtro-estado")?.value || "todos";
+      const btnLimpiar = document.getElementById("btn-limpiar-busqueda-disp");
+      if (btnLimpiar) btnLimpiar.classList.toggle("hidden", !queryRaw);
+
+      let htmlFilas = "";
+      let totalMostrado = 0, dispMostrado = 0, usoMostrado = 0, mttoMostrado = 0;
+
+      grupos.forEach(t => {
+        const unidades = t.unidades || [];
+        const unidadesFiltradas = unidades.filter(u => {
+          if (estadoFiltro !== "todos") {
+            if (estadoFiltro === "Mantenimiento" && (u.estado_operativo === "En Uso" || u.estado_operativo === "Disponible")) return false;
+            if (estadoFiltro !== "Mantenimiento" && u.estado_operativo !== estadoFiltro) return false;
+          }
+          if (!query) return true;
+          const textoUnidad = `${u.codigo_inventario || ""} ${u.tipo_equipo || ""} ${u.marca || ""} ${u.modelo || ""} ${u.ubicacion_uci || ""} ${u.paciente_nombre || ""} ${u.cama_uci || ""} ${u.numero_serie || ""}`.toLowerCase();
+          return textoUnidad.includes(query);
+        });
+
+        const coincideCategoria = !query && estadoFiltro === "todos";
+        if (!coincideCategoria && unidadesFiltradas.length === 0) return;
+
+        const cTotal = coincideCategoria ? t.total : unidadesFiltradas.length;
+        const cDisp = coincideCategoria ? t.disponibles : unidadesFiltradas.filter(u => u.estado_operativo === "Disponible").length;
+        const cUso = coincideCategoria ? t.en_uso : unidadesFiltradas.filter(u => u.estado_operativo === "En Uso").length;
+        const cMtto = coincideCategoria ? t.mantenimiento : unidadesFiltradas.filter(u => u.estado_operativo !== "Disponible" && u.estado_operativo !== "En Uso").length;
+
+        totalMostrado += cTotal;
+        dispMostrado += cDisp;
+        usoMostrado += cUso;
+        mttoMostrado += cMtto;
+
+        const estaExpandida = Boolean(query) || estadoFiltro !== "todos" || categoriasExpandidasDisp.has(t.tipo);
+        const tipoEsc = escapeHtml(t.tipo).replace(/'/g, "\\'");
+
+        htmlFilas += `
+          <tr onclick="alternarCategoriaDisp('${tipoEsc}')" class="border-b border-slate-100 hover:bg-blue-50/50 transition cursor-pointer select-none ${estaExpandida ? 'bg-slate-50/90' : ''}">
+            <td class="py-2 pl-3 pr-3 text-slate-800 font-medium flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-blue-600 shrink-0 transition-transform duration-200" style="transform: rotate(${estaExpandida ? 90 : 0}deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <span>${escapeHtml(t.tipo)}</span>
+            </td>
+            <td class="py-2 px-2 text-right font-mono text-slate-600">${cTotal}</td>
+            <td class="py-2 px-2 text-right font-mono font-bold text-emerald-700">${cDisp}</td>
+            <td class="py-2 px-2 text-right font-mono text-sky-700">${cUso}</td>
+            <td class="py-2 pr-3 pl-2 text-right font-mono text-amber-700">${cMtto}</td>
+          </tr>
+        `;
+
+        if (estaExpandida) {
+          const filasUnidades = unidadesFiltradas.map(u => {
+            let badgeCls = "bg-slate-100 text-slate-700 border-slate-200";
+            if (u.estado_operativo === "Disponible") badgeCls = "bg-emerald-50 text-emerald-700 border-emerald-200";
+            else if (u.estado_operativo === "En Uso") badgeCls = "bg-sky-50 text-sky-700 border-sky-200";
+            else badgeCls = "bg-amber-50 text-amber-800 border-amber-200";
+
+            const detalleUbic = u.paciente_nombre
+              ? `<span class="font-mono font-bold text-sky-800">${escapeHtml(u.cama_uci || u.ubicacion_uci)}</span> · <span class="text-slate-700">${escapeHtml(u.paciente_nombre)}</span>`
+              : `<span class="text-slate-600">${escapeHtml(u.ubicacion_uci || "Almacén UCI")}</span>`;
+
+            const esExacto = query && (u.codigo_inventario || "").toLowerCase() === query;
+            return `
+              <tr class="border-b border-slate-100 text-[11px] ${esExacto ? 'bg-blue-50/80 ring-1 ring-blue-300' : 'bg-white hover:bg-slate-50'}">
+                <td class="py-1.5 pl-2.5 pr-2 font-mono font-bold text-blue-700 whitespace-nowrap">
+                  <button type="button" onclick="seleccionarEquipoDesdeDisponibilidad('${escapeHtml(u.codigo_inventario)}')" class="px-1.5 py-0.5 rounded bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 cursor-pointer" title="Consultar expediente de ${escapeHtml(u.codigo_inventario)}">
+                    ${escapeHtml(u.codigo_inventario)}
+                  </button>
+                </td>
+                <td class="py-1.5 px-2 text-slate-700 font-medium">${escapeHtml(u.marca)} <span class="font-bold text-slate-900">${escapeHtml(u.modelo)}</span></td>
+                <td class="py-1.5 px-2">${detalleUbic}</td>
+                <td class="py-1.5 px-2 text-right">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeCls}">${escapeHtml(u.estado_operativo)}</span>
+                </td>
+              </tr>
+            `;
+          }).join("");
+
+          htmlFilas += `
+            <tr class="bg-slate-50/70 border-b border-slate-200">
+              <td colspan="5" class="p-2">
+                <div class="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-2xs">
+                  <table class="w-full text-left text-[11px]">
+                    <thead class="bg-slate-100 text-slate-600 text-[10px] uppercase sticky top-0">
+                      <tr>
+                        <th class="py-1.5 pl-2.5 pr-2">Llave Primaria (ID)</th>
+                        <th class="py-1.5 px-2">Marca & Modelo Oficial</th>
+                        <th class="py-1.5 px-2">Cama / Paciente o Ubicación</th>
+                        <th class="py-1.5 px-2 text-right">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>${filasUnidades}</tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      if (!htmlFilas) {
+        htmlFilas = `
+          <tr>
+            <td colspan="5" class="py-4 text-center text-slate-500 text-xs">
+              No se encontraron equipos que coincidan con <strong>"${escapeHtml(queryRaw)}"</strong>.
+            </td>
+          </tr>
+        `;
+      }
+
+      tbody.innerHTML = htmlFilas + `
+        <tr class="font-bold text-slate-800 bg-slate-50/80 border-t border-slate-200">
+          <td class="py-2 pl-3 pr-3">${query || estadoFiltro !== "todos" ? "Total filtrado" : "Total equipos"}</td>
+          <td class="py-2 px-2 text-right font-mono">${query || estadoFiltro !== "todos" ? totalMostrado : (eqGlobal.total || 0)}</td>
+          <td class="py-2 px-2 text-right font-mono text-emerald-700">${query || estadoFiltro !== "todos" ? dispMostrado : (eqGlobal.disponibles || 0)}</td>
+          <td class="py-2 px-2 text-right font-mono text-sky-700">${query || estadoFiltro !== "todos" ? usoMostrado : (eqGlobal.en_uso || 0)}</td>
+          <td class="py-2 pr-3 pl-2 text-right font-mono text-amber-700">${query || estadoFiltro !== "todos" ? mttoMostrado : (eqGlobal.mantenimiento || 0)}</td>
+        </tr>`;
+
+      const todosTipos = grupos.map(t => t.tipo);
+      const estanTodas = todosTipos.length > 0 && todosTipos.every(t => categoriasExpandidasDisp.has(t));
+      const txtBtn = document.getElementById("txt-expandir-todas-disp");
+      const iconBtn = document.getElementById("icon-expandir-todas-disp");
+      if (txtBtn) txtBtn.innerText = estanTodas ? "Contraer equipos" : "Desplegar equipos";
+      if (iconBtn) iconBtn.style.transform = estanTodas ? "rotate(180deg)" : "rotate(0deg)";
+    }
+
     async function cargarEstadisticas() {
       try {
         const res = await fetch("/dashboard-stats", { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
+        cacheDashboardStats = data;
         const camas = data.camas || {};
         const eq = data.equipos || {};
+
+        if (Array.isArray(data.equipos_detalle) && data.equipos_detalle.length > 0) {
+          cacheEquiposDocumentosLista = data.equipos_detalle.map(u => ({
+            id_equipo: u.codigo_inventario,
+            tipo_nombre: `${u.tipo_equipo} · ${u.marca} ${u.modelo}`,
+            nombre: `${u.tipo_equipo} (${u.marca} ${u.modelo})`,
+            marca: u.marca,
+            modelo: u.modelo,
+            tipo: (u.codigo_inventario || "").split("-")[0]
+          }));
+          const dlDisp = document.getElementById("disp-datalist-equipos");
+          if (dlDisp) {
+            dlDisp.innerHTML = data.equipos_detalle.map(u =>
+              `<option value="${escapeHtml(u.codigo_inventario)}">${escapeHtml(u.tipo_equipo)} · ${escapeHtml(u.marca)} ${escapeHtml(u.modelo)} (${escapeHtml(u.estado_operativo)}${u.cama_uci ? ' - ' + escapeHtml(u.cama_uci) : ''})</option>`
+            ).join("");
+          }
+        }
 
         document.getElementById("kpi-pacientes").innerText = data.pacientes || 0;
         document.getElementById("kpi-camas-detalle").innerText = `${camas.ocupadas ?? data.camas_en_uso ?? 0} camas ocupadas`;
@@ -2907,22 +3246,9 @@
           ? libres.map(c => `<span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[11px] font-bold">${c}</span>`).join("")
           : `<span class="text-xs text-rose-600 font-semibold">No hay camas disponibles</span>`;
 
-        const filas = (data.equipos_por_tipo || []).map(t => `
-          <tr class="border-b border-slate-100">
-            <td class="py-1.5 pr-3 text-slate-700">${t.tipo}</td>
-            <td class="py-1.5 px-2 text-right font-mono text-slate-600">${t.total}</td>
-            <td class="py-1.5 px-2 text-right font-mono font-bold text-emerald-700">${t.disponibles}</td>
-            <td class="py-1.5 px-2 text-right font-mono text-sky-700">${t.en_uso}</td>
-            <td class="py-1.5 pl-2 text-right font-mono text-amber-700">${t.mantenimiento}</td>
-          </tr>`).join("");
-        document.getElementById("disp-equipos-body").innerHTML = filas + `
-          <tr class="font-bold text-slate-800">
-            <td class="py-1.5 pr-3">Total equipos</td>
-            <td class="py-1.5 px-2 text-right font-mono">${eq.total || 0}</td>
-            <td class="py-1.5 px-2 text-right font-mono text-emerald-700">${eq.disponibles || 0}</td>
-            <td class="py-1.5 px-2 text-right font-mono text-sky-700">${eq.en_uso || 0}</td>
-            <td class="py-1.5 pl-2 text-right font-mono text-amber-700">${eq.mantenimiento || 0}</td>
-          </tr>`;
+        renderizarCamasOcupadasDisponibilidad();
+        renderizarTablaDisponibilidadEquipos();
+
         document.getElementById("disp-actualizado").innerText =
           "Actualizado " + new Date().toLocaleTimeString("es-CO");
       } catch (e) {
@@ -2974,7 +3300,8 @@
                   if (eq.codigo_inventario.startsWith("VENT")) badgeColor = "bg-sky-50 text-sky-800 border-sky-200";
                   else if (eq.codigo_inventario.startsWith("MON")) badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-200";
                   else if (eq.codigo_inventario.startsWith("ECO") || eq.codigo_inventario.startsWith("RX")) badgeColor = "bg-purple-50 text-purple-800 border-purple-200";
-                  else if (eq.codigo_inventario.startsWith("HV-UCI-006") || eq.codigo_inventario.startsWith("BVOL")) badgeColor = "bg-amber-50 text-amber-800 border-amber-200";
+                  else if (eq.codigo_inventario.startsWith("BVOL")) badgeColor = "bg-amber-50 text-amber-800 border-amber-200";
+                  else if (eq.codigo_inventario.startsWith("BJER")) badgeColor = "bg-purple-50 text-purple-800 border-purple-200";
 
                   const btnCerrar = (sesionActiva && sesionActiva.rol === 'Medico') ? `
                     <button onclick="ejecutarFinalizarEncuentro(${eq.encuentro_id}, '${p.nombre.replace(/'/g, "\\'")}')" title="Desconectar este equipo" class="ml-1 hover:text-rose-600 transition font-bold">&times;</button>
@@ -3019,7 +3346,7 @@
             <td class="py-3 px-4 font-mono text-slate-700 font-semibold">${p.documento_identidad}</td>
             <td class="py-3 px-4">
               <div class="font-bold text-slate-900">${p.nombre}</div>
-              <div class="text-[10px] text-slate-400">ID Paciente: #${p.id}</div>
+              <div class="text-[10px] text-slate-400">ID Paciente: #${p.id} · Dotación: 1 VENT · 1 MON · 2 BVOL · 1 BJER</div>
             </td>
             <td class="py-3 px-4">
               <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono font-bold text-xs border border-sky-200 shadow-2xs">${p.cama_uci}</span>
@@ -3036,6 +3363,75 @@
       }
     }
 
+    function alternarDespliegueTablaEquiposUCI() {
+      const cont = document.getElementById("contenedor-tabla-equipos-uci");
+      const txt = document.getElementById("txt-toggle-tabla-equipos");
+      const icon = document.getElementById("icon-toggle-tabla-equipos");
+      if (!cont) return;
+      const oculto = cont.classList.toggle("hidden");
+      if (txt) txt.innerText = oculto ? "Desplegar listado" : "Ocultar listado";
+      if (icon) icon.style.transform = oculto ? "rotate(0deg)" : "rotate(180deg)";
+    }
+
+    function renderizarTablaEquiposUCI() {
+      const tbody = document.getElementById("tabla-equipos-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      const q = (document.getElementById("equipos-uci-busqueda")?.value || "").trim().toLowerCase();
+      const est = document.getElementById("equipos-uci-filtro-estado")?.value || "todos";
+
+      const filtrados = (cacheEquipos || []).filter(eq => {
+        if (est !== "todos" && eq.estado_operativo !== est) return false;
+        if (!q) return true;
+        const txt = `${eq.codigo_inventario || ""} ${eq.tipo_equipo || ""} ${eq.marca || ""} ${eq.modelo || ""} ${eq.ubicacion_uci || ""} ${eq.paciente_nombre || ""}`.toLowerCase();
+        return txt.includes(q);
+      });
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No se encontraron equipos para el criterio ingresado</td></tr>`;
+        return;
+      }
+
+      filtrados.forEach(eq => {
+        let badgeEstado = "bg-slate-100 text-slate-700 border-slate-200";
+        if (eq.estado_operativo === "En Uso") badgeEstado = "bg-teal-950 text-teal-300 border-teal-800";
+        if (eq.estado_operativo === "Disponible") badgeEstado = "bg-emerald-950 text-emerald-300 border-emerald-800";
+        if (eq.estado_operativo === "Mantenimiento" || eq.estado_operativo === "Descalibrado") badgeEstado = "bg-rose-950 text-rose-300 border-rose-800";
+
+        const bat = eq.bateria_backup_porcentaje || 0;
+        let batColor = bat < 30 ? "bg-rose-400" : (bat < 60 ? "bg-amber-400" : "bg-emerald-400");
+        const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-100/40 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-cyan-300 font-semibold">${eq.codigo_inventario}</td>
+          <td class="py-3 px-4 font-medium text-slate-900">${eq.tipo_equipo}</td>
+          <td class="py-3 px-4 text-slate-700">${eq.marca} ${eq.modelo}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-[10px] font-bold">Riesgo ${eq.clasificacion_riesgo || 'IIB'}</span></td>
+          <td class="py-3 px-4 text-slate-700">${eq.ubicacion_uci}${eq.paciente_nombre ? ` <span class="text-xs text-slate-500">(${escapeHtml(eq.paciente_nombre)})</span>` : ''}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <div class="w-16 bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden">
+                <div class="${batColor} h-2 rounded-full" style="width: ${bat}%"></div>
+              </div>
+              <span class="font-mono text-xs text-slate-700">${bat}%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badgeEstado}">${eq.estado_operativo}</span></td>
+          <td class="py-3 px-4 text-right">
+            ${esAdmin ? `
+              <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] transition font-semibold">
+                Metrología
+              </button>
+            ` : `<span class="text-xs text-slate-500">Solo Lectura</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     async function cargarEquiposUCI() {
       if (!sesionActiva) return;
       try {
@@ -3050,50 +3446,7 @@
 
         const data = await res.json();
         cacheEquipos = data.equipos_uci || [];
-
-        if (cacheEquipos.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">No hay equipos registrados para este perfil</td></tr>`;
-          return;
-        }
-
-        cacheEquipos.forEach(eq => {
-          let badgeEstado = "bg-slate-100 text-slate-700 border-slate-200";
-          if (eq.estado_operativo === "En Uso") badgeEstado = "bg-teal-950 text-teal-300 border-teal-800";
-          if (eq.estado_operativo === "Disponible") badgeEstado = "bg-emerald-950 text-emerald-300 border-emerald-800";
-          if (eq.estado_operativo === "Mantenimiento" || eq.estado_operativo === "Descalibrado") badgeEstado = "bg-rose-950 text-rose-300 border-rose-800";
-
-          const bat = eq.bateria_backup_porcentaje || 0;
-          let batColor = bat < 30 ? "bg-rose-400" : (bat < 60 ? "bg-amber-400" : "bg-emerald-400");
-          const esAdmin = sesionActiva && sesionActiva.rol === "Admin Biomedico";
-
-          const tr = document.createElement("tr");
-          tr.className = "hover:bg-slate-100/40 transition";
-          tr.innerHTML = `
-            <td class="py-3 px-4 font-mono text-cyan-300 font-semibold">${eq.codigo_inventario}</td>
-            <td class="py-3 px-4 font-medium text-slate-900">${eq.tipo_equipo}</td>
-            <td class="py-3 px-4 text-slate-700">${eq.marca} ${eq.modelo}</td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-[10px] font-bold">Riesgo ${eq.clasificacion_riesgo || 'IIB'}</span></td>
-            <td class="py-3 px-4 text-slate-700">${eq.ubicacion_uci}</td>
-            <td class="py-3 px-4">
-              <div class="flex items-center gap-2">
-                <div class="w-16 bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden">
-                  <div class="${batColor} h-2 rounded-full" style="width: ${bat}%"></div>
-                </div>
-                <span class="font-mono text-xs text-slate-700">${bat}%</span>
-              </div>
-            </td>
-            <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${badgeEstado}">${eq.estado_operativo}</span></td>
-            <td class="py-3 px-4 text-right">
-              ${esAdmin ? `
-                <button onclick="abrirModalEdicionEquipo(${eq.equipo_uci_id}, '${eq.tipo_equipo} (${eq.codigo_inventario})', '${eq.ubicacion_uci}', '${eq.estado_operativo}', ${bat})" class="px-2.5 py-1 bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] transition font-semibold">
-                  Metrología
-                </button>
-              ` : `<span class="text-xs text-slate-500">Solo Lectura</span>`}
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-
+        renderizarTablaEquiposUCI();
       } catch (err) {
         console.error("Error equipos:", err);
       }
@@ -5354,6 +5707,12 @@
         if (!res.ok) return;
         const data = await res.json();
         cacheDocumentosActuales = data.todos || [];
+
+        if (data.hoja_vida && heroNom) {
+          const hv = data.hoja_vida;
+          const ubicTxt = hv.cama_uci ? `${hv.cama_uci} (${hv.paciente_nombre || 'En Uso'})` : (hv.ubicacion_uci || hv.estado_operativo || '');
+          heroNom.innerText = `${hv.tipo_equipo} · ${hv.marca} ${hv.modelo} (${hv.registro_invima}${ubicTxt ? ' · ' + ubicTxt : ''})`;
+        }
 
         const foto = data.foto;
         const cert = data.certificado;

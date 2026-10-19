@@ -58,9 +58,9 @@ def poblar_uci_y_pacientes():
     cur.execute("SELECT COALESCE(MAX(id), 0) FROM hoja_vida_equipos;")
     max_hv = cur.fetchone()[0]
 
-    # Modelos y marcas de referencia
-    marcas_vent = [('Hamilton Medical', 'C3'), ('Dräger', 'Evita V800'), ('Mindray', 'SV800'), ('Medtronic', 'Puritan Bennett 980')]
-    marcas_mon = [('Philips', 'IntelliVue MX800'), ('Mindray', 'BeneVision N17'), ('GE Healthcare', 'Carescape B850'), ('Nihon Kohden', 'Life Scope G9')]
+    # Modelos y marcas oficiales registrados en Neon (sin modelos inventados)
+    marcas_vent = [('Hamilton Medical', 'C3'), ('Dräger', 'Evita V800')]
+    marcas_mon = [('Mindray', 'BeneVision N17'), ('Philips', 'IntelliVue MX800')]
 
     for i in range(1, 31):
         cama_tag = f"UCI-BED-{i:02d}"

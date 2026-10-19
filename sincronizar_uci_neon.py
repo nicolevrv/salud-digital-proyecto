@@ -54,33 +54,34 @@ TIPO_A_PREFIJO = {
 PREFIJO_A_CATALOGO = {"VENT": 1, "MON": 2, "BVOL": 3, "BJER": 4, "CRRT": 5, "POCT": 6, "ECG": 7, "DEF": 8, "ECO": 9, "RX": 10}
 EQUIPOS_CABECERA = {"VENT", "MON", "BVOL", "BJER"}
 
-# Marca/modelo de referencia para las unidades que aún no tienen hoja de vida
-# (el Excel no trae marca ni modelo).
-MARCAS = {
-    "VENT": [("Hamilton Medical", "C3"), ("Dräger", "Evita V800"), ("Mindray", "SV800"), ("Medtronic", "Puritan Bennett 980")],
-    "MON": [("Philips", "IntelliVue MX800"), ("Mindray", "BeneVision N17"), ("GE Healthcare", "Carescape B850"), ("Nihon Kohden", "Life Scope G9")],
-    "BVOL": [("BBraun", "Space P"), ("Fresenius Kabi", "Agilia VP"), ("Baxter", "Sigma Spectrum"), ("Mindray", "BeneFusion VP5")],
-    "BJER": [("Fresenius Kabi", "Injectomat Agilia"), ("BBraun", "Perfusor Space"), ("Mindray", "BeneFusion SP5"), ("Terumo", "TE-SS700")],
-    "CRRT": [("Baxter", "PrisMax"), ("Baxter", "Prismaflex"), ("Nikkiso", "Aquarius"), ("Fresenius Medical Care", "multiFiltrate")],
-    "POCT": [("Radiometer", "ABL90 FLEX"), ("Abbott", "i-STAT 1")],
-    "ECG": [("GE Healthcare", "MAC 2000"), ("Philips", "PageWriter TC30"), ("Schiller", "AT-102")],
-    "DEF": [("Zoll", "R Series"), ("Mindray", "BeneHeart D3"), ("Philips", "HeartStart XL+"), ("Zoll", "R Series")],
-    "ECO": [("Sonoscape", "S22"), ("Sonosite", "Edge II")],
-    "RX": [("Siemens", "Mobilett Elara Max"), ("Carestream", "DRX-Revolution")],
+# Modelos oficialmente registrados en Neon (con fotografías, certificados ONAC y hojas de vida).
+# Estrictamente NO se agregan ni inventan modelos adicionales.
+MODELOS_REGISTRADOS = {
+    "VENT": [
+        ("Hamilton Medical", "C3", "INVIMA 2021EBC-00012"),
+        ("Dräger", "Evita V800", "INVIMA 2022EBC-00094"),
+    ],
+    "MON": [
+        ("Mindray", "BeneVision N17", "INVIMA 2022EBC-00045"),
+        ("Philips", "IntelliVue MX800", "INVIMA 2020EBC-00112"),
+    ],
+    "BVOL": [("BBraun", "Space P", "INVIMA 2020EBC-00088")],
+    "BJER": [("Fresenius Kabi", "Injectomat Agilia", "INVIMA 2021EBC-00341")],
+    "CRRT": [("Baxter", "PrisMax", "INVIMA 2023EBC-00019")],
+    "POCT": [("Radiometer", "ABL90 FLEX", "INVIMA 2021EBC-00511")],
+    "ECG": [("GE Healthcare", "MAC 2000", "INVIMA 2019EBC-00077")],
+    "DEF": [("Mindray / Zoll", "BeneHeart D3", "INVIMA 2019EBC-00033")],
+    "ECO": [("Sonosite", "Edge II", "INVIMA 2022EBC-00812")],
+    "RX": [("Carestream", "Motion Mobile", "INVIMA 2020EBC-00451")],
 }
-INVIMA = {
-    "VENT": "INVIMA 2022EBC-00094", "MON": "INVIMA 2020EBC-00112", "BVOL": "INVIMA 2020EBC-00088",
-    "BJER": "INVIMA 2021EBC-00341", "CRRT": "INVIMA 2023EBC-00019", "POCT": "INVIMA 2021EBC-00511",
-    "ECG": "INVIMA 2019EBC-00077", "DEF": "INVIMA 2019EBC-00033", "ECO": "INVIMA 2022EBC-00812",
-    "RX": "INVIMA 2020EBC-00451",
-}
-# Hojas de vida antiguas que corresponden a la primera unidad del dataset de su tipo
+
+# Hojas de vida originales (IDs 1..12) que corresponden a las unidades base registradas
 REKEY_LEGACY = {
+    "HV-UCI-001": "VENT-01", "HV-UCI-002": "VENT-02", "HV-UCI-003": "MON-01", "HV-UCI-004": "MON-02",
     "HV-UCI-005": "BVOL-01", "HV-UCI-006": "BJER-01", "HV-UCI-007": "CRRT-01", "HV-UCI-008": "POCT-01",
     "HV-HOSP-009": "ECG-01", "HV-URG-010": "DEF-01", "HV-IMG-011": "ECO-01", "HV-IMG-012": "RX-01",
 }
-# Hojas de vida antiguas de demo que duplican la flota VENT-xx / MON-xx
-LEGACY_DUPLICADOS = ["HV-UCI-001", "HV-UCI-002", "HV-UCI-003", "HV-UCI-004"]
+
 
 # Columnas de dataset_eventos: (columna en Excel, columna en Neon, tipo SQL)
 COLUMNAS = [
@@ -214,42 +215,63 @@ def sincronizar_equipos(cur, df):
     en_falla = {i for i in ids if ult.loc[i, "Estado_Equipo"] == "Con falla"}
     log(f"[5] Unidades en el Excel: {len(ids)} | con falla vigente (no asignables): {len(en_falla)}")
 
-    # Re-keys de hojas de vida antiguas
+    # Re-keys y fusión de hojas de vida antiguas (HV-UCI-001..012 -> VENT-01..RX-01)
     for viejo, nuevo in REKEY_LEGACY.items():
         cur.execute("SELECT id FROM hoja_vida_equipos WHERE codigo_inventario=%s", (viejo,))
-        r = cur.fetchone()
-        cur.execute("SELECT 1 FROM hoja_vida_equipos WHERE codigo_inventario=%s", (nuevo,))
-        if r and not cur.fetchone():
-            cur.execute("UPDATE hoja_vida_equipos SET codigo_inventario=%s, es_equipo_uci=TRUE WHERE id=%s", (nuevo, r[0]))
+        r_viejo = cur.fetchone()
+        cur.execute("SELECT id FROM hoja_vida_equipos WHERE codigo_inventario=%s", (nuevo,))
+        r_nuevo = cur.fetchone()
+        if r_viejo and r_nuevo and r_viejo[0] != r_nuevo[0]:
+            hv_viejo, hv_nuevo = r_viejo[0], r_nuevo[0]
+            cur.execute("SELECT id FROM equipos_uci WHERE hoja_vida_id=%s", (hv_viejo,))
+            eq_v = cur.fetchone()
+            cur.execute("SELECT id FROM equipos_uci WHERE hoja_vida_id=%s", (hv_nuevo,))
+            eq_n = cur.fetchone()
+            if eq_v and eq_n:
+                cur.execute("UPDATE encuentros SET equipo_uci_id=%s WHERE equipo_uci_id=%s", (eq_v[0], eq_n[0]))
+                cur.execute("DELETE FROM equipos_uci WHERE id=%s", (eq_n[0],))
+                cur.execute("UPDATE equipos_uci SET is_deleted=FALSE WHERE id=%s", (eq_v[0],))
+            elif eq_n and not eq_v:
+                cur.execute("UPDATE equipos_uci SET hoja_vida_id=%s, is_deleted=FALSE WHERE id=%s", (hv_viejo, eq_n[0]))
+            cur.execute("DELETE FROM hoja_vida_equipos WHERE id=%s", (hv_nuevo,))
+            cur.execute("UPDATE hoja_vida_equipos SET codigo_inventario=%s, es_equipo_uci=TRUE, is_deleted=FALSE WHERE id=%s", (nuevo, hv_viejo))
+            cur.execute("UPDATE equipos_documentos SET equipo_id=%s WHERE equipo_id=%s", (nuevo, viejo))
+            log(f"    Hoja de vida fusionada {viejo} (id={hv_viejo}) <- {nuevo} (id={hv_nuevo} eliminado)")
+        elif r_viejo and not r_nuevo:
+            cur.execute("UPDATE hoja_vida_equipos SET codigo_inventario=%s, es_equipo_uci=TRUE, is_deleted=FALSE WHERE id=%s", (nuevo, r_viejo[0]))
             cur.execute("UPDATE equipos_documentos SET equipo_id=%s WHERE equipo_id=%s", (nuevo, viejo))
             log(f"    Hoja de vida {viejo} -> {nuevo}")
 
-    # Duplicados de demo: dar de baja lógica (soft-delete)
-    cur.execute("""
-        UPDATE equipos_uci SET is_deleted = TRUE
-        WHERE hoja_vida_id IN (SELECT id FROM hoja_vida_equipos WHERE codigo_inventario = ANY(%s))
-    """, (LEGACY_DUPLICADOS,))
-    log(f"    Equipos demo duplicados dados de baja lógica: {cur.rowcount}")
+    # Limpiar duplicados de prueba en equipos_documentos (mantener los 34 documentos oficiales)
+    cur.execute("DELETE FROM equipos_documentos WHERE id > 34")
+    if cur.rowcount:
+        log(f"    Documentos duplicados eliminados de equipos_documentos: {cur.rowcount}")
 
-    # Hojas de vida / equipos_uci para las 232 unidades
+    # Hojas de vida / equipos_uci para las 232 unidades con modelos estrictamente registrados
     cur.execute("SELECT id, codigo_inventario FROM hoja_vida_equipos")
     hv = {c: i for i, c in cur.fetchall()}
     creados = 0
+    actualizados_modelo = 0
     for cod in ids:
         pre = prefijo(cod)
+        marca, modelo, invima = MODELOS_REGISTRADOS[pre][(num(cod) - 1) % len(MODELOS_REGISTRADOS[pre])]
         if cod in hv:
-            cur.execute("UPDATE hoja_vida_equipos SET is_deleted=FALSE WHERE id=%s", (hv[cod],))
+            cur.execute("""
+                UPDATE hoja_vida_equipos
+                SET equipo_catalogo_id=%s, marca=%s, modelo=%s, registro_invima=%s, es_equipo_uci=TRUE, is_deleted=FALSE
+                WHERE id=%s
+            """, (PREFIJO_A_CATALOGO[pre], marca, modelo, invima, hv[cod]))
+            actualizados_modelo += 1
             continue
-        marca, modelo = MARCAS[pre][(num(cod) - 1) % len(MARCAS[pre])]
         fecha_adq = (ult.loc[cod, "Fecha_Reporte"] - timedelta(days=float(ult.loc[cod, "Edad_Equipo_Meses"]) * 30.44)).date()
         cur.execute("""
             INSERT INTO hoja_vida_equipos (equipo_catalogo_id, codigo_inventario, marca, modelo, numero_serie,
                 registro_invima, es_equipo_uci, servicio_asignado, fecha_adquisicion, created_by)
             VALUES (%s,%s,%s,%s,%s,%s,TRUE,'UCI Adultos',%s,%s) RETURNING id
-        """, (PREFIJO_A_CATALOGO[pre], cod, marca, modelo, f"SN-{cod}", INVIMA[pre], fecha_adq, ADMIN_ID))
+        """, (PREFIJO_A_CATALOGO[pre], cod, marca, modelo, f"SN-{cod}", invima, fecha_adq, ADMIN_ID))
         hv[cod] = cur.fetchone()[0]
         creados += 1
-    log(f"    Hojas de vida creadas: {creados}")
+    log(f"    Hojas de vida creadas: {creados} | normalizadas a modelos oficiales: {actualizados_modelo}")
 
     cur.execute("SELECT id, hoja_vida_id, ubicacion_uci FROM equipos_uci")
     eq = {}
