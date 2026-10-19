@@ -3700,7 +3700,6 @@ def get_prediccion_resumen_global(
         lista_equipos = []
         for r in rows:
             p = calcular_prediccion_equipo(r)
-            feats = p["features_entrada"]
             slug = obtener_slug_tipo(r["Tipo_Equipo"])
             f_str = r["Fecha_Reporte"].strftime("%Y-%m-%d") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
             cid = int(r.get("cluster_id") or 0)
@@ -3711,33 +3710,37 @@ def get_prediccion_resumen_global(
                 "equipo_id": r["ID_Equipo"],
                 "clasificacion_riesgo": r.get("Clasificacion_Riesgo") or "IIB",
                 "fecha_reporte": f_str,
-                # Las 9 variables de entrada del modelo
-                "edad_meses": feats["Edad_Equipo_Meses"],
-                "meses_mtto": feats["Meses_Desde_Ultimo_Mtto"],
-                "horas_uso_acumuladas": feats["Horas_Uso_Acumuladas"],
-                "fallas_previas": feats["Fallas_Acumuladas"],
-                "mtbf_dias": feats["MTBF_Promedio_Dias"],
-                "corriente_fuga_ua": feats["Corriente_Fuga_uA"],
-                "resistencia_tierra_ohms": feats["Resistencia_Tierra_Ohms"],
-                "desviacion_calibracion_pct": feats["Desviacion_Calibracion_Pct"],
+                # Las 9 variables de entrada del modelo tomadas de la fila
+                "edad_meses": float(r.get("Edad_Equipo_Meses") or 0.0),
+                "meses_mtto": float(r.get("Meses_Desde_Ultimo_Mtto") or 0.0),
+                "horas_uso_acumuladas": float(r.get("Horas_Uso_Acumuladas") or 0.0),
+                "horas_uso": float(r.get("Horas_Uso_Acumuladas") or 0.0),
+                "fallas_previas": int(r.get("Fallas_Acumuladas") or 0),
+                "mtbf_dias": float(r.get("MTBF_Promedio_Dias") or 180.0),
+                "corriente_fuga_ua": float(r.get("Corriente_Fuga_uA") or 0.0),
+                "corriente_fuga": float(r.get("Corriente_Fuga_uA") or 0.0),
+                "resistencia_tierra_ohms": float(r.get("Resistencia_Tierra_Ohms") or 0.0),
+                "resistencia_tierra": float(r.get("Resistencia_Tierra_Ohms") or 0.0),
+                "desviacion_calibracion_pct": float(r.get("Desviacion_Calibracion_Pct") or 0.0),
+                "desviacion_calibracion": float(r.get("Desviacion_Calibracion_Pct") or 0.0),
                 "estado_iec62353": r.get("Estado_IEC62353") or "Conforme",
                 # Los 3 objetivos binarios (Targets) del modelo ML
                 "target_falla": p["target_falla"],
                 "probabilidad_falla": p["probabilidad_falla"],
-                "umbral_falla": p["umbral_falla"],
+                "umbral_falla": p.get("umbral_falla", 0.73),
                 "target_mtto_predictivo": p["target_mtto_predictivo"],
                 "probabilidad_mtto_predictivo": p["probabilidad_mtto_predictivo"],
-                "umbral_mtto_predictivo": p["umbral_mtto_predictivo"],
+                "umbral_mtto_predictivo": p.get("umbral_mtto_predictivo", 0.65),
                 "target_critico": p["target_critico"],
                 "probabilidad_critico": p["probabilidad_critico"],
-                "umbral_critico": p["umbral_critico"],
-                "targets": p["targets"],
+                "umbral_critico": p.get("umbral_critico", 0.38),
+                "targets": p.get("targets", {}),
                 # Compatibilidad y diagnóstico
                 "falla_actual": p["target_falla"],
-                "nivel_riesgo": p["nivel_riesgo"],
-                "diagnostico": p["diagnostico"],
-                "anomalias": p["anomalias"],
-                "accion_recomendada": p["accion_recomendada"],
+                "nivel_riesgo": p.get("nivel_riesgo", "Bajo"),
+                "diagnostico": p.get("diagnostico", ""),
+                "anomalias": p.get("anomalias", []),
+                "accion_recomendada": p.get("accion_recomendada", ""),
                 "evento_reciente": r.get("Descripcion_Evento") or "Operación Normal",
                 "origen": r.get("origen") or "sintetico",
                 "cluster_id": cid,
