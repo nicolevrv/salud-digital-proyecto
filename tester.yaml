@@ -1,0 +1,140 @@
+# ==============================================================================
+# tester.yaml - Contrato de Verificación Automática (Corte 2)
+# Proyecto: Sistema Hospitalario UCI - Salud Digital & Gestión Predictiva Biomédica
+# ==============================================================================
+
+equipo:
+  nombre: "UCI Digital & Telemetria Biomedica"
+  url_publica: "https://salud-digital-proyecto.onrender.com"
+  version_corte: 2
+
+usuarios_prueba:
+  admin:
+    email: "admin.biomedico@hospital.com"
+    password: "admin123"
+    rol_esperado: "admin"
+  medico:
+    email: "medico@hospital.com"
+    password: "med123"
+    rol_esperado: "medico"
+  especialista:
+    email: "especialista@hospital.com"
+    password: "especialista123"
+    rol_esperado: "especialista"
+  contable:
+    email: "contable@hospital.com"
+    password: "contable123"
+    rol_esperado: "contable"
+  paciente:
+    email: "paciente@hospital.com"
+    password: "paciente123"
+    rol_esperado: "paciente"
+
+endpoints:
+  yo:
+    metodo: GET
+    ruta: "/yo"
+    descripcion: "Identidad y rol del usuario autenticado"
+    
+  login:
+    metodo: POST
+    ruta: "/login"
+    descripcion: "Autenticacion con JWT y proteccion de 3 intentos"
+
+  ia_analizar:
+    metodo: POST
+    ruta: "/ia/analizar"
+    descripcion: "Inferencia del modelo 3-targets (Falla, Mtto Predictivo, Critico) con estado inicial pendiente"
+
+  ia_reporte:
+    metodo: GET
+    ruta: "/ia/reportes/{id}"
+    metodo_revision: PUT
+    ruta_revision: "/ia/reportes/{id}"
+    descripcion: "Consulta y aprobacion/rechazo de reportes de IA (Soft Put)"
+
+  ia_payload:
+    metodo: GET
+    ruta: "/ia/reportes/{id}/payload"
+    descripcion: "Payload JSON exacto enviado al modelo IA, seudonimizado sin PHI directo"
+
+  historia:
+    metodo: GET
+    ruta: "/pacientes/{id}/historia"
+    descripcion: "Historia clinica integral con lista de reportes IA aprobados"
+
+  historia_pdf:
+    metodo: GET
+    ruta: "/pacientes/{id}/historia/pdf"
+    descripcion: "Descarga binaria de la historia clinica en formato PDF estructurado"
+
+  imagenes_paciente:
+    metodo: GET
+    ruta: "/pacientes/{id}/imagenes"
+    descripcion: "Lista de imagenes DICOM/PACS asociadas al paciente o equipo de soporte"
+
+  clusters:
+    metodo: GET
+    ruta: "/clusters"
+    descripcion: "Resumen de agrupamiento con k-means, distribucion real/sintetico y justificacion de sesgo"
+
+  remitir:
+    metodo: POST
+    ruta: "/remisiones"
+    descripcion: "Creacion y disparo de remision interinstitucional o a especialista"
+
+  remisiones:
+    metodo: GET
+    ruta: "/remisiones"
+    descripcion: "Lista de remisiones activas filtradas por rol"
+
+  remision_aceptar:
+    metodo: PUT
+    ruta: "/remisiones/{id}/aceptar"
+    descripcion: "Aceptacion formal de remision por el especialista (actualiza estado y notifica al remitente)"
+
+  contable_listar:
+    metodo: GET
+    ruta: "/contabilidad/facturas"
+    descripcion: "Listado de facturacion UCI por cama, insumos y eventos aprobados de IA"
+
+  notificaciones:
+    metodo: GET
+    ruta: "/notificaciones"
+    descripcion: "Bandeja de notificaciones en tiempo real del usuario autenticado"
+
+  notif_leer:
+    metodo: PUT
+    ruta: "/notificaciones/{id}/leer"
+    descripcion: "Marcar notificacion como leida (restringido a su propietario)"
+
+  pendientes:
+    metodo: GET
+    ruta: "/pendientes"
+    descripcion: "Contadores de tareas pendientes: reportes_por_revisar, remisiones_recibidas, alertas_activas"
+
+  alertas:
+    metodo: GET
+    ruta: "/alertas"
+    descripcion: "Lista de alertas clinicas y tecnicas criticas con estado activa/reconocida"
+
+  alerta_reconocer:
+    metodo: PUT
+    ruta: "/alertas/{id}/reconocer"
+    descripcion: "Reconocimiento obligatorio con nota clinica para retirar banner persistente"
+
+  fhir_observation:
+    metodo: POST
+    ruta: "/fhir/Observation"
+    descripcion: "Recepcion de recursos FHIR R4 Observation para telemetria y signos vitales"
+
+  tiempo_real:
+    metodo: GET
+    ruta: "/eventos/stream"
+    protocolo: "SSE"
+    descripcion: "Canal Server-Sent Events (SSE) para empuje reactivo sin recargas"
+
+  auditoria:
+    metodo: GET
+    ruta: "/auditoria"
+    descripcion: "Pista inmutable de auditoria segun Ley 1581/2012 y Res. 1995/1999"

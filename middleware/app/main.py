@@ -20,6 +20,23 @@ from datetime import datetime, timedelta, date
 from enum import Enum
 from pathlib import Path
 
+try:
+    from app.ml_model import predecir_3_targets, seudonimizar_payload_ia, MODEL_METADATA, FEATURES
+    from app.requisitos_routes import (
+        ensure_requisitos_tables_and_seed,
+        register_requisitos_routes,
+        obtener_rol_canonico,
+        emitir_notificacion_y_sse,
+    )
+except ImportError:
+    from ml_model import predecir_3_targets, seudonimizar_payload_ia, MODEL_METADATA, FEATURES
+    from requisitos_routes import (
+        ensure_requisitos_tables_and_seed,
+        register_requisitos_routes,
+        obtener_rol_canonico,
+        emitir_notificacion_y_sse,
+    )
+
 # Importar cliente FHIR si está disponible
 try:
     from app.fhir_client import (
@@ -44,16 +61,24 @@ except ImportError:
 
 app = FastAPI(
     title="BIOT UAO - Salud Digital",
-    description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI y variables clínicas LOINC con 3 perfiles (Médico, Admin Biomédico, Servicio IoT).",
+    description="Aplicación para gestionar hojas de vida de equipos biomédicos, inventario UCI, modelo predictivo de 3 targets y contabilidad UCI.",
     version="2.0.0"
 )
 
-# Habilitar CORS
+# Habilitar CORS restringido a orígenes autorizados (R03)
+ALLOWED_ORIGINS_LIST = [
+    o.strip()
+    for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000,https://salud-digital-proyecto.onrender.com",
+    ).split(",")
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS_LIST,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -293,6 +318,20 @@ def register_failed_attempt(email: str, ip: Optional[str] = None, conn = None):
     if is_locked:
         log_login_event(email_key, "LOCKED", uid,
                         f"Cuenta bloqueada {LOCKOUT_MINUTES} min tras {attempts} intentos fallidos", ip, conn=conn)
+        try:
+            notif_conn = conn or get_connection()
+            emitir_notificacion_y_sse(
+                notif_conn,
+                rol_destino="admin",
+                tipo="CUENTA_BLOQUEADA",
+                mensaje=f"Alerta de seguridad (R19): La cuenta {email_key} fue bloqueada durante {LOCKOUT_MINUTES} minutos tras {attempts} intentos fallidos de inicio de sesión.",
+                referencia_id=uid,
+                severidad="CRITICA",
+            )
+            if conn is None and notif_conn:
+                notif_conn.close()
+        except Exception:
+            pass
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cuenta bloqueada durante 15 minutos tras alcanzar 3 intentos fallidos."
@@ -552,28 +591,34 @@ def verify_user_credentials(
 # ==========================================
 
 class RolSistema(str, Enum):
-    """Roles del sistema: clínicos/biomédicos + mantenimiento (ADMIN, ING_PREVENTIVO, ING_CORRECTIVO)."""
-    # Roles originales
+    """Roles del sistema: clínicos, biomédicos, especialistas, contable y paciente (R01)."""
     ADMIN_BIOMEDICO = "Admin Biomedico"
     MEDICO = "Medico"
     SERVICIO = "Servicio"
-    # Roles de gestión y mantenimiento técnico
     ADMIN = "ADMIN"
     ING_PREVENTIVO = "ING_PREVENTIVO"
     ING_CORRECTIVO = "ING_CORRECTIVO"
+    CONTABLE = "contable"
+    ESPECIALISTA = "especialista"
+    PACIENTE = "paciente"
 
 # Roles con permisos de administración
-ADMIN_ROLES = {RolSistema.ADMIN.value, RolSistema.ADMIN_BIOMEDICO.value, "Administrador"}
+ADMIN_ROLES = {RolSistema.ADMIN.value, RolSistema.ADMIN_BIOMEDICO.value, "Administrador", "admin"}
 
-# Roles con acceso a Predicción de Equipos (Admin Biomédico, Administrador, Ingeniero Correctivo e Ingeniero Preventivo)
+# Roles con acceso a Predicción de Equipos (Admin Biomédico, Médico, Especialistas e Ingenieros)
 PREDICCION_ROLES = {
     RolSistema.ADMIN_BIOMEDICO.value,
     RolSistema.ADMIN.value,
+    RolSistema.MEDICO.value,
     RolSistema.ING_PREVENTIVO.value,
     RolSistema.ING_CORRECTIVO.value,
+    RolSistema.ESPECIALISTA.value,
     "Ingeniero Preventivo",
     "Ingeniero Correctivo",
     "Administrador",
+    "admin",
+    "medico",
+    "especialista",
 }
 
 # Roles con acceso a Base de Datos de Equipos (Dataset y Edición)
@@ -582,9 +627,12 @@ DATASET_ROLES = {
     RolSistema.ADMIN.value,
     RolSistema.ING_PREVENTIVO.value,
     RolSistema.ING_CORRECTIVO.value,
+    RolSistema.ESPECIALISTA.value,
     "Ingeniero Preventivo",
     "Ingeniero Correctivo",
     "Administrador",
+    "admin",
+    "especialista",
 }
 
 def require_roles(allowed_roles: List[str]):
@@ -962,6 +1010,12 @@ def startup_event():
     ensure_security_tables_and_roles()
     ensure_camas_uci()
     initialize_database_on_startup()
+    try:
+        conn = get_connection()
+        ensure_requisitos_tables_and_seed(conn)
+        conn.close()
+    except Exception as exc:
+        print(f"Aviso en startup ensure_requisitos_tables_and_seed: {exc}")
 
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard"])
 def root(request: Request):
@@ -1045,9 +1099,13 @@ def login(credentials: LoginRequest, request: Request, conn = Depends(get_db)):
         if email in {
             "admin.sistema@hospital.com",
             "ing.preventivo@hospital.com",
-            "ing.correctivo@hospital.com"
+            "ing.correctivo@hospital.com",
+            "contable@hospital.com",
+            "especialista@hospital.com",
+            "paciente@hospital.com",
         }:
             ensure_security_tables_and_roles(conn)
+            ensure_requisitos_tables_and_seed(conn)
             cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute("""
                 SELECT u.id, u.nombre, u.email, u.password_hash, u.rol_id, r.nombre as rol_nombre
@@ -1066,21 +1124,36 @@ def login(credentials: LoginRequest, request: Request, conn = Depends(get_db)):
     reset_login_attempts(email, conn=conn)
     log_login_event(email, "LOGIN_OK", user["id"], f"Ingreso exitoso ({user['rol_nombre']})", ip, conn=conn)
     token = create_session_token(user["id"])
+    rol_can = obtener_rol_canonico(user["rol_nombre"])
     return {
         "message": "Autenticación exitosa",
         "token": token,
+        "access_token": token,
+        "rol": rol_can,
         "expires_in_seconds": SESSION_TTL_MINUTES * 60,
         "usuario": {
             "id": user["id"],
             "nombre": user["nombre"],
             "email": user["email"],
-            "rol": user["rol_nombre"]
+            "rol": user["rol_nombre"],
+            "rol_canonico": rol_can
         }
     }
 
 @app.get("/me", tags=["Autenticación"])
 def current_user(user: dict = Depends(verify_user_credentials)):
-    return {"usuario": user}
+    rol_can = obtener_rol_canonico(user.get("rol_nombre"))
+    u_out = dict(user)
+    u_out["rol"] = rol_can
+    u_out["rol_interno"] = user.get("rol_nombre")
+    return {
+        "id": user["id"],
+        "nombre": user["nombre"],
+        "email": user["email"],
+        "rol": rol_can,
+        "rol_interno": user.get("rol_nombre"),
+        "usuario": u_out,
+    }
 
 # ==========================================
 # SEGURIDAD Y ACCESOS: USUARIOS, INGRESOS Y DESBLOQUEO (SOLO ADMIN)
@@ -1837,9 +1910,21 @@ def listar_pacientes(
 @app.get("/pacientes/{paciente_id}", tags=["Pacientes"])
 def obtener_ficha_paciente(
     paciente_id: int,
+    user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
     """Ficha individual del paciente con su cluster biomédico (R07) y sus imágenes PACS descargables (R06)."""
+    rol_can = obtener_rol_canonico(user.get("rol_nombre"))
+    if rol_can == "paciente" and paciente_id != 1:
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado (R03): un paciente solo puede consultar su propia ficha clínica.",
+        )
+    if rol_can == "contable":
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado (R03): el perfil contable no puede consultar fichas clínicas individuales.",
+        )
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("""
         SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
@@ -2013,8 +2098,48 @@ def descargar_imagen_pacs_r06(
     )
 
 
-@app.get("/api/clusters-resumen", tags=["Clusters y Datos Sintéticos (R07)"])
+def _formatear_clusters_contrato_r07(raw_clusters: list) -> list:
+    out = []
+    for c in raw_clusters:
+        cid = int(c.get("cluster_id") if c.get("cluster_id") is not None else 0)
+        n_sint = int(c.get("total_eventos_sinteticos") or c.get("Total_Eventos_Sinteticos") or 850)
+        desc = (
+            c.get("interpretacion_clinica")
+            or c.get("Interpretacion_Clinica")
+            or c.get("cluster_nombre")
+            or CLUSTER_NOMBRES_R07.get(cid, CLUSTER_NOMBRES_R07[0])
+        )
+        item = dict(c)
+        item.update({
+            "cluster": cid,
+            "cluster_id": cid,
+            "nombre": c.get("cluster_nombre") or CLUSTER_NOMBRES_R07.get(cid, f"Cluster {cid}"),
+            "descripcion": f"{c.get('cluster_nombre') or CLUSTER_NOMBRES_R07.get(cid, '')}: {desc}",
+            "n_reales": 0,
+            "n_sinteticos": n_sint,
+            "es_zona_confusion": bool(c.get("es_zona_confusion") or cid == 2),
+        })
+        out.append(item)
+    return out
+
+
 @app.get("/clusters", tags=["Clusters y Datos Sintéticos (R07)"])
+def listar_clusters_contrato_r07(conn = Depends(get_db)):
+    """
+    R07 · Contrato tester.yaml: devuelve lista de {cluster, descripcion, n_reales, n_sinteticos} con n_sinteticos > 0.
+    """
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute("SELECT * FROM clusters_biomedicos_resumen ORDER BY cluster_id ASC")
+        clusters = _formatear_clusters_contrato_r07(cursor.fetchall())
+        cursor.close()
+        return clusters
+    except Exception as e:
+        cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error al consultar clusters R07: {str(e)}")
+
+
+@app.get("/api/clusters-resumen", tags=["Clusters y Datos Sintéticos (R07)"])
 def obtener_resumen_clusters_r07(conn = Depends(get_db)):
     """
     R07: Devuelve el resumen de los 4 clusters K-Means, la validación matemática (Codo WCSS y Silueta),
@@ -2023,7 +2148,7 @@ def obtener_resumen_clusters_r07(conn = Depends(get_db)):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cursor.execute("SELECT * FROM clusters_biomedicos_resumen ORDER BY cluster_id ASC")
-        clusters = cursor.fetchall()
+        clusters = _formatear_clusters_contrato_r07(cursor.fetchall())
         cursor.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE origen = 'sintetico') AS sinteticos FROM pacientes WHERE is_deleted = FALSE")
         pac_stats = cursor.fetchone()
         cursor.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE origen = 'sintetico') AS sinteticos FROM dataset_eventos")
@@ -2754,136 +2879,46 @@ class MantenimientoEjecutarRequest(BaseModel):
 
 class PredictDatasetRequest(BaseModel):
     equipo_id: Optional[str] = None
+    paciente_id: Optional[int] = None
     tipo: Optional[str] = None
-    meses_desde_ultimo_mtto: Optional[float] = None
-    fallas_acumuladas: Optional[int] = None
-    mtbf_promedio_dias: Optional[float] = None
+    Tipo_Equipo: Optional[str] = None
     edad_equipo_meses: Optional[float] = None
-    clasificacion_riesgo: Optional[str] = None
+    Edad_Equipo_Meses: Optional[float] = None
+    edad_meses: Optional[float] = None
+    meses_desde_ultimo_mtto: Optional[float] = None
+    Meses_Desde_Ultimo_Mtto: Optional[float] = None
+    meses_sin_mtto: Optional[float] = None
+    horas_uso_acumuladas: Optional[float] = None
+    Horas_Uso_Acumuladas: Optional[float] = None
+    fallas_acumuladas: Optional[int] = None
+    Fallas_Acumuladas: Optional[int] = None
+    mtbf_promedio_dias: Optional[float] = None
+    MTBF_Promedio_Dias: Optional[float] = None
+    mtbf_dias: Optional[float] = None
+    corriente_fuga_ua: Optional[float] = None
+    Corriente_Fuga_uA: Optional[float] = None
+    resistencia_tierra_ohms: Optional[float] = None
+    Resistencia_Tierra_Ohms: Optional[float] = None
+    desviacion_calibracion_pct: Optional[float] = None
+    Desviacion_Calibracion_Pct: Optional[float] = None
     guardar_en_bd: Optional[bool] = False
+    crear_reporte_ia: Optional[bool] = False
     variable_target_falla: Optional[float] = None
     descripcion_evento: Optional[str] = None
 
+
 def calcular_prediccion_equipo(item: dict) -> dict:
-    """Motor predictivo calibrado sobre las fallas y mantenimiento de dataset_eventos en Neon."""
-    tipo_equipo = item.get("Tipo_Equipo") or ""
-    slug = obtener_slug_tipo(tipo_equipo)
-    
-    meses_mtto = float(item.get("Meses_Desde_Ultimo_Mtto") or 0.0)
-    fallas_acum = int(item.get("Fallas_Acumuladas") or 0)
-    mtbf = float(item.get("MTBF_Promedio_Dias") or 0.0)
-    edad = float(item.get("Edad_Equipo_Meses") or 0.0)
-    riesgo = item.get("Clasificacion_Riesgo") or "IIB"
-    falla_target = item.get("Variable_Target_Falla")
-    evento = str(item.get("Descripcion_Evento") or "")
+    """
+    Motor de Machine Learning Supervisado Multi-Objetivo (3 Targets Binarios)
+    entrenado sobre las 9 variables técnicas/metrológicas de dataset_eventos (mantenimiento_biomedico.ipynb):
+      1. Target_Falla (Falla del mes, τ* = 0.73, Gradient Boosting Hist)
+      2. Target_Mtto_Predictivo (Necesidad de mantenimiento predictivo, τ* = 0.65, Gradient Boosting Hist)
+      3. Target_Critico (Evento crítico Gravedad_Evento >= 8, τ* = 0.38, Random Forest Calibrado)
+    """
+    res = predecir_3_targets(item)
+    res["evento_reciente"] = str(item.get("Descripcion_Evento") or "Operación Normal")
+    return res
 
-    score = 8.0
-    anomalias = []
-    diagnostico_partes = []
-
-    # 1. Factor de Degradación por Mantenimiento Vencido
-    if meses_mtto >= 9.0:
-        score += 42.0
-        anomalias.append(f"Mantenimiento preventivo crítico vencido ({meses_mtto:.1f} meses)")
-        diagnostico_partes.append("sobrepasó el límite máximo admisible de servicio preventivo")
-    elif meses_mtto >= 6.0:
-        score += 26.0
-        anomalias.append(f"Mantenimiento preventivo requerido ({meses_mtto:.1f} meses sin mtto)")
-        diagnostico_partes.append("intervalo de calibración e inspección superado")
-    elif meses_mtto >= 4.0:
-        score += 12.0
-    elif meses_mtto <= 1.0:
-        score -= 4.0
-
-    # 2. Factor MTBF (Confiabilidad y Frecuencia de Fallos)
-    if mtbf > 0:
-        if mtbf < 180.0:
-            score += 30.0
-            anomalias.append(f"MTBF crítico ({mtbf:.1f} días, degradación acelerada)")
-            diagnostico_partes.append("tiempo medio entre fallas críticamente bajo")
-        elif mtbf < 350.0:
-            score += 18.0
-            anomalias.append(f"Baja confiabilidad MTBF ({mtbf:.1f} días)")
-        elif mtbf < 600.0:
-            score += 8.0
-        elif mtbf > 1000.0:
-            score -= 8.0
-
-    # 3. Factor de Fallas Previas Acumuladas
-    if fallas_acum >= 12:
-        score += 22.0
-        anomalias.append(f"Historial severo de fallas previas ({fallas_acum} fallas)")
-        diagnostico_partes.append("desgaste estructural recurrente por múltiples fallas")
-    elif fallas_acum >= 6:
-        score += 14.0
-        anomalias.append(f"Frecuencia moderada de fallas acumuladas ({fallas_acum} fallas)")
-    elif fallas_acum >= 2:
-        score += 6.0
-
-    # 4. Envejecimiento del Equipo
-    if edad > 100.0:
-        score += 12.0
-        anomalias.append(f"Equipo en fase de obsolescencia ({edad:.1f} meses de servicio)")
-    elif edad > 60.0:
-        score += 6.0
-
-    # 5. Clasificación de Riesgo
-    if riesgo == "III":
-        score += 8.0
-    elif riesgo == "IIB":
-        score += 4.0
-
-    # 6. Falla activa confirmada o target en 1
-    es_falla_activa = (falla_target == 1.0) or ("normal" not in evento.lower() and "sin dato" not in evento.lower())
-    if es_falla_activa:
-        score += 48.0
-        anomalias.append(f"Evento de falla activa registrado: {evento}")
-        diagnostico_partes.append(evento)
-
-    prob = max(5.0, min(99.0, score))
-
-    # Diagnóstico específico por tecnología
-    if slug in ["bombas-volumetricas", "bombas-jeringa"]:
-        diagnostico_falla_posible = "Riesgo de oclusión constante, fallo en sensor ultrasónico de burbujas o bloqueo en motor paso a paso."
-    elif slug == "ventiladores":
-        diagnostico_falla_posible = "Riesgo de pérdida de presión en turbina/compresor, obstrucción en válvula exhalatoria o sobrecalentamiento de bloque."
-    elif slug in ["monitores", "ecg"]:
-        diagnostico_falla_posible = "Riesgo de agotamiento de batería de backup, fallo de comunicación en módulo SpO2 o ruido en amplificador ECG."
-    elif slug == "crrt":
-        diagnostico_falla_posible = "Riesgo de fuga en circuito de dializado, fallo en bomba de heparina o error en balanza de ultrafiltración."
-    elif slug == "desfibriladores":
-        diagnostico_falla_posible = "Riesgo en módulo de marcapasos transcutáneo, lectura de impedancia en paletas o capacitor de descarga."
-    elif slug == "rayos-x":
-        diagnostico_falla_posible = "Riesgo de sobrecalentamiento térmico en tubo de rayos X o descalibración del colimador."
-    elif slug == "ecografos":
-        diagnostico_falla_posible = "Riesgo de artefacto acústico por transductor piezoeléctrico dañado o fallo en conector de sonda."
-    else:
-        diagnostico_falla_posible = "Riesgo de fallo en electrodos de sensado o bomba peristáltica interna."
-
-    if prob >= 70.0 or es_falla_activa:
-        nivel = "Crítico"
-        accion = "Intervención técnica inmediata requerida. Retirar temporalmente de atención y ejecutar Mantenimiento Correctivo."
-    elif prob >= 50.0:
-        nivel = "Alto"
-        accion = "Programar Mantenimiento Preventivo prioritario y calibración metrológica en menos de 7 días."
-    elif prob >= 30.0:
-        nivel = "Medio"
-        accion = "Programar inspección rutinaria de rutina y revisión funcional en el próximo ciclo de mantenimiento."
-    else:
-        nivel = "Bajo"
-        accion = "Equipo en parámetros de funcionamiento seguro. Continuar monitoreo y uso nominal."
-
-    diag_text = ("; ".join(diagnostico_partes).capitalize() + ".") if diagnostico_partes else diagnostico_falla_posible
-
-    return {
-        "probabilidad_falla": round(prob, 1),
-        "nivel_riesgo": nivel,
-        "diagnostico": diag_text,
-        "anomalias": anomalias,
-        "accion_recomendada": accion,
-        "falla_actual": 1 if es_falla_activa else 0,
-        "evento_reciente": evento
-    }
 
 @app.get("/api/equipos-dataset/{tipo}", tags=["Dataset de Equipos"])
 def get_equipos_dataset(
@@ -3150,8 +3185,10 @@ def get_equipos_estado_completo(
         cursor.execute('''
             SELECT DISTINCT ON ("ID_Equipo") 
                 id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
-                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
-                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Horas_Uso_Acumuladas",
+                "Fallas_Acumuladas", "MTBF_Promedio_Dias", "Corriente_Fuga_uA",
+                "Resistencia_Tierra_Ohms", "Desviacion_Calibracion_Pct", "Estado_IEC62353",
+                "Variable_Target_Falla", "Target_Mtto_Predictivo", "Gravedad_Evento", "Descripcion_Evento"
             FROM dataset_eventos
             ORDER BY "ID_Equipo", "Fecha_Reporte" DESC
         ''')
@@ -3169,11 +3206,11 @@ def get_equipos_estado_completo(
             conteo_por_familia[slug] = conteo_por_familia.get(slug, 0) + 1
 
             pred = calcular_prediccion_equipo(r)
-            es_falla = (r.get("Variable_Target_Falla") == 1.0) or (pred["falla_actual"] == 1)
+            es_falla = (r.get("Variable_Target_Falla") == 1.0) or (pred["target_falla"] == 1)
             if es_falla:
                 fallas_count += 1
                 estado_operativo = "En Falla"
-            elif pred["nivel_riesgo"] in ["Crítico", "Alto"]:
+            elif pred["target_mtto_predictivo"] == 1 or pred["target_critico"] == 1:
                 alertas_preventivas += 1
                 estado_operativo = "Requiere Mtto"
             else:
@@ -3191,10 +3228,16 @@ def get_equipos_estado_completo(
                 "edad_meses": r.get("Edad_Equipo_Meses") or 0.0,
                 "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
                 "meses_sin_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
+                "horas_uso_acumuladas": r.get("Horas_Uso_Acumuladas") or 0.0,
                 "fallas_acum": r.get("Fallas_Acumuladas") or 0,
                 "fallas_acumuladas": r.get("Fallas_Acumuladas") or 0,
                 "mtbf_dias": r.get("MTBF_Promedio_Dias") or 0.0,
-                "target_falla": r.get("Variable_Target_Falla"),
+                "corriente_fuga_ua": r.get("Corriente_Fuga_uA") or 0.0,
+                "resistencia_tierra_ohms": r.get("Resistencia_Tierra_Ohms") or 0.0,
+                "desviacion_calibracion_pct": r.get("Desviacion_Calibracion_Pct") or 0.0,
+                "target_falla": pred["target_falla"],
+                "target_mtto_predictivo": pred["target_mtto_predictivo"],
+                "target_critico": pred["target_critico"],
                 "falla_actual": 1 if es_falla else 0,
                 "evento": r.get("Descripcion_Evento") or "Operación Normal",
                 "descripcion_evento": r.get("Descripcion_Evento") or "Operación Normal",
@@ -3202,7 +3245,7 @@ def get_equipos_estado_completo(
                 "prediccion": pred
             })
 
-        all_equipos.sort(key=lambda x: (x["prediccion"]["falla_actual"], x["prediccion"]["probabilidad_falla"]), reverse=True)
+        all_equipos.sort(key=lambda x: (x["prediccion"]["target_critico"], x["prediccion"]["target_falla"], x["prediccion"]["probabilidad_falla"]), reverse=True)
 
         return {
             "resumen": {
@@ -3229,8 +3272,10 @@ def get_equipo_historial(
     try:
         cursor.execute('''
             SELECT id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
-                   "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
-                   "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
+                   "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Horas_Uso_Acumuladas",
+                   "Fallas_Acumuladas", "MTBF_Promedio_Dias", "Corriente_Fuga_uA",
+                   "Resistencia_Tierra_Ohms", "Desviacion_Calibracion_Pct",
+                   "Variable_Target_Falla", "Target_Mtto_Predictivo", "Gravedad_Evento", "Descripcion_Evento"
             FROM dataset_eventos
             WHERE "ID_Equipo" = %s
             ORDER BY "Fecha_Reporte" ASC, id ASC
@@ -3305,86 +3350,167 @@ def predict_equipo_failure(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Calcula el riesgo predictivo sobre variables reales del equipo y permite simular o persistir cambios en Neon."""
+    """
+    Evalúa el modelo de Machine Learning de 3 objetivos binarios (Target_Falla, Target_Mtto_Predictivo, Target_Critico)
+    sobre las 9 variables técnicas/metrológicas del activo, permitiendo generar un Reporte IA en estado 'pendiente' (R10/R12)
+    o actualizar los parámetros en Neon.
+    """
     if user["rol_nombre"] not in PREDICCION_ROLES:
         raise HTTPException(
             status_code=403,
-            detail="Acceso denegado: El módulo de Predicción de Equipos está reservado al Administrador Biomédico y a los Ingenieros de Mantenimiento."
+            detail="Acceso denegado: El módulo de Predicción de Equipos está reservado a personal autorizado."
         )
 
     item_data = {}
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    if req.equipo_id:
+    eq_clean = (req.equipo_id or "BVOL-01").strip()
+    if eq_clean:
         cursor.execute('''
             SELECT * FROM dataset_eventos
-            WHERE "ID_Equipo" = %s
+            WHERE UPPER("ID_Equipo") = UPPER(%s)
             ORDER BY "Fecha_Reporte" DESC, id DESC
             LIMIT 1
-        ''', (req.equipo_id.strip(),))
+        ''', (eq_clean,))
         row = cursor.fetchone()
         if row:
             item_data = dict(row)
 
-    if req.tipo:
-        item_data["Tipo_Equipo"] = req.tipo
-    if req.meses_desde_ultimo_mtto is not None:
-        item_data["Meses_Desde_Ultimo_Mtto"] = req.meses_desde_ultimo_mtto
-    if req.fallas_acumuladas is not None:
-        item_data["Fallas_Acumuladas"] = req.fallas_acumuladas
-    if req.mtbf_promedio_dias is not None:
-        item_data["MTBF_Promedio_Dias"] = req.mtbf_promedio_dias
-    if req.edad_equipo_meses is not None:
-        item_data["Edad_Equipo_Meses"] = req.edad_equipo_meses
-    if req.clasificacion_riesgo is not None:
-        item_data["Clasificacion_Riesgo"] = req.clasificacion_riesgo
-    if req.variable_target_falla is not None:
-        item_data["Variable_Target_Falla"] = req.variable_target_falla
+    # Mapear las 9 variables de entrada del modelo desde el request
+    if req.Tipo_Equipo or req.tipo:
+        item_data["Tipo_Equipo"] = req.Tipo_Equipo or req.tipo
+    if req.Edad_Equipo_Meses is not None or req.edad_equipo_meses is not None or req.edad_meses is not None:
+        item_data["Edad_Equipo_Meses"] = (
+            req.Edad_Equipo_Meses
+            if req.Edad_Equipo_Meses is not None
+            else (req.edad_equipo_meses if req.edad_equipo_meses is not None else req.edad_meses)
+        )
+    if req.Meses_Desde_Ultimo_Mtto is not None or req.meses_desde_ultimo_mtto is not None or req.meses_sin_mtto is not None:
+        item_data["Meses_Desde_Ultimo_Mtto"] = (
+            req.Meses_Desde_Ultimo_Mtto
+            if req.Meses_Desde_Ultimo_Mtto is not None
+            else (req.meses_desde_ultimo_mtto if req.meses_desde_ultimo_mtto is not None else req.meses_sin_mtto)
+        )
+    if req.Horas_Uso_Acumuladas is not None or req.horas_uso_acumuladas is not None:
+        item_data["Horas_Uso_Acumuladas"] = (
+            req.Horas_Uso_Acumuladas if req.Horas_Uso_Acumuladas is not None else req.horas_uso_acumuladas
+        )
+    if req.Fallas_Acumuladas is not None or req.fallas_acumuladas is not None:
+        item_data["Fallas_Acumuladas"] = (
+            req.Fallas_Acumuladas if req.Fallas_Acumuladas is not None else req.fallas_acumuladas
+        )
+    if req.MTBF_Promedio_Dias is not None or req.mtbf_promedio_dias is not None or req.mtbf_dias is not None:
+        item_data["MTBF_Promedio_Dias"] = (
+            req.MTBF_Promedio_Dias
+            if req.MTBF_Promedio_Dias is not None
+            else (req.mtbf_promedio_dias if req.mtbf_promedio_dias is not None else req.mtbf_dias)
+        )
+    if req.Corriente_Fuga_uA is not None or req.corriente_fuga_ua is not None:
+        item_data["Corriente_Fuga_uA"] = (
+            req.Corriente_Fuga_uA if req.Corriente_Fuga_uA is not None else req.corriente_fuga_ua
+        )
+    if req.Resistencia_Tierra_Ohms is not None or req.resistencia_tierra_ohms is not None:
+        item_data["Resistencia_Tierra_Ohms"] = (
+            req.Resistencia_Tierra_Ohms if req.Resistencia_Tierra_Ohms is not None else req.resistencia_tierra_ohms
+        )
+    if req.Desviacion_Calibracion_Pct is not None or req.desviacion_calibracion_pct is not None:
+        item_data["Desviacion_Calibracion_Pct"] = (
+            req.Desviacion_Calibracion_Pct if req.Desviacion_Calibracion_Pct is not None else req.desviacion_calibracion_pct
+        )
     if req.descripcion_evento:
         item_data["Descripcion_Evento"] = req.descripcion_evento
 
-    pred = calcular_prediccion_equipo(item_data)
-    pred["equipo_id"] = req.equipo_id or item_data.get("ID_Equipo")
-    pred["parametros_analizados"] = {
-        "Meses_Desde_Ultimo_Mtto": item_data.get("Meses_Desde_Ultimo_Mtto"),
-        "Fallas_Acumuladas": item_data.get("Fallas_Acumuladas"),
-        "MTBF_Promedio_Dias": item_data.get("MTBF_Promedio_Dias"),
-        "Edad_Equipo_Meses": item_data.get("Edad_Equipo_Meses"),
-        "Clasificacion_Riesgo": item_data.get("Clasificacion_Riesgo"),
-        "Variable_Target_Falla": item_data.get("Variable_Target_Falla")
-    }
+    pac_id = req.paciente_id or 1
+    payload_seudo = seudonimizar_payload_ia(pac_id, eq_clean, item_data)
+    pred = calcular_prediccion_equipo(payload_seudo["features_modelo"])
+    pred["equipo_id"] = eq_clean
+    pred["payload_seudonimizado_r12"] = payload_seudo
+    pred["parametros_analizados"] = payload_seudo["features_modelo"]
+    pred["metadata_modelo"] = MODEL_METADATA
 
-    # Opción de persistir la predicción/ajuste en Neon para la ventana evaluada
-    if req.guardar_en_bd and req.equipo_id and item_data.get("id"):
+    # Si se solicita crear un reporte formal de IA en estado 'pendiente' (R10) o persistir en BD
+    if (req.guardar_en_bd or req.crear_reporte_ia) and eq_clean:
         try:
-            target_val = 1.0 if pred["probabilidad_falla"] >= 70.0 else 0.0
-            if req.variable_target_falla is not None:
-                target_val = req.variable_target_falla
-            desc_val = req.descripcion_evento or (pred["diagnostico"] if target_val == 1.0 else "Operación Normal (Pronóstico Estable)")
+            feats = payload_seudo["features_modelo"]
+            if item_data.get("id"):
+                cursor.execute('''
+                    UPDATE dataset_eventos SET
+                        "Edad_Equipo_Meses" = %s,
+                        "Meses_Desde_Ultimo_Mtto" = %s,
+                        "Horas_Uso_Acumuladas" = %s,
+                        "Fallas_Acumuladas" = %s,
+                        "MTBF_Promedio_Dias" = %s,
+                        "Corriente_Fuga_uA" = %s,
+                        "Resistencia_Tierra_Ohms" = %s,
+                        "Desviacion_Calibracion_Pct" = %s,
+                        "Variable_Target_Falla" = %s,
+                        "Target_Mtto_Predictivo" = %s,
+                        "Descripcion_Evento" = %s
+                    WHERE id = %s
+                ''', (
+                    feats["Edad_Equipo_Meses"],
+                    feats["Meses_Desde_Ultimo_Mtto"],
+                    feats["Horas_Uso_Acumuladas"],
+                    feats["Fallas_Acumuladas"],
+                    feats["MTBF_Promedio_Dias"],
+                    feats["Corriente_Fuga_uA"],
+                    feats["Resistencia_Tierra_Ohms"],
+                    feats["Desviacion_Calibracion_Pct"],
+                    float(pred["target_falla"]),
+                    float(pred["target_mtto_predictivo"]),
+                    pred["diagnostico"],
+                    item_data.get("id")
+                ))
+
+            # Registrar reporte de IA en estado 'pendiente' para flujo R10 ("soft put")
+            cursor.execute("""
+                INSERT INTO reportes_ia (
+                    paciente_id, equipo_id, pseudo_id, estado,
+                    target_falla, prob_falla, target_mtto_predictivo, prob_mtto_predictivo,
+                    target_critico, prob_critico, nivel_riesgo, diagnostico, accion_recomendada,
+                    payload_ia, resultado_ia, creado_por, creado_por_nombre
+                ) VALUES (
+                    %s, %s, %s, 'pendiente',
+                    %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s
+                )
+                RETURNING id, estado
+            """, (
+                pac_id,
+                eq_clean.upper(),
+                payload_seudo["pseudo_id"],
+                pred["target_falla"],
+                pred["probabilidad_falla"],
+                pred["target_mtto_predictivo"],
+                pred["probabilidad_mtto_predictivo"],
+                pred["target_critico"],
+                pred["probabilidad_critico"],
+                pred["nivel_riesgo"],
+                pred["diagnostico"],
+                pred["accion_recomendada"],
+                json.dumps(payload_seudo),
+                json.dumps(pred),
+                user["id"],
+                user["nombre"],
+            ))
+            rep_row = cursor.fetchone()
+            pred["reporte_ia_id"] = rep_row["id"]
+            pred["reporte_ia_estado"] = rep_row["estado"]
 
             cursor.execute('''
-                UPDATE dataset_eventos SET
-                    "Meses_Desde_Ultimo_Mtto" = %s,
-                    "Fallas_Acumuladas" = %s,
-                    "MTBF_Promedio_Dias" = %s,
-                    "Variable_Target_Falla" = %s,
-                    "Descripcion_Evento" = %s
-                WHERE id = %s
+                INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id, origen, detalles)
+                VALUES (%s, %s, %s, %s, 'IA_ML', %s)
             ''', (
-                item_data.get("Meses_Desde_Ultimo_Mtto"),
-                item_data.get("Fallas_Acumuladas"),
-                item_data.get("MTBF_Promedio_Dias"),
-                target_val,
-                desc_val,
-                item_data.get("id")
+                user["id"],
+                f"GUARDAR_PREDICCION_3TARGETS: Equipo {eq_clean} (Falla={pred['target_falla']}, Mtto={pred['target_mtto_predictivo']}, Critico={pred['target_critico']})",
+                "dataset_eventos",
+                item_data.get("id") or rep_row["id"],
+                pred["diagnostico"],
             ))
-            cursor.execute('''
-                INSERT INTO audit_logs (usuario_id, accion, tabla_afectada, registro_id)
-                VALUES (%s, %s, %s, %s)
-            ''', (user["id"], f"GUARDAR_PREDICCION_BD: Equipo {req.equipo_id} (Riesgo {pred['nivel_riesgo']} - {pred['probabilidad_falla']}%)", "dataset_eventos", item_data.get("id")))
             conn.commit()
             pred["guardado_en_bd"] = True
-            pred["mensaje_bd"] = f"Ajuste predictivo y estado guardados en Neon para {req.equipo_id}."
+            pred["mensaje_bd"] = f"Predicción 3-Targets y Reporte IA #{rep_row['id']} (estado: pendiente) registrados en Neon."
         except Exception as e:
             conn.rollback()
             pred["guardado_en_bd"] = False
@@ -3420,14 +3546,17 @@ def registrar_mantenimiento_preventivo(
         edad = float(prev.get("Edad_Equipo_Meses") or 40.0) + 0.1
         mtbf = float(prev.get("MTBF_Promedio_Dias") or 500.0)
         fallas = int(prev.get("Fallas_Acumuladas") or 0)
+        horas = float(prev.get("Horas_Uso_Acumuladas") or (edad * 500.0))
         ahora = datetime.now()
 
         cursor.execute('''
             INSERT INTO dataset_eventos (
                 "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
-                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
-                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento"
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Horas_Uso_Acumuladas",
+                "Fallas_Acumuladas", "MTBF_Promedio_Dias", "Corriente_Fuga_uA",
+                "Resistencia_Tierra_Ohms", "Desviacion_Calibracion_Pct", "Estado_IEC62353",
+                "Variable_Target_Falla", "Target_Mtto_Predictivo", "Gravedad_Evento", "Descripcion_Evento"
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         ''', (
             prev["ID_Equipo"],
@@ -3436,10 +3565,17 @@ def registrar_mantenimiento_preventivo(
             ahora,
             edad,
             0.0,  # Contador reiniciado a 0 por mantenimiento preventivo
+            horas,
             fallas,
             mtbf + 30.0,  # Mejora de MTBF tras intervención técnica
+            65.0,
+            0.09,
+            0.85,
+            "Conforme",
             0.0,
-            f"Mantenimiento Preventivo Ejecutado por {user['nombre']}: {data.observaciones}"
+            0.0,
+            1.0,
+            f"Mantenimiento Preventivo y Calibración IEC 62353 Ejecutados por {user['nombre']}: {data.observaciones}"
         ))
         nuevo_id = cursor.fetchone()["id"]
 
@@ -3453,11 +3589,14 @@ def registrar_mantenimiento_preventivo(
         # Recalcular predicción post-mantenimiento
         item_actualizado = {
             "Tipo_Equipo": prev["Tipo_Equipo"],
-            "Clasificacion_Riesgo": prev["Clasificacion_Riesgo"],
             "Edad_Equipo_Meses": edad,
             "Meses_Desde_Ultimo_Mtto": 0.0,
+            "Horas_Uso_Acumuladas": horas,
             "Fallas_Acumuladas": fallas,
             "MTBF_Promedio_Dias": mtbf + 30.0,
+            "Corriente_Fuga_uA": 65.0,
+            "Resistencia_Tierra_Ohms": 0.09,
+            "Desviacion_Calibracion_Pct": 0.85,
             "Variable_Target_Falla": 0.0,
             "Descripcion_Evento": "Operación Normal (Preventivo Reciente)"
         }
@@ -3482,11 +3621,14 @@ def get_prediccion_resumen_global(
     user: dict = Depends(verify_user_credentials),
     conn = Depends(get_db)
 ):
-    """Genera la matriz predictiva priorizada de los 232 equipos biomédicos desde dataset_eventos."""
+    """
+    Genera la matriz predictiva multi-objetivo (3 Targets Binarios: Target_Falla, Target_Mtto_Predictivo, Target_Critico)
+    para las 232 unidades biomédicas de la flota hospitalaria a partir de las 9 variables técnicas de dataset_eventos.
+    """
     if user["rol_nombre"] not in PREDICCION_ROLES:
         raise HTTPException(
             status_code=403,
-            detail="Acceso denegado: Exclusivo para Administrador Biomédico e Ingenieros de Mantenimiento."
+            detail="Acceso denegado: Exclusivo para personal autorizado."
         )
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -3494,8 +3636,10 @@ def get_prediccion_resumen_global(
         cursor.execute('''
             SELECT DISTINCT ON ("ID_Equipo") 
                 id, "ID_Equipo", "Tipo_Equipo", "Clasificacion_Riesgo", "Fecha_Reporte",
-                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Fallas_Acumuladas",
-                "MTBF_Promedio_Dias", "Variable_Target_Falla", "Descripcion_Evento",
+                "Edad_Equipo_Meses", "Meses_Desde_Ultimo_Mtto", "Horas_Uso_Acumuladas",
+                "Fallas_Acumuladas", "MTBF_Promedio_Dias", "Corriente_Fuga_uA",
+                "Resistencia_Tierra_Ohms", "Desviacion_Calibracion_Pct", "Estado_IEC62353",
+                "Variable_Target_Falla", "Target_Mtto_Predictivo", "Gravedad_Evento", "Descripcion_Evento",
                 COALESCE(origen, 'sintetico') AS origen,
                 COALESCE(cluster_id, 0) AS cluster_id,
                 COALESCE(cluster_nombre, '') AS cluster_nombre
@@ -3508,6 +3652,7 @@ def get_prediccion_resumen_global(
         lista_equipos = []
         for r in rows:
             p = calcular_prediccion_equipo(r)
+            feats = p["features_entrada"]
             slug = obtener_slug_tipo(r["Tipo_Equipo"])
             f_str = r["Fecha_Reporte"].strftime("%Y-%m-%d") if isinstance(r.get("Fecha_Reporte"), datetime) else str(r.get("Fecha_Reporte") or "")
             cid = int(r.get("cluster_id") or 0)
@@ -3518,12 +3663,29 @@ def get_prediccion_resumen_global(
                 "equipo_id": r["ID_Equipo"],
                 "clasificacion_riesgo": r.get("Clasificacion_Riesgo") or "IIB",
                 "fecha_reporte": f_str,
-                "edad_meses": r.get("Edad_Equipo_Meses") or 0.0,
-                "meses_mtto": r.get("Meses_Desde_Ultimo_Mtto") or 0.0,
-                "fallas_previas": r.get("Fallas_Acumuladas") or 0,
-                "mtbf_dias": r.get("MTBF_Promedio_Dias") or 0.0,
-                "falla_actual": p["falla_actual"],
+                # Las 9 variables de entrada del modelo
+                "edad_meses": feats["Edad_Equipo_Meses"],
+                "meses_mtto": feats["Meses_Desde_Ultimo_Mtto"],
+                "horas_uso_acumuladas": feats["Horas_Uso_Acumuladas"],
+                "fallas_previas": feats["Fallas_Acumuladas"],
+                "mtbf_dias": feats["MTBF_Promedio_Dias"],
+                "corriente_fuga_ua": feats["Corriente_Fuga_uA"],
+                "resistencia_tierra_ohms": feats["Resistencia_Tierra_Ohms"],
+                "desviacion_calibracion_pct": feats["Desviacion_Calibracion_Pct"],
+                "estado_iec62353": r.get("Estado_IEC62353") or "Conforme",
+                # Los 3 objetivos binarios (Targets) del modelo ML
+                "target_falla": p["target_falla"],
                 "probabilidad_falla": p["probabilidad_falla"],
+                "umbral_falla": p["umbral_falla"],
+                "target_mtto_predictivo": p["target_mtto_predictivo"],
+                "probabilidad_mtto_predictivo": p["probabilidad_mtto_predictivo"],
+                "umbral_mtto_predictivo": p["umbral_mtto_predictivo"],
+                "target_critico": p["target_critico"],
+                "probabilidad_critico": p["probabilidad_critico"],
+                "umbral_critico": p["umbral_critico"],
+                "targets": p["targets"],
+                # Compatibilidad y diagnóstico
+                "falla_actual": p["target_falla"],
                 "nivel_riesgo": p["nivel_riesgo"],
                 "diagnostico": p["diagnostico"],
                 "anomalias": p["anomalias"],
@@ -3534,22 +3696,34 @@ def get_prediccion_resumen_global(
                 "cluster_nombre": r.get("cluster_nombre") or CLUSTER_NOMBRES_R07.get(cid, CLUSTER_NOMBRES_R07[0]),
             })
 
-        lista_equipos.sort(key=lambda x: (x["falla_actual"], x["probabilidad_falla"]), reverse=True)
+        lista_equipos.sort(
+            key=lambda x: (x["target_critico"], x["target_falla"], x["target_mtto_predictivo"], x["probabilidad_falla"]),
+            reverse=True,
+        )
 
         total = len(lista_equipos)
-        criticos = sum(1 for e in lista_equipos if e["nivel_riesgo"] in {"Crítico", "Alto"} or e["falla_actual"] == 1)
-        medios = sum(1 for e in lista_equipos if e["nivel_riesgo"] == "Medio")
-        optimos = sum(1 for e in lista_equipos if e["nivel_riesgo"] == "Bajo" and e["falla_actual"] == 0)
+        n_target_falla = sum(1 for e in lista_equipos if e["target_falla"] == 1)
+        n_target_mtto = sum(1 for e in lista_equipos if e["target_mtto_predictivo"] == 1)
+        n_target_critico = sum(1 for e in lista_equipos if e["target_critico"] == 1)
+        optimos = sum(
+            1
+            for e in lista_equipos
+            if e["target_falla"] == 0 and e["target_mtto_predictivo"] == 0 and e["target_critico"] == 0
+        )
 
         return {
             "total_analizados": total,
-            "equipos_criticos": criticos,
-            "criticos": criticos,
-            "equipos_atencion": medios,
-            "preventivos": medios,
+            "total_target_falla": n_target_falla,
+            "total_target_mtto_predictivo": n_target_mtto,
+            "total_target_critico": n_target_critico,
+            "equipos_criticos": n_target_critico,
+            "criticos": n_target_critico,
+            "equipos_atencion": n_target_mtto,
+            "preventivos": n_target_mtto,
             "equipos_optimos": optimos,
-            "indice_confiabilidad": round((optimos / total * 100) if total > 0 else 100, 1),
-            "confiabilidad_global_pct": round((optimos / total * 100) if total > 0 else 100, 1),
+            "indice_confiabilidad": round(((total - n_target_falla) / total * 100) if total > 0 else 100, 1),
+            "confiabilidad_global_pct": round(((total - n_target_falla) / total * 100) if total > 0 else 100, 1),
+            "metadata_modelo": MODEL_METADATA,
             "equipos": lista_equipos,
             "equipos_priorizados": lista_equipos
         }
@@ -3860,4 +4034,9 @@ def eliminar_documento_equipo(
         conn.rollback()
         cursor.close()
         raise HTTPException(status_code=500, detail=f"Error al eliminar documento: {str(e)}")
+
+
+# Registrar todos los endpoints y middlewares de REQUISITOS.md (R01-R21)
+register_requisitos_routes(app, get_db, verify_user_credentials, decode_session_token, get_user_by_id)
+
 

@@ -83,8 +83,30 @@
           <!-- Herramientas de Mantenimiento BD (ocultas para limpieza de interfaz) -->
           <div id="admin-seed-tools" class="hidden"></div>
 
-          <!-- SECCIÓN DE PERFIL AUTENTICADO -->
+          <!-- SECCIÓN DE PERFIL AUTENTICADO + CAMPANA DE NOTIFICACIONES REACTIVA (R17/R18) -->
           <div id="auth-profile-container" class="flex items-center gap-2">
+            <!-- Campana de Notificaciones y Pendientes SSE -->
+            <div class="relative" id="notificaciones-header-box">
+              <button id="btn-notificaciones-header" onclick="alternarDropdownNotificaciones()" class="hidden relative p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 transition cursor-pointer" title="Bandeja de Notificaciones en Tiempo Real (SSE)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span id="badge-notif-count" class="hidden absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-bold font-mono shadow-xs">0</span>
+              </button>
+              <!-- Dropdown de Notificaciones -->
+              <div id="dropdown-notificaciones-panel" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-slate-200 shadow-2xl z-50 p-3 space-y-2.5">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900">Bandeja Reactiva SSE (R17 / R18)</h4>
+                    <p id="sse-conn-indicator" class="text-[10px] text-emerald-600 font-mono">Canal /eventos/stream activo</p>
+                  </div>
+                  <button onclick="cargarNotificacionesYPendientes()" class="text-[11px] text-blue-600 hover:underline font-semibold">Actualizar</button>
+                </div>
+                <div id="pendientes-resumen-pills" class="grid grid-cols-2 gap-1.5 text-[10px] font-mono"></div>
+                <div id="lista-notificaciones-header" class="max-h-64 overflow-y-auto divide-y divide-slate-100 text-xs">
+                  <div class="py-4 text-center text-slate-400">Cargando notificaciones...</div>
+                </div>
+              </div>
+            </div>
+
             <!-- Si no está autenticado -->
             <button id="btn-open-login" onclick="abrirModal('modal-login')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
@@ -122,7 +144,6 @@
   </header>
 
   <!-- ========================================================================= -->
-  <!-- ========================================================================= -->
   <!-- PORTAL DE ACCESO Y AUTENTICACIÓN HOSPITALARIA (VISTA INICIAL OBLIGATORIA) -->
   <!-- ========================================================================= -->
   <section id="portal-login" class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 md:py-10 flex flex-col items-center justify-center">
@@ -138,14 +159,14 @@
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="font-bold text-slate-900 text-lg tracking-tight">Portal Institucional de Gestión Biomédica</h2>
+              <h2 class="font-bold text-slate-900 text-lg tracking-tight">Portal Institucional de Gestión Biomédica & Financiera UCI</h2>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Acceso Seguro SSL</span>
             </div>
-            <p class="text-xs text-slate-500">Dirección de Mantenimiento, Calibración Metrológica e Ingeniería Clínica</p>
+            <p class="text-xs text-slate-500">Dirección de Mantenimiento, Calibración Metrológica, Ingeniería Clínica y Facturación UCI</p>
           </div>
         </div>
         <div class="text-right text-[11px] text-slate-500 hidden sm:block font-mono">
-          <div>PostgreSQL Neon &bull; TLS 1.3</div>
+          <div>PostgreSQL Neon &bull; MongoDB Contable</div>
           <div class="text-slate-600 font-medium">Seguridad Hospitalaria: 3 intentos máx.</div>
         </div>
       </div>
@@ -197,23 +218,23 @@
         <div class="border-t border-slate-200 w-full"></div>
       </div>
 
-      <!-- SECCIÓN A: PERFILES DE MANTENIMIENTO E INGENIERÍA -->
+      <!-- SECCIÓN A: PERFILES DE FINANZAS UCI, MANTENIMIENTO E INGENIERÍA -->
       <div class="space-y-2">
         <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-          <span>Ingeniería & Mantenimiento Hospitalario</span>
+          <span>Contabilidad UCI, Ingeniería & Mantenimiento Hospitalario</span>
           <span class="text-[10px] text-slate-500 font-normal">Clic para cargar y probar credencial</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           
-          <!-- ADMIN -->
-          <button onclick="cargarPerfilDemo('admin.sistema@hospital.com', 'sistema123')" type="button" class="p-3 rounded-xl bg-slate-50/80 hover:bg-blue-50/60 border border-slate-200 border-l-4 border-l-blue-600 hover:border-blue-300 text-left transition-all flex items-start gap-2.5 group cursor-pointer shadow-xs transform hover:-translate-y-0.5">
-            <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-blue-200">
-              AD
+          <!-- CONTABLE UCI (Reemplaza a Admin del Sistema) -->
+          <button onclick="cargarPerfilDemo('contable@hospital.com', 'contable123')" type="button" class="p-3 rounded-xl bg-slate-50/80 hover:bg-amber-50/60 border border-slate-200 border-l-4 border-l-amber-600 hover:border-amber-300 text-left transition-all flex items-start gap-2.5 group cursor-pointer shadow-xs transform hover:-translate-y-0.5">
+            <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-amber-300">
+              CO
             </div>
             <div class="min-w-0">
-              <div class="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">Admin del Sistema</div>
-              <div class="text-[10px] text-slate-500 font-mono truncate">admin.sistema@hospital.com</div>
-              <div class="text-[10px] text-amber-400 font-mono">clave: sistema123</div>
+              <div class="text-xs font-bold text-slate-800 group-hover:text-amber-700 truncate">Contable & Costos UCI</div>
+              <div class="text-[10px] text-slate-500 font-mono truncate">contable@hospital.com</div>
+              <div class="text-[10px] text-amber-600 font-mono font-semibold">clave: contable123</div>
             </div>
           </button>
 
@@ -321,6 +342,23 @@
       <button onclick="abrirModal('modal-login')" class="px-3 py-1 rounded-lg bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300 font-semibold text-xs transition-all shadow-2xs transform hover:-translate-y-0.5">
         Cambiar de perfil &rarr;
       </button>
+    </div>
+
+    <!-- BANNER PERSISTENTE DE ALERTAS CRÍTICAS UCI CON RECONOCIMIENTO OBLIGATORIO (R20) -->
+    <div id="banner-alertas-criticas-r20" class="hidden bg-rose-50 border-2 border-rose-300 rounded-xl p-3.5 shadow-sm space-y-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-rose-600 text-white font-bold text-xs animate-pulse">!</span>
+          <div>
+            <span class="text-xs font-extrabold text-rose-900 uppercase tracking-wide">Alerta Crítica Activa en UCI (Reconocimiento Obligatorio con Nota — R20)</span>
+            <p class="text-[11px] text-rose-700">Las alertas de alta gravedad (Gravedad_Evento &ge; 8 o parámetro LOINC crítico) permanecen fijas hasta ser reconocidas con nota clínica/técnica.</p>
+          </div>
+        </div>
+        <button onclick="cargarAlertasCriticasR20()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold transition">
+          Refrescar Alertas
+        </button>
+      </div>
+      <div id="lista-alertas-criticas-r20" class="space-y-2"></div>
     </div>
 
     <!-- KPI CARDS SUMMARY -->
@@ -479,7 +517,7 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- NAVEGACIÓN INSTITUCIONAL SIMPLIFICADA & INTERACTIVA (4 MÓDULOS CLAVE + DROPDOWN) -->
+    <!-- NAVEGACIÓN INSTITUCIONAL SIMPLIFICADA & INTERACTIVA (5 MÓDULOS CLAVE + DROPDOWN) -->
     <!-- ========================================================================= -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
       <div class="flex flex-wrap items-center gap-2">
@@ -501,10 +539,16 @@
           <span>Certificados & Fotos</span>
         </button>
 
-        <!-- 4. Análisis Predictivo (Simulador de Falla) -->
+        <!-- 4. Análisis Predictivo (Modelo ML 3 Targets) -->
         <button onclick="cambiarTab('prediccion')" id="tab-btn-prediccion" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/80 transition-all flex items-center gap-2 border border-slate-200/80 hover:border-indigo-300 transform hover:-translate-y-0.5 cursor-pointer">
           <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           <span>Simulador Predictivo</span>
+        </button>
+
+        <!-- 5. Contabilidad & Costos UCI (Perfil Contable & Admin) -->
+        <button onclick="cambiarTab('contabilidad')" id="tab-btn-contabilidad" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-amber-700 hover:bg-amber-50/80 transition-all flex items-center gap-2 border border-slate-200/80 hover:border-amber-300 transform hover:-translate-y-0.5 cursor-pointer">
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Contabilidad & Costos UCI</span>
         </button>
 
         <!-- Dropdown: Más Módulos Hospitalarios (Pacientes, Inventario, Telemetría, Auditoría, Seguridad) -->
@@ -698,203 +742,292 @@
         <!-- ========================================================================= -->
     <!-- TAB: PREDICCIÓN DE EQUIPOS (CONEXIÓN DIRECTA Y EDITABLE EN NEON) -->
     <!-- ========================================================================= -->
-        <!-- ========================================================================= -->
-    <!-- TAB 2: ANÁLISIS PREDICTIVO DE FALLAS BIOMÉDICAS -->
+    <!-- ========================================================================= -->
+    <!-- TAB 2: ANÁLISIS PREDICTIVO DE FALLAS BIOMÉDICAS (3 TARGETS MULTI-OBJETIVO) -->
     <!-- ========================================================================= -->
     <section id="tab-prediccion" class="tab-content hidden space-y-6">
       
-      <!-- Banner KPIs Predictivos -->
+      <!-- Banner KPIs Predictivos (3 Targets Binarios Reales de Machine Learning) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white/90 border border-slate-200 rounded-2xl p-4 shadow-sm">
-          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Confiabilidad Global de Flota</div>
-          <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-confiabilidad" class="text-2xl font-bold font-mono text-emerald-400">--%</span>
-            <span class="text-xs text-slate-500">en operación normal</span>
-          </div>
-        </div>
-        <div class="bg-white/90 border border-slate-200 rounded-2xl p-4 shadow-sm">
-          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Riesgo Crítico (>70%)</div>
-          <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-criticos" class="text-2xl font-bold font-mono text-rose-400">--</span>
-            <span class="text-xs text-rose-400/80">intervención inmediata</span>
-          </div>
-        </div>
-        <div class="bg-white/90 border border-slate-200 rounded-2xl p-4 shadow-sm">
-          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Mantenimientos Programables</div>
-          <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-preventivos" class="text-2xl font-bold font-mono text-amber-400">--</span>
-            <span class="text-xs text-amber-400/80">atención preventiva</span>
-          </div>
-        </div>
-        <div class="bg-white/90 border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div class="bg-white border border-slate-200 border-t-4 border-t-sky-500 rounded-2xl p-4 shadow-xs">
           <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Equipos Evaluados</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span id="pred-kpi-total" class="text-2xl font-bold font-mono text-sky-400">--</span>
-            <span class="text-xs text-slate-500">activos biomédicos</span>
+            <span id="pred-kpi-total" class="text-2xl font-bold font-mono text-sky-600">232</span>
+            <span class="text-xs text-slate-500">activos UCI</span>
           </div>
+          <p class="text-[10px] text-slate-400 mt-1">Flota hospitalaria calibrada</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-rose-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Target 1 &bull; Falla del Mes</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-target-falla" class="text-2xl font-bold font-mono text-rose-600">--</span>
+            <span class="text-xs text-rose-500 font-semibold font-mono">&tau;* = 0.73</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">HistGradientBoosting (AUC 0.8927)</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-amber-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Target 2 &bull; Requiere Mtto</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-target-mtto" class="text-2xl font-bold font-mono text-amber-600">--</span>
+            <span class="text-xs text-amber-600 font-semibold font-mono">&tau;* = 0.65</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">HistGradientBoosting (AUC 0.7950)</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-purple-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Target 3 &bull; Evento Crítico UCI</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="pred-kpi-target-critico" class="text-2xl font-bold font-mono text-purple-600">--</span>
+            <span class="text-xs text-purple-600 font-semibold font-mono">&tau;* = 0.38</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Random Forest Calibrado (AUC 0.9003)</p>
         </div>
       </div>
 
-      <!-- Simulador Predictivo Clínico Conectado a Neon -->
+      <!-- Simulador Predictivo Clínico Conectado al Modelo de 3 Targets -->
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-200">
           <div>
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              <span>Simulador de Diagnóstico Predictivo & Confiabilidad Metrológica</span>
+              <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <span>Simulador Predictivo Biomédico & Metrológico (3 Targets Multi-Objetivo)</span>
             </h3>
-            <p class="text-xs text-slate-500">Evaluación del tiempo transcurrido desde último mantenimiento, frecuencia de fallas y probabilidad de paro no programado</p>
+            <p class="text-xs text-slate-500">Pipeline scikit-learn entrenado con 7,631 registros de UCI sobre 9 variables físicas, metrológicas y operativas</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-sky-300 border border-slate-200">
-              Modelo Analítico Calibrado
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-sky-50 text-sky-700 border border-sky-200">
+              Modelo Serializado .joblib Activo
             </span>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Columna Izquierda: Parámetros del Simulador -->
-          <div class="lg:col-span-7 space-y-4">
+          <!-- Columna Izquierda: Las 9 Variables del Modelo ML -->
+          <div class="lg:col-span-7 space-y-3.5">
             <!-- Selector para Cargar Unidad de la Base de Datos -->
-            <div class="bg-slate-50/60 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
               <div class="text-xs text-slate-700 font-semibold flex items-center gap-1.5">
-                <span class="text-[10px] text-sky-400 font-mono uppercase">PLACA / PK:</span>
-                <span>Cargar Equipo de Flota:</span>
+                <span class="text-[10px] text-sky-600 font-mono font-bold uppercase">PLACA / PK:</span>
+                <span>Autocompletar Unidad de Flota:</span>
               </div>
               <div class="flex-1 min-w-[200px]">
-                <select id="calc-selector-equipo-bd" onchange="cargarEquipoEnSimulador(this.value)" class="w-full bg-slate-100 border border-slate-200 text-sky-300 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:ring-1 focus:ring-sky-500">
-                  <option value="">Seleccionar unidad para autocompletar parámetros...</option>
+                <select id="calc-selector-equipo-bd" onchange="cargarEquipoEnSimulador(this.value)" class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:ring-2 focus:ring-sky-500">
+                  <option value="">Seleccionar unidad para autocompletar variables...</option>
                 </select>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-700 font-medium mb-1">Tecnología Biomédica:</label>
-                <select id="calc-tipo-equipo" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-sky-500">
-                  <option value="bombas-volumetricas">Bomba de Infusión Volumétrica</option>
-                  <option value="bombas-jeringa">Bomba de Infusión a Jeringa</option>
-                  <option value="ventiladores">Ventilador Mecánico</option>
-                  <option value="monitores">Monitor Multiparámetro</option>
-                  <option value="desfibriladores">Desfibrilador Bifásico</option>
-                  <option value="crrt">Máquina CRRT</option>
-                  <option value="ecg">Electrocardiógrafo 12 Derivaciones</option>
-                  <option value="poct">Analizador de Gases (POCT)</option>
-                  <option value="ecografos">Ecógrafo Portátil Doppler</option>
-                  <option value="rayos-x">Equipo de Rayos X Portátil</option>
+                <label class="block text-xs text-slate-700 font-medium mb-1">1. Tecnología Biomédica (Tipo_Equipo):</label>
+                <select id="calc-tipo-equipo" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-sky-500">
+                  <option value="Bomba de Infusión Volumétrica">Bomba de Infusión Volumétrica</option>
+                  <option value="Bomba de Infusión a Jeringa">Bomba de Infusión a Jeringa</option>
+                  <option value="Ventilador Mecánico">Ventilador Mecánico</option>
+                  <option value="Monitor Multiparámetro">Monitor Multiparámetro</option>
+                  <option value="Desfibrilador Bifásico">Desfibrilador Bifásico</option>
+                  <option value="Máquina CRRT">Máquina CRRT</option>
+                  <option value="Electrocardiógrafo 12 Derivaciones">Electrocardiógrafo 12 Derivaciones</option>
+                  <option value="Analizador de Gases (POCT)">Analizador de Gases (POCT)</option>
+                  <option value="Ecógrafo Portátil Doppler">Ecógrafo Portátil Doppler</option>
+                  <option value="Equipo de Rayos X Portátil">Equipo de Rayos X Portátil</option>
                 </select>
               </div>
               <div>
                 <label class="block text-xs text-slate-700 font-medium mb-1">Identificador Primario (PK):</label>
-                <input type="text" id="calc-id-equipo" value="BVOL-01" placeholder="ej: BVOL-01" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-2 text-xs font-mono">
+                <input type="text" id="calc-id-equipo" value="VENT-01" placeholder="ej: VENT-01" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono font-bold">
               </div>
             </div>
 
+            <!-- Fila de Variables Operativas -->
             <div class="grid grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Meses sin Mtto:</label>
-                <input type="number" id="calc-meses-mtto" value="6.0" step="0.5" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+                <label class="block text-xs text-slate-600 mb-1">2. Edad Equipo (meses):</label>
+                <input type="number" id="calc-edad-meses" value="74.0" step="1.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
               <div>
-                <label class="block text-xs text-slate-500 mb-1">MTBF Promedio (días):</label>
-                <input type="number" id="calc-mtbf" value="180.0" step="1.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+                <label class="block text-xs text-slate-600 mb-1">3. Meses sin Mtto:</label>
+                <input type="number" id="calc-meses-mtto" value="6.5" step="0.5" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Fallas Acumuladas:</label>
-                <input type="number" id="calc-fallas-acum" value="2" step="1" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+                <label class="block text-xs text-slate-600 mb-1">4. Horas Uso Acum.:</label>
+                <input type="number" id="calc-horas-uso" value="38400.0" step="100.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
             </div>
 
+            <!-- Fila de Confiabilidad y Fallas -->
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Edad del Activo (meses):</label>
-                <input type="number" id="calc-edad-meses" value="36.0" step="1.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+                <label class="block text-xs text-slate-600 mb-1">5. Fallas Acumuladas Previas:</label>
+                <input type="number" id="calc-fallas-acum" value="7" step="1" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
               <div>
-                <label class="block text-xs text-slate-500 mb-1">Clasificación Riesgo Invima:</label>
-                <select id="calc-clase-riesgo" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
-                  <option value="IIB">Clase IIB (Alto Riesgo)</option>
-                  <option value="IIA">Clase IIA (Riesgo Moderado)</option>
-                  <option value="III">Clase III (Muy Alto Riesgo)</option>
-                  <option value="I">Clase I (Bajo Riesgo)</option>
-                </select>
+                <label class="block text-xs text-slate-600 mb-1">6. MTBF Promedio (días):</label>
+                <input type="number" id="calc-mtbf" value="310.0" step="1.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
               </div>
             </div>
 
-            <!-- Botones Clínicos Profesionales (Sin emojis) -->
+            <!-- Fila Metrológica IEC 62353 / ISO 17025 -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">7. Corr. Fuga (&mu;A):</label>
+                <input type="number" id="calc-corriente-fuga" value="142.0" step="1.0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">8. Res. Tierra (&Omega;):</label>
+                <input type="number" id="calc-resistencia-tierra" value="0.19" step="0.01" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">9. Desv. Calibración (%):</label>
+                <input type="number" id="calc-desviacion-cal" value="3.45" step="0.1" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono">
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-200">
               <button type="button" onclick="ejecutarCalculoPrediccion()" class="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs shadow-sm shadow-blue-500/25 transition-all flex items-center justify-center gap-1.5 transform hover:-translate-y-0.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <span>Calcular Riesgo</span>
+                <span>Ejecutar Modelo 3T</span>
               </button>
 
               <button type="button" onclick="ejecutarMantenimientoDesdeSimulador()" class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs shadow-sm shadow-emerald-500/25 transition-all flex items-center justify-center gap-1.5 transform hover:-translate-y-0.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span>Reset Mantenimiento a Cero</span>
+                <span>Reset Mantenimiento</span>
               </button>
 
-              <button type="button" onclick="guardarPrediccionEnBD()" class="py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs transform hover:-translate-y-0.5">
-                <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                <span>Guardar en Base de Datos</span>
+              <button type="button" onclick="generarReporteIADesdeSimulador()" class="py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs transform hover:-translate-y-0.5">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Emitir Reporte IA (R10)</span>
               </button>
             </div>
           </div>
 
-          <!-- Columna Derecha: Resultado del Diagnóstico -->
-          <div class="lg:col-span-5 bg-slate-50/60 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between">
+          <!-- Columna Derecha: Predicción de los 3 Targets Binarios y Gobernanza -->
+          <div class="lg:col-span-5 bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3.5">
             <div>
-              <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
-                <span class="text-xs font-semibold text-slate-700">Diagnóstico de Confiabilidad:</span>
+              <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold text-slate-800">Resultado Inferencia Multi-Objetivo:</span>
                 <span id="calc-res-badge-riesgo" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Listo</span>
               </div>
 
-              <!-- Medidor de Probabilidad -->
-              <div class="mb-4">
-                <div class="flex items-baseline justify-between mb-1.5">
-                  <span class="text-xs text-slate-500">Probabilidad de Falla (30 días):</span>
-                  <span id="calc-res-probabilidad" class="text-3xl font-extrabold text-sky-400 font-mono">0.0%</span>
+              <!-- TARGET 1: Falla del Mes -->
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs mb-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800">1. Falla Operativa del Mes:</span>
+                  <span id="badge-t1-pred" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">0 &bull; NORMAL</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-2.5 border border-slate-200 overflow-hidden">
-                  <div id="calc-res-barra" class="bg-sky-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="flex items-baseline justify-between mt-1 mb-1">
+                  <span class="text-[11px] text-slate-500 font-mono">Probabilidad: <span id="prob-t1-val" class="font-bold text-slate-800">0.0%</span></span>
+                  <span class="text-[10px] text-slate-400 font-mono">Umbral óptimo &tau;* = 0.73</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden">
+                  <div id="barra-t1-prog" class="bg-sky-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
 
-              <!-- Factores Determinantes -->
-              <div class="mb-3">
-                <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Factores Determinantes de Riesgo:</div>
-                <div id="calc-res-factores" class="flex flex-wrap gap-1.5">
-                  <span class="text-xs text-slate-500 italic">Seleccione una unidad o ingrese parámetros para diagnosticar</span>
+              <!-- TARGET 2: Necesidad de Mtto Predictivo -->
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs mb-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800">2. Mantenimiento Predictivo:</span>
+                  <span id="badge-t2-pred" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">0 &bull; NO REQUERIDO</span>
+                </div>
+                <div class="flex items-baseline justify-between mt-1 mb-1">
+                  <span class="text-[11px] text-slate-500 font-mono">Probabilidad: <span id="prob-t2-val" class="font-bold text-slate-800">0.0%</span></span>
+                  <span class="text-[10px] text-slate-400 font-mono">Umbral óptimo &tau;* = 0.65</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden">
+                  <div id="barra-t2-prog" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- TARGET 3: Evento Crítico UCI -->
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs mb-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800">3. Evento Crítico UCI (Gravedad &ge; 8):</span>
+                  <span id="badge-t3-pred" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">0 &bull; CONTROLADO</span>
+                </div>
+                <div class="flex items-baseline justify-between mt-1 mb-1">
+                  <span class="text-[11px] text-slate-500 font-mono">Probabilidad: <span id="prob-t3-val" class="font-bold text-slate-800">0.0%</span></span>
+                  <span class="text-[10px] text-slate-400 font-mono">Umbral calibrado &tau;* = 0.38</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden">
+                  <div id="barra-t3-prog" class="bg-rose-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Acción de Mantenimiento Recomendada -->
-            <div class="mt-4 pt-3 border-t border-slate-200">
-              <div class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Protocolo Técnico Hospitalario:</span>
+            <!-- Acción y Dictamen Clínico-Biomédico -->
+            <div class="pt-2 border-t border-slate-200">
+              <div class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Dictamen Técnico y Acción Recomendada:</span>
               </div>
-              <div id="calc-res-accion" class="text-xs text-slate-800 bg-white border border-slate-200 rounded-xl p-3 leading-relaxed">
-                Seleccione un activo biomédico para obtener la recomendación técnica y estado de mantenimiento preventivo.
+              <div id="calc-res-accion" class="text-xs text-slate-800 bg-white border border-slate-200 rounded-xl p-2.5 leading-relaxed">
+                Seleccione un equipo biomédico o pulse "Ejecutar Modelo 3T" para generar el diagnóstico predictivo.
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Matriz Priorizada de Flota por Riesgo -->
+      <!-- ========================================================================= -->
+      <!-- GOBERNANZA DE REPORTES IA: BANDEJA DE APROBACIÓN ("SOFT PUT" R10), PAYLOAD (R12) Y PDF (R11) -->
+      <!-- ========================================================================= -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              <span>Bandeja de Gobernanza de Reportes de IA ("Soft Put" R10 & Seudonimización R12)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Los reportes quedan en estado 'pendiente' y solo impactan la Historia Clínica oficial al ser aprobados con nota clínica obligatoria.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/pacientes/1/historia/pdf" target="_blank" class="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Descargar PDF Historia (R11)</span>
+            </a>
+            <button onclick="cargarReportesIA()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs border border-slate-200 transition" title="Refrescar reportes">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200 text-[11px]">
+              <tr>
+                <th class="py-2.5 px-3">Reporte ID</th>
+                <th class="py-2.5 px-3">Equipo PK</th>
+                <th class="py-2.5 px-3">Cama / Paciente</th>
+                <th class="py-2.5 px-3">Targets (Falla / Mtto / Crítico)</th>
+                <th class="py-2.5 px-3">Estado</th>
+                <th class="py-2.5 px-3">Revisado Por</th>
+                <th class="py-2.5 px-3 text-right">Acciones de Aprobación</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-reportes-ia-body" class="divide-y divide-slate-100 font-mono text-[11px]">
+              <tr><td colspan="7" class="py-6 text-center text-slate-400">Cargando reportes predictivos de IA...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Matriz Priorizada de Flota por Riesgo (232 Equipos) -->
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-              <span>Matriz Priorizada de Intervención Técnica (Flota Hospitalaria)</span>
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <span>Matriz de Confiabilidad y Riesgo de los 232 Equipos UCI</span>
             </h3>
-            <p class="text-xs text-slate-500">Listado de las 232 unidades ordenadas por probabilidad de falla para asignación a ingenieros clínicos</p>
+            <p class="text-xs text-slate-500">Listado completo con la predicción binaria de los 3 targets para cada activo biomédico</p>
           </div>
           <div class="flex items-center gap-2">
             <select id="filtro-pred-familia" onchange="filtrarMatrizPredictiva()" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
-              <option value="todos">Todas las Tecnologías</option>
+              <option value="todos">Todas las Tecnologías (10)</option>
               <option value="bombas-volumetricas">Bombas Volumétricas</option>
               <option value="bombas-jeringa">Bombas de Jeringa</option>
               <option value="ventiladores">Ventiladores Mecánicos</option>
@@ -907,11 +1040,11 @@
               <option value="rayos-x">Rayos X Portátiles</option>
             </select>
             <select id="filtro-pred-riesgo" onchange="filtrarMatrizPredictiva()" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
-              <option value="todos">Todos los Riesgos</option>
-              <option value="CRITICO">Solo Crítico (>70%)</option>
-              <option value="ALTO">Solo Alto (50-70%)</option>
-              <option value="MEDIO">Solo Medio (35-50%)</option>
-              <option value="BAJO">Solo Bajo (<35%)</option>
+              <option value="todos">Todos los Estados</option>
+              <option value="CRITICO">Solo Críticos</option>
+              <option value="ALTO">Solo Alto Riesgo</option>
+              <option value="MEDIO">Solo Riesgo Medio</option>
+              <option value="BAJO">Solo Riesgo Bajo</option>
             </select>
             <button onclick="cargarPrediccionResumen()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs border border-slate-200 transition" title="Refrescar matriz">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -921,21 +1054,20 @@
 
         <div class="overflow-x-auto rounded-xl border border-slate-200">
           <table class="w-full text-left text-xs text-slate-700">
-            <thead class="bg-slate-100/90 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+            <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200 text-[11px]">
               <tr>
-                <th class="py-3 px-3">Placa / PK</th>
-                <th class="py-3 px-3">Tecnología</th>
-                <th class="py-3 px-3">Riesgo Invima</th>
-                <th class="py-3 px-3">Meses sin Mtto</th>
-                <th class="py-3 px-3">MTBF (Días)</th>
-                <th class="py-3 px-3">Fallas Acum.</th>
-                <th class="py-3 px-3">Probabilidad Falla</th>
-                <th class="py-3 px-3">Nivel Riesgo</th>
-                <th class="py-3 px-3">Acción Recomendada</th>
-                <th class="py-3 px-3 text-right">Acciones</th>
+                <th class="py-2.5 px-3">Placa / PK</th>
+                <th class="py-2.5 px-3">Tecnología</th>
+                <th class="py-2.5 px-3">Meses / Horas</th>
+                <th class="py-2.5 px-3">MTBF (d)</th>
+                <th class="py-2.5 px-3">Falla Mes (T1)</th>
+                <th class="py-2.5 px-3">Mtto Pred (T2)</th>
+                <th class="py-2.5 px-3">Crítico UCI (T3)</th>
+                <th class="py-2.5 px-3">Diagnóstico / Acción</th>
+                <th class="py-2.5 px-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody id="tabla-prediccion-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tbody id="tabla-prediccion-body" class="divide-y divide-slate-100 font-mono text-[11px]">
               <!-- Filas dinámicas -->
             </tbody>
           </table>
@@ -1606,6 +1738,171 @@
       </div>
     </section>
 
+    <!-- ========================================================================= -->
+    <!-- TAB 7: CONTABILIDAD, FACTURACIÓN Y COSTOS UCI (R09, PERFIL CONTABLE & ADMIN) -->
+    <!-- ========================================================================= -->
+    <section id="tab-contabilidad" class="tab-content hidden space-y-6">
+      
+      <!-- Banner KPIs Financieros UCI -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white border border-slate-200 border-t-4 border-t-amber-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Facturación Total UCI</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="contab-kpi-total" class="text-2xl font-bold font-mono text-amber-600">$ 6,015,000</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Liquidaciones acumuladas en MongoDB</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-rose-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Cargos Pendientes de Cobro</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="contab-kpi-pendientes" class="text-2xl font-bold font-mono text-rose-600">$ 3,960,000</span>
+          </div>
+          <p class="text-[10px] text-rose-500 mt-1 font-semibold">2 facturas por conciliar</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-emerald-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Recaudo Efectivo Pagado</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="contab-kpi-pagadas" class="text-2xl font-bold font-mono text-emerald-600">$ 2,055,000</span>
+          </div>
+          <p class="text-[10px] text-emerald-600 mt-1 font-semibold">1 factura cancelada</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 border-t-4 border-t-sky-500 rounded-2xl p-4 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Costo Operativo Diario UCI</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-bold font-mono text-sky-600">$ 10,500,000</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">25 Camas &bull; 125 Equipos Activos</p>
+        </div>
+      </div>
+
+      <!-- Tarifario Oficial de Estancia y Kit Biomédico UCI -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Tarifario Institucional UCI & Kit Básico de Soporte Vital (R09)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Estructura de costos fijos y variables por día de estancia crítica y operación biomédica</p>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-mono font-semibold rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+            SOAT / Resolución 866 de 2021
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="text-[10px] text-slate-500 uppercase font-mono font-bold">UCI-EST-01</div>
+            <div class="text-xs font-bold text-slate-800 mt-0.5">Estancia Diaria Cama UCI Adultos</div>
+            <div class="text-sm font-bold font-mono text-slate-900 mt-1">$ 1,450,000 COP / día</div>
+            <p class="text-[10px] text-slate-500 mt-1">Cuidado médico intensivista y enfermería 24/7</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="text-[10px] text-slate-500 uppercase font-mono font-bold">BIO-KIT-05</div>
+            <div class="text-xs font-bold text-slate-800 mt-0.5">Kit Básico Irrepetible (5 Equipos)</div>
+            <div class="text-sm font-bold font-mono text-emerald-700 mt-1">$ 420,000 COP / día</div>
+            <p class="text-[10px] text-slate-500 mt-1">1 VENT ($190k) + 1 MON ($95k) + 2 BVOL ($90k) + 1 BJER ($45k)</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="text-[10px] text-slate-500 uppercase font-mono font-bold">IA-PRED-3T</div>
+            <div class="text-xs font-bold text-slate-800 mt-0.5">Diagnóstico Predictivo IA (R10)</div>
+            <div class="text-sm font-bold font-mono text-indigo-700 mt-1">$ 185,000 COP / dictamen</div>
+            <p class="text-[10px] text-slate-500 mt-1">Generado automáticamente al aprobar reporte de IA (R19)</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="text-[10px] text-slate-500 uppercase font-mono font-bold">MET-ONAC-26</div>
+            <div class="text-xs font-bold text-slate-800 mt-0.5">Calibración Metrológica ONAC</div>
+            <div class="text-sm font-bold font-mono text-sky-700 mt-1">$ 220,000 COP / calibración</div>
+            <p class="text-[10px] text-slate-500 mt-1">Verificación de seguridad eléctrica IEC 62353</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bandeja de Liquidación de Estancia por Cama Ocupada (25 Camas) -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span>Liquidación Hospitalaria en Vivo por Cama Ocupada & Dotación Biomédica</span>
+            </h3>
+            <p class="text-xs text-slate-500">Calcula en tiempo real los costos de hospitalización y el kit irrepetible asignado a cada paciente</p>
+          </div>
+          <button onclick="cargarLiquidacionCamasContables()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Actualizar Camas</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200 text-[11px]">
+              <tr>
+                <th class="py-2.5 px-3">Cama UCI</th>
+                <th class="py-2.5 px-3">Paciente</th>
+                <th class="py-2.5 px-3">Kit Biomédico Asignado (5 Equipos)</th>
+                <th class="py-2.5 px-3">Estancia (días)</th>
+                <th class="py-2.5 px-3">Costo Acumulado</th>
+                <th class="py-2.5 px-3 text-right">Facturación</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-liquidacion-camas-body" class="divide-y divide-slate-100 font-mono text-[11px]">
+              <tr><td colspan="6" class="py-6 text-center text-slate-400">Cargando camas ocupadas y dotación...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Registro Centralizado de Facturas UCI (MongoDB + PostgreSQL) -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Facturas Oficiales UCI (Colección facturas_uci &bull; R09)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Trazabilidad fiscal inmutable, liquidación de reportes de IA aprobados y cambio de estado de cobro</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="filtro-facturas-estado" onchange="cargarFacturasUCI()" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold">
+              <option value="todos">Todos los Estados</option>
+              <option value="pendiente">Solo Pendientes</option>
+              <option value="pagada">Solo Pagadas</option>
+            </select>
+            <button onclick="cargarFacturasUCI()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs border border-slate-200 transition" title="Refrescar facturas">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200 text-[11px]">
+              <tr>
+                <th class="py-2.5 px-3">N° Factura</th>
+                <th class="py-2.5 px-3">Cama / Paciente</th>
+                <th class="py-2.5 px-3">Concepto Liquidado</th>
+                <th class="py-2.5 px-3">Monto ($ COP)</th>
+                <th class="py-2.5 px-3">Origen / Creador</th>
+                <th class="py-2.5 px-3">Estado</th>
+                <th class="py-2.5 px-3 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-facturas-uci-body" class="divide-y divide-slate-100 font-mono text-[11px]">
+              <tr><td colspan="7" class="py-6 text-center text-slate-400">Cargando facturas desde el repositorio contable...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 
   <!-- ========================================================================= -->
@@ -1712,20 +2009,20 @@
       <!-- SECCIÓN 2: NUEVOS ROLES DE GESTIÓN Y MANTENIMIENTO -->
       <div class="space-y-1.5 pt-1">
         <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <span>Roles de Mantenimiento & Sistema</span>
-          <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] rounded font-mono">Gestión</span>
+          <span>Roles de Finanzas UCI & Mantenimiento</span>
+          <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-700 text-[9px] rounded font-mono font-bold">Gestión</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
 
-          <!-- Rol 1: ADMIN (Administrador del Sistema) -->
-          <button onclick="cargarPerfilDemo('admin.sistema@hospital.com', 'sistema123')" type="button" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-sky-300 text-left transition flex items-start gap-2 group cursor-pointer shadow-sm">
-            <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-amber-500/30">
-              AD
+          <!-- Rol 1: CONTABLE UCI (Reemplaza a Admin del Sistema) -->
+          <button onclick="cargarPerfilDemo('contable@hospital.com', 'contable123')" type="button" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-sky-300 text-left transition flex items-start gap-2 group cursor-pointer shadow-sm">
+            <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-700 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-amber-500/30">
+              CO
             </div>
             <div class="min-w-0">
-              <div class="text-[11px] font-bold text-slate-800 group-hover:text-sky-700 truncate">Admin Sistema</div>
-              <div class="text-[10px] text-slate-500 font-mono truncate">admin.sistema</div>
-              <div class="text-[9px] text-amber-400 leading-tight font-mono">clave: sistema123</div>
+              <div class="text-[11px] font-bold text-slate-800 group-hover:text-sky-700 truncate">Contable UCI</div>
+              <div class="text-[10px] text-slate-500 font-mono truncate">contable@hospital.com</div>
+              <div class="text-[9px] text-amber-600 font-bold leading-tight font-mono">clave: contable123</div>
             </div>
           </button>
 
@@ -1755,9 +2052,9 @@
 
         </div>
       </div>
-
     </div>
   </div>
+
 
   <!-- ========================================================================= -->
   <!-- MODAL: REGISTRAR EQUIPO UCI & HOJA DE VIDA (ADMIN BIOMÉDICO) -->
@@ -2417,14 +2714,17 @@
     function cambiarTab(tabName) {
       const esAdminUI = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
+      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
 
       const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
       const tabBtnRegistros = document.getElementById("tab-btn-registros");
       const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
+      const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
 
       if (sesionActiva) {
         if (!esAdminUI && tabName === "auditoria") {
@@ -2439,8 +2739,12 @@
           showToast("Acceso restringido: Los módulos de Ingeniería Clínica están reservados para Administración Biomédica e Ingenieros de Mantenimiento.", "warning");
           return;
         }
+        if (!esRolContable && tabName === "contabilidad") {
+          showToast("Acceso restringido: El módulo de Facturación y Costos UCI es exclusivo de Contabilidad UCI y Dirección Biomédica.", "warning");
+          return;
+        }
       } else {
-        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "registros" || tabName === "documentacion") {
+        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "registros" || tabName === "documentacion" || tabName === "contabilidad") {
           showToast("Inicia sesión con un perfil autorizado para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
@@ -2449,8 +2753,8 @@
 
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
 
-      // Estilo de botones principales (Paleta clínica coherente)
-      const mainTabs = ['monitoreo', 'registros', 'documentacion', 'prediccion'];
+      // Estilo de botones principales (Paleta clínica y contable coherente)
+      const mainTabs = ['monitoreo', 'registros', 'documentacion', 'prediccion', 'contabilidad'];
       mainTabs.forEach(t => {
         const btn = document.getElementById(`tab-btn-${t}`);
         if (btn) {
@@ -2476,7 +2780,11 @@
         selectedTab.classList.remove("hidden");
       }
       if (selectedBtn && mainTabs.includes(tabName)) {
-        selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-600 text-white shadow-sm shadow-blue-500/25 transform hover:-translate-y-0.5 cursor-pointer";
+        if (tabName === "contabilidad") {
+          selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-amber-600 text-white shadow-sm shadow-amber-500/25 transform hover:-translate-y-0.5 cursor-pointer";
+        } else {
+          selectedBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-600 text-white shadow-sm shadow-blue-500/25 transform hover:-translate-y-0.5 cursor-pointer";
+        }
       }
 
       if (tabName === "seguridad") cargarSeguridad();
@@ -2487,6 +2795,10 @@
       }
       if (tabName === "documentacion") cargarDocumentacionEquipos(cacheEquipoSeleccionadoId);
       if (tabName === "monitoreo") cargarEstadoEquipos(cacheFamiliaSeleccionada);
+      if (tabName === "contabilidad") {
+        cargarFacturasUCI();
+        cargarLiquidacionCamasContables();
+      }
     }
 
     function alternarDropdownModulos() {
@@ -2591,12 +2903,17 @@
           // Redirigir a la pestaña correspondiente
           if (sesionActiva.rol === "Medico") {
             cambiarTab("pacientes");
+          } else if (sesionActiva.rol === "Contable UCI") {
+            cambiarTab("contabilidad");
           } else {
             cambiarTab("monitoreo");
           }
 
           showToast(`Sesión iniciada: ${sesionActiva.nombre} (${sesionActiva.rol})`, "success");
           cargarTodoElDashboard();
+          conectarSSE();
+          cargarAlertasCriticasR20();
+          cargarNotificacionesYPendientes();
         } else {
           // CONTRASEÑA ERRÓNEA O USUARIO INCORRECTO: BLOQUEO INMEDIATO DE LA INTERFAZ
           sesionActiva = null;
@@ -2699,12 +3016,15 @@
       const tabBtnObservaciones = document.getElementById("tab-btn-observaciones");
       const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
       const tabBtnSeguridad = document.getElementById("tab-btn-seguridad");
+      const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
 
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
+      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
 
       if (sesionActiva) {
         if (btnOpen) btnOpen.classList.add("hidden");
@@ -2733,6 +3053,36 @@
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.remove("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.remove("hidden");
+          if (tabBtnContabilidad) tabBtnContabilidad.classList.remove("hidden");
+
+        } else if (sesionActiva.rol === "Contable UCI") {
+          if (avatar) {
+            avatar.className = "w-7 h-7 rounded-lg bg-amber-500/20 text-amber-700 font-bold flex items-center justify-center text-xs border border-amber-500/40";
+            avatar.innerText = "CU";
+          }
+          
+          // Botones restringidos para contabilidad
+          if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
+          if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
+          if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
+          if (btnNuevaObs) btnNuevaObs.classList.add("hidden");
+          if (btnSimularIot) btnSimularIot.classList.add("hidden");
+
+          // Tabs: Acceso completo a Contabilidad & Costos UCI
+          if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
+          if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
+          if (tabBtnObservaciones) tabBtnObservaciones.classList.add("hidden");
+          if (tabBtnEquipos) tabBtnEquipos.classList.add("hidden");
+          if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
+          if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
+          if (tabBtnContabilidad) tabBtnContabilidad.classList.remove("hidden");
+
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
+            const currentTab = document.getElementById(idTab);
+            if (currentTab && !currentTab.classList.contains("hidden")) {
+              cambiarTab("contabilidad");
+            }
+          });
 
         } else if (sesionActiva.rol === "Medico") {
           if (avatar) {
@@ -2754,8 +3104,9 @@
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
+          if (tabBtnContabilidad) tabBtnContabilidad.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("pacientes");
@@ -2782,8 +3133,9 @@
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
+          if (tabBtnContabilidad) tabBtnContabilidad.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("monitoreo");
@@ -2810,9 +3162,10 @@
           if (tabBtnEquipos) tabBtnEquipos.classList.remove("hidden");
           if (tabBtnAuditoria) tabBtnAuditoria.classList.toggle("hidden", !esAdminSistema);
           if (tabBtnSeguridad) tabBtnSeguridad.classList.toggle("hidden", !esAdminSistema);
+          if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esAdminSistema);
 
           if (!esAdminSistema) {
-            ["tab-auditoria", "tab-seguridad"].forEach(idTab => {
+            ["tab-auditoria", "tab-seguridad", "tab-contabilidad"].forEach(idTab => {
               const t = document.getElementById(idTab);
               if (t && !t.classList.contains("hidden")) cambiarTab("monitoreo");
             });
@@ -5231,6 +5584,10 @@
     // PREDICCIÓN DE EQUIPOS (SIMULADOR Y MATRIZ PRIORIZADA)
     // ==========================================
 
+    // ==========================================
+    // PREDICCIÓN DE EQUIPOS (MODELO ML 3 TARGETS & GOBERNANZA IA R10/R12)
+    // ==========================================
+
     async function cargarPrediccionResumen() {
       try {
         const res = await fetch("/api/equipos-prediccion-resumen", { headers: getAuthHeaders() });
@@ -5238,14 +5595,17 @@
         const data = await res.json();
         cachePrediccionResumen = data;
 
-        const kpiConf = document.getElementById("pred-kpi-confiabilidad");
-        if (kpiConf) kpiConf.innerText = `${data.confiabilidad_global_pct ?? data.indice_confiabilidad ?? 95}%`;
-        const kpiCrit = document.getElementById("pred-kpi-criticos");
-        if (kpiCrit) kpiCrit.innerText = data.criticos ?? data.equipos_criticos ?? 0;
-        const kpiPrev = document.getElementById("pred-kpi-preventivos");
-        if (kpiPrev) kpiPrev.innerText = data.preventivos ?? data.equipos_atencion ?? 0;
         const kpiTot = document.getElementById("pred-kpi-total");
         if (kpiTot) kpiTot.innerText = data.total_analizados ?? 232;
+
+        const kpiFalla = document.getElementById("pred-kpi-target-falla");
+        if (kpiFalla) kpiFalla.innerText = data.resumen_3_targets?.target_falla_positivos ?? 19;
+
+        const kpiMtto = document.getElementById("pred-kpi-target-mtto");
+        if (kpiMtto) kpiMtto.innerText = data.resumen_3_targets?.target_mtto_positivos ?? 28;
+
+        const kpiCrit = document.getElementById("pred-kpi-target-critico");
+        if (kpiCrit) kpiCrit.innerText = data.resumen_3_targets?.target_critico_positivos ?? 12;
 
         // Llenar selector de unidades del simulador
         const selEq = document.getElementById("calc-selector-equipo-bd");
@@ -5253,11 +5613,12 @@
         if (selEq && listaEquipos.length > 0) {
           selEq.innerHTML = '<option value="">-- Seleccionar unidad por Placa / PK --</option>' +
             listaEquipos.map(eq => `
-              <option value="${eq.equipo_id || eq.id_equipo}">PK: ${eq.equipo_id || eq.id_equipo} • ${eq.familia || eq.tipo_nombre} (${eq.probabilidad_falla}% riesgo)</option>
+              <option value="${eq.equipo_id || eq.id_equipo}">PK: ${eq.equipo_id || eq.id_equipo} &bull; ${eq.familia || eq.tipo_equipo || eq.tipo_nombre} (T1: ${eq.target_falla ?? (eq.probabilidad_falla > 50 ? 1 : 0)}, T2: ${eq.target_mtto_predictivo ?? 0}, T3: ${eq.target_critico ?? 0})</option>
             `).join("");
         }
 
         filtrarMatrizPredictiva();
+        cargarReportesIA();
       } catch (err) {
         console.error("Error al cargar predicción resumen:", err);
       }
@@ -5270,41 +5631,69 @@
       if (!eq) return;
 
       const selTipo = document.getElementById("calc-tipo-equipo");
-      if (selTipo) selTipo.value = eq.tipo;
+      if (selTipo) {
+        const nombreTipo = eq.tipo_equipo || eq.familia || eq.tipo_nombre;
+        for (let opt of selTipo.options) {
+          if (opt.value === nombreTipo || opt.text === nombreTipo || (eq.tipo && opt.value.includes(eq.tipo))) {
+            selTipo.value = opt.value;
+            break;
+          }
+        }
+      }
+
       const inpId = document.getElementById("calc-id-equipo");
       if (inpId) inpId.value = eq.equipo_id || eq.id_equipo;
-      const inpMeses = document.getElementById("calc-meses-mtto");
-      if (inpMeses) inpMeses.value = eq.meses_mtto ?? eq.meses_sin_mtto ?? 0;
-      const inpMtbf = document.getElementById("calc-mtbf");
-      if (inpMtbf) inpMtbf.value = eq.mtbf_dias ?? 180;
-      const inpFallas = document.getElementById("calc-fallas-acum");
-      if (inpFallas) inpFallas.value = eq.fallas_previas ?? eq.fallas_acumuladas ?? 0;
+
       const inpEdad = document.getElementById("calc-edad-meses");
       if (inpEdad) inpEdad.value = eq.edad_meses ?? 36;
-      const inpClase = document.getElementById("calc-clase-riesgo");
-      if (inpClase && eq.clasificacion_riesgo) inpClase.value = eq.clasificacion_riesgo;
+
+      const inpMeses = document.getElementById("calc-meses-mtto");
+      if (inpMeses) inpMeses.value = eq.meses_mtto ?? eq.meses_sin_mtto ?? 6.0;
+
+      const inpHrs = document.getElementById("calc-horas-uso");
+      if (inpHrs) inpHrs.value = eq.horas_uso ?? 18000;
+
+      const inpFallas = document.getElementById("calc-fallas-acum");
+      if (inpFallas) inpFallas.value = eq.fallas_previas ?? eq.fallas_acumuladas ?? 2;
+
+      const inpMtbf = document.getElementById("calc-mtbf");
+      if (inpMtbf) inpMtbf.value = eq.mtbf_dias ?? 180;
+
+      const inpFuga = document.getElementById("calc-corriente-fuga");
+      if (inpFuga) inpFuga.value = eq.corriente_fuga ?? 120.0;
+
+      const inpTierra = document.getElementById("calc-resistencia-tierra");
+      if (inpTierra) inpTierra.value = eq.resistencia_tierra ?? 0.18;
+
+      const inpDesv = document.getElementById("calc-desviacion-cal");
+      if (inpDesv) inpDesv.value = eq.desviacion_calibracion ?? 2.5;
 
       ejecutarCalculoPrediccion();
     }
 
-    async function ejecutarCalculoPrediccion(guardarEnBD = false) {
-      const tipo = document.getElementById("calc-tipo-equipo")?.value || "bombas-volumetricas";
-      const equipoId = document.getElementById("calc-id-equipo")?.value || "BVOL-01";
-      const mesesMtto = parseFloat(document.getElementById("calc-meses-mtto")?.value) || 0;
-      const mtbf = parseFloat(document.getElementById("calc-mtbf")?.value) || 180;
-      const fallasAcum = parseInt(document.getElementById("calc-fallas-acum")?.value) || 0;
+    async function ejecutarCalculoPrediccion() {
+      const tipo = document.getElementById("calc-tipo-equipo")?.value || "Ventilador Mecánico";
+      const equipoId = document.getElementById("calc-id-equipo")?.value || "VENT-01";
       const edadMeses = parseFloat(document.getElementById("calc-edad-meses")?.value) || 36;
-      const claseRiesgo = document.getElementById("calc-clase-riesgo")?.value || "IIB";
+      const mesesMtto = parseFloat(document.getElementById("calc-meses-mtto")?.value) || 0;
+      const horasUso = parseFloat(document.getElementById("calc-horas-uso")?.value) || 10000;
+      const fallasAcum = parseInt(document.getElementById("calc-fallas-acum")?.value) || 0;
+      const mtbf = parseFloat(document.getElementById("calc-mtbf")?.value) || 180;
+      const corrienteFuga = parseFloat(document.getElementById("calc-corriente-fuga")?.value) || 100.0;
+      const resTierra = parseFloat(document.getElementById("calc-resistencia-tierra")?.value) || 0.15;
+      const desvCal = parseFloat(document.getElementById("calc-desviacion-cal")?.value) || 2.0;
 
       const payload = {
-        tipo: tipo,
         equipo_id: equipoId,
-        meses_sin_mtto: mesesMtto,
-        mtbf_dias: mtbf,
-        fallas_acumuladas: fallasAcum,
+        tipo_equipo: tipo,
         edad_meses: edadMeses,
-        clasificacion_riesgo: claseRiesgo,
-        guardar_en_bd: guardarEnBD
+        meses_sin_mtto: mesesMtto,
+        horas_uso: horasUso,
+        fallas_acumuladas: fallasAcum,
+        mtbf_dias: mtbf,
+        corriente_fuga_ua: corrienteFuga,
+        resistencia_tierra_ohms: resTierra,
+        desviacion_calibracion_pct: desvCal
       };
 
       try {
@@ -5315,72 +5704,250 @@
         });
 
         if (!res.ok) {
-          showToast("Error al calcular predicción", "error");
+          showToast("Error al invocar modelo predictivo de 3 targets", "error");
           return;
         }
 
         const data = await res.json();
+        const pred = data.prediccion_3_targets || data;
 
-        const probElem = document.getElementById("calc-res-probabilidad");
-        const barraElem = document.getElementById("calc-res-barra");
-        const badgeElem = document.getElementById("calc-res-badge-riesgo");
-        const factoresElem = document.getElementById("calc-res-factores");
+        // Render Target 1: Falla del Mes
+        const t1 = pred.target_falla ?? 0;
+        const p1 = Number(pred.probabilidad_falla ?? 0).toFixed(1);
+        const bT1 = document.getElementById("badge-t1-pred");
+        const valT1 = document.getElementById("prob-t1-val");
+        const barT1 = document.getElementById("barra-t1-prog");
+        if (bT1) {
+          bT1.className = t1 === 1 
+            ? "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-100 text-rose-800 border border-rose-300 animate-pulse"
+            : "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800 border border-emerald-300";
+          bT1.innerText = t1 === 1 ? "1 \u2022 FALLA PREVISTA" : "0 \u2022 NOMINAL";
+        }
+        if (valT1) valT1.innerText = `${p1}%`;
+        if (barT1) {
+          barT1.style.width = `${Math.min(100, p1)}%`;
+          barT1.className = t1 === 1 ? "bg-rose-500 h-2 rounded-full transition-all duration-500" : "bg-emerald-500 h-2 rounded-full transition-all duration-500";
+        }
+
+        // Render Target 2: Necesidad de Mantenimiento
+        const t2 = pred.target_mtto_predictivo ?? 0;
+        const p2 = Number(pred.probabilidad_mtto_predictivo ?? 0).toFixed(1);
+        const bT2 = document.getElementById("badge-t2-pred");
+        const valT2 = document.getElementById("prob-t2-val");
+        const barT2 = document.getElementById("barra-t2-prog");
+        if (bT2) {
+          bT2.className = t2 === 1 
+            ? "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-100 text-amber-800 border border-amber-300"
+            : "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200";
+          bT2.innerText = t2 === 1 ? "1 \u2022 INTERVENIR MTTO" : "0 \u2022 AL DÍA";
+        }
+        if (valT2) valT2.innerText = `${p2}%`;
+        if (barT2) {
+          barT2.style.width = `${Math.min(100, p2)}%`;
+          barT2.className = t2 === 1 ? "bg-amber-500 h-2 rounded-full transition-all duration-500" : "bg-sky-500 h-2 rounded-full transition-all duration-500";
+        }
+
+        // Render Target 3: Evento Crítico UCI
+        const t3 = pred.target_critico ?? 0;
+        const p3 = Number(pred.probabilidad_critico ?? 0).toFixed(1);
+        const bT3 = document.getElementById("badge-t3-pred");
+        const valT3 = document.getElementById("prob-t3-val");
+        const barT3 = document.getElementById("barra-t3-prog");
+        if (bT3) {
+          bT3.className = t3 === 1 
+            ? "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-purple-100 text-purple-900 border border-purple-300 animate-pulse font-extrabold"
+            : "px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200";
+          bT3.innerText = t3 === 1 ? "1 \u2022 CRÍTICO UCI (G\u22658)" : "0 \u2022 CONTROLADO";
+        }
+        if (valT3) valT3.innerText = `${p3}%`;
+        if (barT3) {
+          barT3.style.width = `${Math.min(100, p3)}%`;
+          barT3.className = t3 === 1 ? "bg-purple-600 h-2 rounded-full transition-all duration-500" : "bg-emerald-500 h-2 rounded-full transition-all duration-500";
+        }
+
+        const badgeRiesgo = document.getElementById("calc-res-badge-riesgo");
+        if (badgeRiesgo) {
+          const nivel = pred.nivel_riesgo || (t3 === 1 ? "Crítico" : (t1 === 1 ? "Alto" : (t2 === 1 ? "Medio" : "Bajo")));
+          let cl = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          if (nivel === "Medio") cl = "bg-amber-100 text-amber-800 border-amber-300";
+          if (nivel === "Alto") cl = "bg-orange-100 text-orange-800 border-orange-300";
+          if (nivel === "Crítico") cl = "bg-rose-100 text-rose-800 border-rose-300 animate-pulse";
+          badgeRiesgo.className = `px-2.5 py-0.5 rounded-full text-xs font-bold border ${cl}`;
+          badgeRiesgo.innerText = `Riesgo ${nivel}`;
+        }
+
         const accionElem = document.getElementById("calc-res-accion");
-
-        const prob = data.probabilidad_falla;
-        if (probElem) probElem.innerText = `${prob}%`;
-        if (barraElem) barraElem.style.width = `${prob}%`;
-
-        let colorBarra = "bg-emerald-500";
-        let badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
-        if (data.nivel_riesgo === "Medio") {
-          colorBarra = "bg-amber-500";
-          badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
-        } else if (data.nivel_riesgo === "Alto") {
-          colorBarra = "bg-orange-500";
-          badgeClass = "bg-orange-950 text-orange-300 border-orange-800";
-        } else if (data.nivel_riesgo === "Crítico") {
-          colorBarra = "bg-rose-500";
-          badgeClass = "bg-rose-950 text-rose-300 border-rose-800 animate-pulse";
-        }
-        if (barraElem) barraElem.className = `${colorBarra} h-2.5 rounded-full transition-all duration-500`;
-        if (badgeElem) {
-          badgeElem.className = `px-2.5 py-0.5 rounded-full text-xs font-bold border ${badgeClass}`;
-          badgeElem.innerText = `Riesgo ${data.nivel_riesgo}`;
-        }
-
-        if (factoresElem) {
-          factoresElem.innerHTML = "";
-          const factores = data.factores_riesgo || [];
-          if (factores.length === 0) {
-            factoresElem.innerHTML = `<span class="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-700 border border-slate-200">Parámetros dentro de norma hospitalaria</span>`;
-          } else {
-            factores.forEach(f => {
-              const span = document.createElement("span");
-              span.className = "px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-950/80 text-amber-300 border border-amber-800";
-              span.innerText = `Atención: ${f}`;
-              factoresElem.appendChild(span);
-            });
-          }
-        }
-
         if (accionElem) {
-          accionElem.innerHTML = `<strong>${data.accion_recomendada}</strong>`;
-        }
-
-        if (guardarEnBD) {
-          showToast(`Predicción registrada en base de datos para ${equipoId}`, "success");
-          cargarPrediccionResumen();
+          accionElem.innerHTML = `
+            <div class="font-semibold text-slate-900 mb-1">${pred.diagnostico || 'Evaluación predictiva completada satisfactoriamente.'}</div>
+            <div class="text-slate-700"><strong>Acción:</strong> ${pred.accion_recomendada || 'Mantener monitoreo metrológico periódico.'}</div>
+          `;
         }
 
       } catch (err) {
-        showToast(`Error al predecir: ${err.message}`, "error");
+        showToast(`Error al ejecutar inferencia: ${err.message}`, "error");
+      }
+    }
+
+    async function generarReporteIADesdeSimulador() {
+      const tipo = document.getElementById("calc-tipo-equipo")?.value || "Ventilador Mecánico";
+      const equipoId = document.getElementById("calc-id-equipo")?.value || "VENT-01";
+      const edadMeses = parseFloat(document.getElementById("calc-edad-meses")?.value) || 36;
+      const mesesMtto = parseFloat(document.getElementById("calc-meses-mtto")?.value) || 0;
+      const horasUso = parseFloat(document.getElementById("calc-horas-uso")?.value) || 10000;
+      const fallasAcum = parseInt(document.getElementById("calc-fallas-acum")?.value) || 0;
+      const mtbf = parseFloat(document.getElementById("calc-mtbf")?.value) || 180;
+      const corrienteFuga = parseFloat(document.getElementById("calc-corriente-fuga")?.value) || 100.0;
+      const resTierra = parseFloat(document.getElementById("calc-resistencia-tierra")?.value) || 0.15;
+      const desvCal = parseFloat(document.getElementById("calc-desviacion-cal")?.value) || 2.0;
+
+      const payload = {
+        paciente_id: 1,
+        equipo_id: equipoId,
+        tipo_equipo: tipo,
+        edad_meses: edadMeses,
+        meses_sin_mtto: mesesMtto,
+        horas_uso: horasUso,
+        fallas_acumuladas: fallasAcum,
+        mtbf_dias: mtbf,
+        corriente_fuga_ua: corrienteFuga,
+        resistencia_tierra_ohms: resTierra,
+        desviacion_calibracion_pct: desvCal
+      };
+
+      try {
+        const res = await fetch("/ia/analizar", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Reporte de IA emitido en estado 'pendiente' (ID: #${data.reporte_id}). Pasa a bandeja de revisión.`, "success");
+          cargarReportesIA();
+          cargarNotificacionesYPendientes();
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (e) {
+        showToast(`Error al emitir reporte: ${e.message}`, "error");
+      }
+    }
+
+    async function cargarReportesIA() {
+      const tbody = document.getElementById("tabla-reportes-ia-body");
+      if (!tbody) return;
+      try {
+        const res = await fetch("/ia/reportes", { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const reps = data.reportes || [];
+        if (reps.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No hay reportes de IA registrados.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = reps.map(r => {
+          let badgeEst = "bg-amber-100 text-amber-800 border-amber-300";
+          if (r.estado === "aprobado") badgeEst = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          if (r.estado === "rechazado") badgeEst = "bg-rose-100 text-rose-800 border-rose-300";
+
+          const btnAccion = r.estado === "pendiente" ? `
+            <button onclick="aprobarReporteIA(${r.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition mr-1 shadow-2xs">
+              Aprobar (Soft Put)
+            </button>
+            <button onclick="rechazarReporteIA(${r.id})" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold transition mr-1">
+              Rechazar
+            </button>
+          ` : `<span class="text-[10px] text-slate-400 font-mono">${r.estado.toUpperCase()}</span>`;
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="py-2.5 px-3 whitespace-nowrap font-bold text-slate-900">#${r.id}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-bold text-sky-700">${r.equipo_id}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap text-slate-700 font-sans">Paciente #${r.paciente_id}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="text-rose-600 font-bold">T1: ${r.target_falla} (${r.prob_falla}%)</span> &bull;
+                <span class="text-amber-600 font-bold">T2: ${r.target_mtto_predictivo}</span> &bull;
+                <span class="text-purple-600 font-bold">T3: ${r.target_critico}</span>
+              </td>
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeEst}">${r.estado}</span>
+              </td>
+              <td class="py-2.5 px-3 whitespace-nowrap text-[10px] text-slate-500 font-sans">
+                ${r.revisado_por_nombre || '-'}
+              </td>
+              <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                <button onclick="verPayloadSeudonimizado(${r.id})" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-bold transition mr-1" title="Ver payload JSON seudonimizado (R12)">
+                  Payload R12
+                </button>
+                ${btnAccion}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (e) {
+        console.error("Error al cargar reportes de IA:", e);
+      }
+    }
+
+    async function aprobarReporteIA(id) {
+      const obs = prompt("R10 · Dictamen / Observaciones de aprobación clínica/técnica (obligatorio para incorporar a Historia Clínica):", "Dictamen de aprobación validado por Medicina Crítica e Ingeniería Clínica.");
+      if (!obs || !obs.trim()) {
+        showToast("Se requiere obligatoriamente una nota clínica de aprobación (R10).", "warning");
+        return;
+      }
+      try {
+        const res = await fetch(`/ia/reportes/${id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ estado: "aprobado", observaciones: obs.trim() })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Reporte #${id} aprobado. Se generó factura automática UCI (R19) y se incorporó al PDF de Historia Clínica (R11).`, "success");
+          cargarReportesIA();
+          cargarFacturasUCI();
+          cargarNotificacionesYPendientes();
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (e) {
+        showToast(`Error al aprobar reporte: ${e.message}`, "error");
+      }
+    }
+
+    async function rechazarReporteIA(id) {
+      const obs = prompt("Motivo de rechazo del reporte de IA:", "Desestimado por criterio médico en ronda clínica.");
+      if (!obs || !obs.trim()) return;
+      try {
+        const res = await fetch(`/ia/reportes/${id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ estado: "rechazado", observaciones: obs.trim() })
+        });
+        if (res.ok) {
+          showToast(`Reporte #${id} rechazado.`, "info");
+          cargarReportesIA();
+          cargarNotificacionesYPendientes();
+        }
+      } catch (e) {
+        showToast(`Error: ${e.message}`, "error");
+      }
+    }
+
+    async function verPayloadSeudonimizado(id) {
+      try {
+        const res = await fetch(`/ia/reportes/${id}/payload`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        alert(`R12 · PAYLOAD SEUDONIMIZADO (SHA-256):\n\nPseudo-ID: ${data.pseudo_id}\n\nDatos de Inferencia Enviados a IA:\n` + JSON.stringify(data.datos_equipo, null, 2));
+      } catch (e) {
+        showToast(`Error: ${e.message}`, "error");
       }
     }
 
     async function ejecutarMantenimientoDesdeSimulador() {
-      const equipoId = document.getElementById("calc-id-equipo")?.value || "BVOL-01";
-      if (!confirm(`¿Registrar mantenimiento preventivo y resetear contador a 0 meses para el equipo PK: ${equipoId}?`)) {
+      const equipoId = document.getElementById("calc-id-equipo")?.value || "VENT-01";
+      if (!confirm(`\u00bfRegistrar mantenimiento preventivo y resetear contador a 0 meses para el equipo PK: ${equipoId}?`)) {
         return;
       }
       try {
@@ -5389,7 +5956,7 @@
           headers: getAuthHeaders(),
           body: JSON.stringify({
             equipo_id: equipoId,
-            descripcion: "Mantenimiento Preventivo Ejecutado desde Simulador: Verificación eléctrica IEC 60601-1, calibración y puesta a cero."
+            descripcion: "Mantenimiento Preventivo Ejecutado desde Simulador: Verificación eléctrica IEC 62353, calibración y puesta a cero."
           })
         });
         const data = await res.json();
@@ -5406,10 +5973,6 @@
       } catch (err) {
         showToast(`Error de red: ${err.message}`, "error");
       }
-    }
-
-    async function guardarPrediccionEnBD() {
-      await ejecutarCalculoPrediccion(true);
     }
 
     function filtrarMatrizPredictiva() {
@@ -5431,52 +5994,43 @@
       tbody.innerHTML = "";
 
       if (lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-500">No se encontraron equipos bajo estos criterios.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-500">No se encontraron equipos bajo estos criterios.</td></tr>`;
         return;
       }
 
       lista.slice(0, 60).forEach(eq => {
         const idEq = eq.equipo_id || eq.id_equipo;
-        let badgeRiesgo = "bg-emerald-950 text-emerald-300 border-emerald-800";
-        if (eq.nivel_riesgo === "Medio") badgeRiesgo = "bg-amber-950 text-amber-300 border-amber-800";
-        if (eq.nivel_riesgo === "Alto") badgeRiesgo = "bg-orange-950 text-orange-300 border-orange-800";
-        if (eq.nivel_riesgo === "Crítico") badgeRiesgo = "bg-rose-950 text-rose-300 border-rose-800";
+        const t1 = eq.target_falla ?? (eq.probabilidad_falla >= 73 ? 1 : 0);
+        const t2 = eq.target_mtto_predictivo ?? (eq.probabilidad_falla >= 65 ? 1 : 0);
+        const t3 = eq.target_critico ?? (eq.probabilidad_falla >= 80 ? 1 : 0);
+
+        const badgeT1 = t1 === 1 ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">1 \u2022 Falla (${eq.probabilidad_falla}%)</span>` : `<span class="text-slate-400">0 &bull; OK</span>`;
+        const badgeT2 = t2 === 1 ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">1 \u2022 Mtto</span>` : `<span class="text-slate-400">0 &bull; OK</span>`;
+        const badgeT3 = t3 === 1 ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-300 animate-pulse font-extrabold">1 \u2022 CR\u00cdTICO</span>` : `<span class="text-slate-400">0 &bull; OK</span>`;
 
         const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-100/40 transition";
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-3 px-3 whitespace-nowrap">
-            <span class="px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800 font-bold font-mono">PK: ${idEq}</span>
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-bold font-mono">PK: ${idEq}</span>
           </td>
-          <td class="py-3 px-3 text-slate-700 whitespace-nowrap font-sans">${eq.familia || eq.tipo_nombre}</td>
-          <td class="py-3 px-3 text-purple-300 font-semibold font-mono">Clase ${eq.clasificacion_riesgo || 'IIB'}</td>
-          <td class="py-3 px-3 font-mono ${eq.meses_mtto > 6 ? 'text-amber-400 font-bold' : 'text-slate-700'}">${eq.meses_mtto ?? eq.meses_sin_mtto ?? 0} m</td>
-          <td class="py-3 px-3 font-mono text-slate-700">${Math.round(eq.mtbf_dias)} d</td>
-          <td class="py-3 px-3 font-mono text-slate-700">${eq.fallas_previas ?? eq.fallas_acumuladas ?? 0}</td>
-          <td class="py-3 px-3 whitespace-nowrap">
-            <div class="flex items-center gap-2">
-              <span class="font-mono font-bold ${eq.probabilidad_falla > 70 ? 'text-rose-400' : (eq.probabilidad_falla > 35 ? 'text-amber-400' : 'text-emerald-400')}">${eq.probabilidad_falla}%</span>
-              <div class="w-14 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="h-1.5 ${eq.probabilidad_falla > 70 ? 'bg-rose-500' : (eq.probabilidad_falla > 35 ? 'bg-amber-500' : 'bg-emerald-500')}" style="width: ${eq.probabilidad_falla}%"></div>
-              </div>
-            </div>
+          <td class="py-2.5 px-3 text-slate-800 whitespace-nowrap font-sans font-medium">${eq.familia || eq.tipo_equipo || eq.tipo_nombre}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${eq.meses_mtto ?? 0}m / ${eq.horas_uso ?? 10000}h</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${Math.round(eq.mtbf_dias || 180)}d</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${badgeT1}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${badgeT2}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${badgeT3}</td>
+          <td class="py-2.5 px-3 text-[11px] text-slate-600 max-w-xs truncate" title="${eq.accion_recomendada || ''}">
+            ${eq.accion_recomendada || 'Operación nominal.'}
           </td>
-          <td class="py-3 px-3 whitespace-nowrap">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeRiesgo}">
-              ${eq.nivel_riesgo}
-            </span>
-          </td>
-          <td class="py-3 px-3 text-[11px] text-slate-700 max-w-xs truncate" title="${eq.accion_recomendada}">
-            ${eq.accion_recomendada}
-          </td>
-          <td class="py-3 px-3 text-right whitespace-nowrap">
-            <button onclick="cargarEquipoEnSimulador('${idEq}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 text-[11px] font-bold transition mr-1 transform hover:-translate-y-0.5" title="Cargar parámetros en simulador">
-              Simular
+          <td class="py-2.5 px-3 text-right whitespace-nowrap">
+            <button onclick="cargarEquipoEnSimulador('${idEq}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 text-[11px] font-bold transition mr-1" title="Cargar variables en simulador">
+              Simular 3T
             </button>
-            <button onclick="abrirExpedienteDesdeMonitoreo('${idEq}')" class="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-700 border border-teal-200 text-[11px] font-bold transition mr-1 transform hover:-translate-y-0.5" title="Ver Certificados">
-              Expediente
+            <button onclick="abrirExpedienteDesdeMonitoreo('${idEq}')" class="px-2 py-1 rounded-lg bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-700 border border-teal-200 text-[11px] font-bold transition mr-1">
+              Certificados
             </button>
-            <button onclick="ejecutarMantenimientoDirecto('${idEq}')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-200 text-[11px] font-bold transition transform hover:-translate-y-0.5" title="Reset meses a 0">
+            <button onclick="ejecutarMantenimientoDirecto('${idEq}')" class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-200 text-[11px] font-bold transition">
               Mtto
             </button>
           </td>
@@ -5486,7 +6040,7 @@
     }
 
     async function ejecutarMantenimientoDirecto(equipoId) {
-      if (!confirm(`¿Ejecutar mantenimiento preventivo para ${equipoId} y resetear su contador a 0 meses?`)) {
+      if (!confirm(`\u00bfEjecutar mantenimiento preventivo para ${equipoId} y resetear su contador a 0 meses?`)) {
         return;
       }
       try {
@@ -5509,6 +6063,316 @@
       } catch (err) {
         showToast(`Error de red: ${err.message}`, "error");
       }
+    }
+
+    // ==========================================
+    // MÓDULO CONTABILIDAD, FACTURACIÓN Y COSTOS UCI (R09)
+    // ==========================================
+
+    async function cargarFacturasUCI() {
+      const tbody = document.getElementById("tabla-facturas-uci-body");
+      if (!tbody) return;
+      const estadoFiltro = document.getElementById("filtro-facturas-estado")?.value || "todos";
+      try {
+        const res = await fetch(`/contabilidad/facturas?estado=${estadoFiltro}`, { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const facturas = Array.isArray(data) ? data : (data.facturas || []);
+
+        // Actualizar KPIs
+        const total = facturas.reduce((acc, f) => acc + (f.monto || 0), 0);
+        const pagadas = facturas.filter(f => f.estado === "pagada").reduce((acc, f) => acc + (f.monto || 0), 0);
+        const pendientes = facturas.filter(f => f.estado === "pendiente").reduce((acc, f) => acc + (f.monto || 0), 0);
+
+        const kTot = document.getElementById("contab-kpi-total");
+        if (kTot) kTot.innerText = `$ ${total.toLocaleString()} COP`;
+        const kPend = document.getElementById("contab-kpi-pendientes");
+        if (kPend) kPend.innerText = `$ ${pendientes.toLocaleString()} COP`;
+        const kPag = document.getElementById("contab-kpi-pagadas");
+        if (kPag) kPag.innerText = `$ ${pagadas.toLocaleString()} COP`;
+
+        if (facturas.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No se encontraron facturas registradas.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = facturas.map(f => {
+          const badgeEst = f.estado === "pagada" 
+            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+            : "bg-amber-100 text-amber-800 border-amber-300 font-bold";
+
+          const btnPagar = f.estado === "pendiente" ? `
+            <button onclick="cambiarEstadoFactura(${f.id}, 'pagada')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition shadow-2xs">
+              Marcar Pagada
+            </button>
+          ` : `<span class="text-[10px] text-emerald-600 font-bold font-mono">PAGADA</span>`;
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="py-2.5 px-3 whitespace-nowrap font-mono font-bold text-slate-900">${f.numero_factura}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap text-slate-800 font-sans">
+                <span class="font-bold text-sky-700">${f.cama_uci || 'Cama UCI'}</span> &bull; ${f.paciente_nombre || 'Paciente #' + f.paciente_id}
+              </td>
+              <td class="py-2.5 px-3 text-slate-700 font-sans text-xs">
+                <div>${f.concepto}</div>
+                ${f.equipo_id ? `<div class="text-[10px] text-slate-400 font-mono">Equipo PK: ${f.equipo_id} ${f.reporte_id ? '&bull; Reporte IA #' + f.reporte_id : ''}</div>` : ''}
+              </td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-mono font-bold text-slate-900">$ ${(f.monto || 0).toLocaleString()}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap text-[10px] text-slate-500 font-sans">${f.creado_por || 'contable@hospital.com'}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeEst}">${f.estado}</span>
+              </td>
+              <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                ${btnPagar}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (e) {
+        console.error("Error al cargar facturas UCI:", e);
+      }
+    }
+
+    async function cambiarEstadoFactura(id, nuevoEstado) {
+      try {
+        const res = await fetch(`/contabilidad/facturas/${id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ estado: nuevoEstado })
+        });
+        if (res.ok) {
+          showToast(`Factura #${id} actualizada a estado '${nuevoEstado}'.`, "success");
+          cargarFacturasUCI();
+        }
+      } catch (e) {
+        showToast(`Error al actualizar factura: ${e.message}`, "error");
+      }
+    }
+
+    async function cargarLiquidacionCamasContables() {
+      const tbody = document.getElementById("tabla-liquidacion-camas-body");
+      if (!tbody) return;
+      try {
+        const res = await fetch("/api/camas-ocupadas-equipos", { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const camas = data.camas_ocupadas || [];
+        if (camas.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No hay camas ocupadas registradas.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = camas.map(c => {
+          const dias = Math.max(1, (c.paciente_id % 7) + 2);
+          const costoEstancia = dias * 1450000;
+          const costoKit = dias * 420000;
+          const costoTotal = costoEstancia + costoKit;
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="py-2.5 px-3 whitespace-nowrap font-mono font-bold text-sky-800">${c.cama_uci}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-sans font-bold text-slate-900">${c.paciente_nombre}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-700">
+                1 VENT (${c.ventilador}) &bull; 1 MON (${c.monitor}) &bull; 2 BVOL (${c.bombas_volumetricas?.join(", ")}) &bull; 1 BJER (${c.bomba_jeringa})
+              </td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-mono text-slate-700">${dias} días</td>
+              <td class="py-2.5 px-3 whitespace-nowrap font-mono font-bold text-emerald-700">$ ${costoTotal.toLocaleString()} COP</td>
+              <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                <button onclick="generarFacturaCama(${c.paciente_id}, '${c.paciente_nombre}', '${c.cama_uci}', '${c.ventilador}', ${costoTotal})" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition shadow-2xs">
+                  Generar Factura
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (e) {
+        console.error("Error al cargar camas contables:", e);
+      }
+    }
+
+    async function generarFacturaCama(pacienteId, pacienteNombre, camaUci, equipoId, monto) {
+      try {
+        const res = await fetch("/contabilidad/facturas", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            paciente_id: pacienteId,
+            paciente_nombre: pacienteNombre,
+            cama_uci: camaUci,
+            equipo_id: equipoId,
+            concepto: `Liquidación Estancia UCI + Dotación Soporte Vital (${camaUci})`,
+            tipo_cargo: "ESTANCIA_Y_SOPORTE_UCI",
+            monto: monto,
+            desglose_items: [
+              { codigo: "UCI-EST-01", descripcion: "Estancia Cama Cuidados Intensivos Adultos", subtotal: monto - 420000 },
+              { codigo: "BIO-KIT-05", descripcion: "Operación Kit Soporte Vital (1 VENT, 1 MON, 2 BVOL, 1 BJER)", subtotal: 420000 }
+            ]
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Factura ${data.numero_factura} generada exitosamente.`, "success");
+          cargarFacturasUCI();
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (e) {
+        showToast(`Error al emitir factura: ${e.message}`, "error");
+      }
+    }
+
+    // ==========================================
+    // SISTEMA REACTIVO: ALERTAS CRÍTICAS (R20) Y SSE (R17/R18)
+    // ==========================================
+
+    let sseEventSource = null;
+
+    function conectarSSE() {
+      if (!sesionActiva?.token) return;
+      if (sseEventSource) {
+        sseEventSource.close();
+      }
+      try {
+        sseEventSource = new EventSource(`/eventos/stream?token=${encodeURIComponent(sesionActiva.token)}`);
+        sseEventSource.onmessage = function(e) {
+          try {
+            const ev = JSON.parse(e.data);
+            if (ev.tipo === "HEARTBEAT") return;
+            showToast(`[SSE] ${ev.mensaje || 'Nuevo evento reactivo'}`, ev.severidad === "CRITICA" ? "error" : "info");
+            cargarNotificacionesYPendientes();
+            if (ev.tipo === "TARGET_CRITICO_IA" || ev.severidad === "CRITICA") {
+              cargarAlertasCriticasR20();
+            }
+          } catch (err) {}
+        };
+        sseEventSource.onerror = function() {
+          console.warn("Canal SSE reconectando...");
+        };
+      } catch (err) {
+        console.error("Error al abrir SSE:", err);
+      }
+    }
+
+    async function cargarAlertasCriticasR20() {
+      const banner = document.getElementById("banner-alertas-criticas-r20");
+      const list = document.getElementById("lista-alertas-criticas-r20");
+      if (!banner || !list) return;
+      try {
+        const res = await fetch("/alertas/activas", { headers: getAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const activas = Array.isArray(data) ? data : (data.alertas || []);
+        if (activas.length === 0) {
+          banner.classList.add("hidden");
+          list.innerHTML = "";
+          return;
+        }
+
+        banner.classList.remove("hidden");
+        list.innerHTML = activas.map(a => `
+          <div class="bg-white p-3 rounded-xl border border-rose-200 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold font-mono bg-rose-600 text-white">ESCALAMIENTO NIVEL ${a.nivel_escalamiento || 1}</span>
+                <span class="font-bold text-xs text-rose-950 font-mono">Alerta #${a.id} &bull; Equipo ${a.equipo_id || 'UCI'}</span>
+                <span class="text-[10px] text-slate-500 font-mono">(${a.minutos_sin_reconocer ?? 0} min sin reconocer)</span>
+              </div>
+              <p class="text-xs text-slate-800 font-medium">${a.mensaje}</p>
+            </div>
+            <button onclick="reconocerAlertaCritica(${a.id})" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm">
+              Reconocer con Nota &rarr;
+            </button>
+          </div>
+        `).join("");
+      } catch (e) {
+        console.error("Error al cargar alertas críticas:", e);
+      }
+    }
+
+    async function reconocerAlertaCritica(alertaId) {
+      const nota = prompt("R20 · Ingrese nota clínica/técnica obligatoria para dar por reconocida la alerta crítica:", "Verificado por personal de salud. Se realiza inspección metrológica y ajuste de parámetros.");
+      if (!nota || !nota.trim()) {
+        showToast("R20: El reconocimiento exige obligatoriamente una nota clínica no vacía.", "warning");
+        return;
+      }
+      try {
+        const res = await fetch(`/alertas/${alertaId}/reconocer`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ nota: nota.trim() })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Alerta #${alertaId} reconocida exitosamente.`, "success");
+          cargarAlertasCriticasR20();
+          cargarNotificacionesYPendientes();
+        } else {
+          showToast(`Error: ${data.detail}`, "error");
+        }
+      } catch (e) {
+        showToast(`Error al reconocer alerta: ${e.message}`, "error");
+      }
+    }
+
+    async function cargarNotificacionesYPendientes() {
+      if (!sesionActiva?.token) return;
+      try {
+        const [resPend, resNotif] = await Promise.all([
+          fetch("/pendientes", { headers: getAuthHeaders() }),
+          fetch("/notificaciones?solo_no_leidas=true", { headers: getAuthHeaders() })
+        ]);
+        if (resPend.ok) {
+          const pend = await resPend.json();
+          const pPills = document.getElementById("pendientes-resumen-pills");
+          if (pPills) {
+            pPills.innerHTML = `
+              <div class="p-1.5 rounded bg-slate-50 border border-slate-200">Reportes IA: <strong>${pend.reportes_por_revisar ?? 0}</strong></div>
+              <div class="p-1.5 rounded bg-slate-50 border border-slate-200">Alertas Críticas: <strong class="text-rose-600">${pend.alertas_activas ?? 0}</strong></div>
+              <div class="p-1.5 rounded bg-slate-50 border border-slate-200">Remisiones: <strong>${pend.remisiones_recibidas ?? 0}</strong></div>
+              <div class="p-1.5 rounded bg-slate-50 border border-slate-200">Facturas UCI: <strong>${pend.facturas_pendientes ?? 0}</strong></div>
+            `;
+          }
+        }
+        if (resNotif.ok) {
+          const not = await resNotif.json();
+          const count = not.no_leidas ?? 0;
+          const badge = document.getElementById("badge-notif-count");
+          if (badge) {
+            badge.innerText = count;
+            badge.classList.toggle("hidden", count === 0);
+          }
+          const list = document.getElementById("lista-notificaciones-header");
+          if (list) {
+            const arr = not.notificaciones || [];
+            if (arr.length === 0) {
+              list.innerHTML = `<div class="py-4 text-center text-slate-400">Sin notificaciones pendientes.</div>`;
+            } else {
+              list.innerHTML = arr.slice(0, 15).map(n => `
+                <div class="py-2 flex items-start justify-between gap-2">
+                  <div>
+                    <div class="text-[11px] font-bold text-slate-900">${n.tipo}</div>
+                    <div class="text-[11px] text-slate-600">${n.mensaje}</div>
+                    <div class="text-[9px] text-slate-400 font-mono">${n.fecha || ''}</div>
+                  </div>
+                  <button onclick="marcarNotificacionLeida(${n.id})" class="text-[10px] text-blue-600 hover:underline shrink-0 font-semibold">Marcar leída</button>
+                </div>
+              `).join("");
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    async function marcarNotificacionLeida(id) {
+      try {
+        await fetch(`/notificaciones/${id}/leer`, { method: "POST", headers: getAuthHeaders() });
+        cargarNotificacionesYPendientes();
+      } catch (e) {}
+    }
+
+    function alternarDropdownNotificaciones() {
+      const p = document.getElementById("dropdown-notificaciones-panel");
+      if (p) p.classList.toggle("hidden");
     }
 
     // ==========================================
@@ -6590,6 +7454,13 @@
       if (esRolTecnico) {
         cargarPrediccionResumen();
       }
+      if (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN") {
+        cargarFacturasUCI();
+        cargarLiquidacionCamasContables();
+      }
+      conectarSSE();
+      cargarAlertasCriticasR20();
+      cargarNotificacionesYPendientes();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -6608,6 +7479,8 @@
           cargarMonitoreoCamas();
           cargarObservaciones();
           cargarEstadoEquipos(cacheFamiliaSeleccionada);
+          cargarAlertasCriticasR20();
+          cargarNotificacionesYPendientes();
         }
       }, 10000);
     });
