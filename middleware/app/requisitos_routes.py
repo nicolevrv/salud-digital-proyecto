@@ -1491,10 +1491,10 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
         conn = Depends(get_db),
     ):
         rol_can = obtener_rol_canonico(user.get("rol_nombre"))
-        if rol_can not in ("contable", "admin"):
+        if rol_can != "contable":
             raise HTTPException(
                 status_code=403,
-                detail="Acceso denegado: la emisión y gestión de facturas está reservada al perfil contable.",
+                detail="Acceso denegado: la emisión y liquidación de facturas está reservada exclusivamente al perfil contable. El Administrador Biomédico no tiene permisos de modificación contable.",
             )
         monto_val = float(
             data.monto
@@ -1675,10 +1675,10 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
         conn = Depends(get_db),
     ):
         rol_can = obtener_rol_canonico(user.get("rol_nombre"))
-        if rol_can not in ("contable", "admin"):
+        if rol_can != "contable":
             raise HTTPException(
                 status_code=403,
-                detail="Acceso denegado: solo el perfil contable puede actualizar el estado de facturas.",
+                detail="Acceso denegado: solo el perfil contable está autorizado para actualizar o conciliar el estado de facturas. El Administrador Biomédico tiene acceso únicamente de auditoría.",
             )
         nuevo_estado = (data.estado or "pagada").strip().lower()
         cur = conn.cursor(cursor_factory=RealDictCursor)

@@ -2775,7 +2775,8 @@
     function cambiarTab(tabName) {
       const esAdminUI = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
-      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
+      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "contable");
+      const esRolClinicoOAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "Medico" || sesionActiva.rol === "Especialista");
 
       const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
       const tabBtnGobernanzaIA = document.getElementById("tab-btn-gobernanza-ia");
@@ -2784,7 +2785,7 @@
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
-      if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", false);
+      if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
@@ -2802,12 +2803,16 @@
           showToast("Acceso restringido: Los módulos de Ingeniería Clínica están reservados para Administración Biomédica e Ingenieros de Mantenimiento.", "warning");
           return;
         }
+        if (!esRolClinicoOAdmin && tabName === "gobernanza-ia") {
+          showToast("Acceso restringido: La gobernanza y validación de IA está reservada para personal médico y administración biomédica.", "warning");
+          return;
+        }
         if (!esRolContable && tabName === "contabilidad") {
           showToast("Acceso restringido: El módulo de Facturación y Costos UCI es exclusivo de Contabilidad UCI y Dirección Biomédica.", "warning");
           return;
         }
       } else {
-        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "registros" || tabName === "documentacion" || tabName === "contabilidad") {
+        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "gobernanza-ia" || tabName === "registros" || tabName === "documentacion" || tabName === "contabilidad") {
           showToast("Inicia sesión con un perfil autorizado para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
@@ -3085,9 +3090,11 @@
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
 
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
-      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN");
+      const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "contable");
+      const esRolClinicoOAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "Medico" || sesionActiva.rol === "Especialista");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
+      if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
@@ -3112,7 +3119,7 @@
           if (btnNuevaObs) btnNuevaObs.classList.remove("hidden");
           if (btnSimularIot) btnSimularIot.classList.add("hidden");
 
-          // Tabs: Admin Biomédico tiene acceso a todos los módulos
+          // Tabs: Admin Biomédico tiene acceso a todos los módulos (Contabilidad en modo auditoría lectura)
           if (tabBtnMonitoreo) tabBtnMonitoreo.classList.remove("hidden");
           if (tabBtnPacientes) tabBtnPacientes.classList.remove("hidden");
           if (tabBtnObservaciones) tabBtnObservaciones.classList.remove("hidden");
@@ -3127,7 +3134,7 @@
             avatar.innerText = "CU";
           }
           
-          // Botones restringidos para contabilidad
+          // Botones restringidos para contabilidad (no clínicos ni biomédicos)
           if (btnNuevoEq) btnNuevoEq.classList.add("hidden");
           if (btnNuevoPac) btnNuevoPac.classList.add("hidden");
           if (btnNuevoEnc) btnNuevoEnc.classList.add("hidden");
@@ -3142,8 +3149,12 @@
           if (tabBtnAuditoria) tabBtnAuditoria.classList.add("hidden");
           if (tabBtnSeguridad) tabBtnSeguridad.classList.add("hidden");
           if (tabBtnContabilidad) tabBtnContabilidad.classList.remove("hidden");
+          if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
+          if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.add("hidden");
+          if (tabBtnRegistros) tabBtnRegistros.classList.add("hidden");
+          if (tabBtnDocumentacion) tabBtnDocumentacion.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-gobernanza-ia", "tab-registros", "tab-documentacion", "tab-equipos", "tab-observaciones"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("contabilidad");
@@ -6243,16 +6254,23 @@
           return;
         }
 
+        const esContableOperativo = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "contable");
+
         tbody.innerHTML = facturas.map(f => {
           const badgeEst = f.estado === "pagada" 
             ? "bg-emerald-100 text-emerald-800 border-emerald-300"
             : "bg-amber-100 text-amber-800 border-amber-300 font-bold";
 
-          const btnPagar = f.estado === "pendiente" ? `
-            <button onclick="cambiarEstadoFactura(${f.id}, 'pagada')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition shadow-2xs">
-              Marcar Pagada
-            </button>
-          ` : `<span class="text-[10px] text-emerald-600 font-bold font-mono">PAGADA</span>`;
+          let accionCol = "";
+          if (esContableOperativo) {
+            accionCol = f.estado === "pendiente" ? `
+              <button onclick="cambiarEstadoFactura(${f.id}, 'pagada')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition shadow-2xs cursor-pointer">
+                Marcar Pagada
+              </button>
+            ` : `<span class="text-[10px] text-emerald-600 font-bold font-mono">PAGADA</span>`;
+          } else {
+            accionCol = `<span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-500 bg-slate-100 border border-slate-200">Solo Lectura (Auditoría)</span>`;
+          }
 
           return `
             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -6270,7 +6288,7 @@
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeEst}">${f.estado}</span>
               </td>
               <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                ${btnPagar}
+                ${accionCol}
               </td>
             </tr>
           `;
@@ -6281,6 +6299,11 @@
     }
 
     async function cambiarEstadoFactura(id, nuevoEstado) {
+      const esContableOperativo = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "contable");
+      if (!esContableOperativo) {
+        showToast("Acceso denegado: El cambio de estado de facturas está reservado exclusivamente al rol Contable UCI. Admin Biomédico solo posee acceso de lectura/auditoría.", "error");
+        return;
+      }
       try {
         const res = await fetch(`/contabilidad/facturas/${id}`, {
           method: "PUT",
@@ -6290,6 +6313,9 @@
         if (res.ok) {
           showToast(`Factura #${id} actualizada a estado '${nuevoEstado}'.`, "success");
           cargarFacturasUCI();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast(`Error: ${err.detail || 'Operación no permitida'}`, "error");
         }
       } catch (e) {
         showToast(`Error al actualizar factura: ${e.message}`, "error");
@@ -6309,11 +6335,19 @@
           return;
         }
 
+        const esContableOperativo = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "contable");
+
         tbody.innerHTML = camas.map(c => {
           const dias = Math.max(1, (c.paciente_id % 7) + 2);
           const costoEstancia = dias * 1450000;
           const costoKit = dias * 420000;
           const costoTotal = costoEstancia + costoKit;
+
+          const btnFacturar = esContableOperativo ? `
+            <button onclick="generarFacturaCama(${c.paciente_id}, '${c.paciente_nombre}', '${c.cama_uci}', '${c.ventilador}', ${costoTotal})" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition shadow-2xs cursor-pointer">
+              Generar Factura
+            </button>
+          ` : `<span class="text-[10px] text-slate-400 font-sans italic">Auditoría / Solo Lectura</span>`;
 
           return `
             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -6325,9 +6359,7 @@
               <td class="py-2.5 px-3 whitespace-nowrap font-mono text-slate-700">${dias} días</td>
               <td class="py-2.5 px-3 whitespace-nowrap font-mono font-bold text-emerald-700">$ ${costoTotal.toLocaleString()} COP</td>
               <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                <button onclick="generarFacturaCama(${c.paciente_id}, '${c.paciente_nombre}', '${c.cama_uci}', '${c.ventilador}', ${costoTotal})" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition shadow-2xs">
-                  Generar Factura
-                </button>
+                ${btnFacturar}
               </td>
             </tr>
           `;
@@ -6338,6 +6370,11 @@
     }
 
     async function generarFacturaCama(pacienteId, pacienteNombre, camaUci, equipoId, monto) {
+      const esContableOperativo = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "contable");
+      if (!esContableOperativo) {
+        showToast("Acceso denegado: La emisión de facturas está reservada exclusivamente al rol Contable UCI. Admin Biomédico solo posee acceso de lectura/auditoría.", "error");
+        return;
+      }
       try {
         const res = await fetch("/contabilidad/facturas", {
           method: "POST",
