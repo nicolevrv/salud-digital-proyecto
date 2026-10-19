@@ -2411,11 +2411,38 @@ def calcular_camas_uci(cursor):
     }
 
 @app.get("/camas-uci", tags=["Dashboard"])
+@app.get("/api/camas-ocupadas-equipos", tags=["Dashboard", "Contabilidad"])
 def listar_camas_uci(conn = Depends(get_db)):
-    """Camas UCI con su ocupación actual (para elegir una cama libre al admitir pacientes)."""
+    """Camas UCI con su ocupación actual y dotación de kit para liquidación y admisión."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     camas = calcular_camas_uci(cursor)
     cursor.close()
+
+    # Enriquecer camas_ocupadas con los identificadores de equipos desglosados (VENT, MON, BVOL1, BVOL2, BJER)
+    ocupadas_enriquecidas = []
+    for c in camas.get("camas_ocupadas", []):
+        eqs = c.get("equipos_asignados") or []
+        vent = next((e["codigo_inventario"] for e in eqs if "VENT" in (e.get("codigo_inventario") or "") or "Ventilador" in (e.get("tipo_equipo") or "")), "VENT-01")
+        mon = next((e["codigo_inventario"] for e in eqs if "MON" in (e.get("codigo_inventario") or "") or "Monitor" in (e.get("tipo_equipo") or "")), "MON-01")
+        bvols = [e["codigo_inventario"] for e in eqs if "BVOL" in (e.get("codigo_inventario") or "") or "Volumétrica" in (e.get("tipo_equipo") or "")]
+        if not bvols:
+            bvols = ["BVOL-01", "BVOL-02"]
+        bjer = next((e["codigo_inventario"] for e in eqs if "BJER" in (e.get("codigo_inventario") or "") or "Jeringa" in (e.get("tipo_equipo") or "")), "BJER-01")
+
+        ocupadas_enriquecidas.append({
+            "cama_uci": c.get("cama"),
+            "cama": c.get("cama"),
+            "paciente_id": c.get("paciente_id"),
+            "paciente_nombre": c.get("paciente_nombre"),
+            "ventilador": vent,
+            "monitor": mon,
+            "bombas_volumetricas": bvols,
+            "bomba_jeringa": bjer,
+            "equipos_asignados": eqs,
+            "total_equipos": len(eqs)
+        })
+
+    camas["camas_ocupadas"] = ocupadas_enriquecidas
     return camas
 
 @app.get("/dashboard-stats", tags=["Dashboard"])
