@@ -757,9 +757,44 @@ def initialize_database_on_startup():
 
     print(f"No fue posible inicializar la base de datos automáticamente: {last_error}")
 
+TOTAL_CAMAS_UCI = 30
+
+def ensure_camas_uci():
+    """Garantiza (idempotente) la tabla camas_uci con las 30 camas de UCI Adultos."""
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS camas_uci (
+                id SERIAL PRIMARY KEY,
+                codigo VARCHAR(30) UNIQUE NOT NULL,
+                area VARCHAR(50) DEFAULT 'UCI Adultos',
+                activa BOOLEAN DEFAULT TRUE
+            )
+        """)
+        for i in range(1, TOTAL_CAMAS_UCI + 1):
+            cur.execute("INSERT INTO camas_uci (codigo) VALUES (%s) ON CONFLICT (codigo) DO NOTHING", (f"UCI-BED-{i:02d}",))
+        conn.commit()
+        cur.close()
+    except Exception as exc:
+        print(f"Aviso en ensure_camas_uci: {exc}")
+        if conn:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
 @app.on_event("startup")
 def startup_event():
     ensure_security_tables_and_roles()
+    ensure_camas_uci()
     initialize_database_on_startup()
 
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard"])
@@ -1245,6 +1280,23 @@ def crear_encuentro(
         raise HTTPException(status_code=403, detail="Solo los médicos están autorizados para iniciar encuentros clínicos.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    if data.equipo_uci_id:
+        cursor.execute(
+            "SELECT estado_operativo FROM equipos_uci WHERE id = %s AND is_deleted = FALSE FOR UPDATE",
+            (data.equipo_uci_id,)
+        )
+        equipo = cursor.fetchone()
+        if not equipo:
+            cursor.close()
+            raise HTTPException(status_code=404, detail="El equipo seleccionado no existe en el inventario UCI.")
+        if equipo["estado_operativo"] != "Disponible":
+            cursor.close()
+            raise HTTPException(
+                status_code=409,
+                detail=f"El equipo no está disponible (estado actual: {equipo['estado_operativo']}). Seleccione un equipo disponible."
+            )
+
     cursor.execute("""
         INSERT INTO encuentros (paciente_id, equipo_uci_id, estado, created_by)
         VALUES (%s, %s, 'in-progress', %s)
@@ -1347,6 +1399,17 @@ def crear_paciente(
         raise HTTPException(status_code=403, detail="Solo los médicos tienen autorización para admitir y registrar pacientes en UCI.")
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    cursor.execute("SELECT 1 FROM camas_uci WHERE codigo = %s AND activa = TRUE", (data.cama_uci,))
+    if cursor.fetchone():
+        camas = calcular_camas_uci(cursor)
+        if data.cama_uci not in camas["camas_libres"]:
+            cursor.close()
+            raise HTTPException(
+                status_code=409,
+                detail=f"La cama {data.cama_uci} ya está ocupada. Camas disponibles ahora: {', '.join(camas['camas_libres']) or 'ninguna'}."
+            )
+
     cursor.execute("""
         INSERT INTO pacientes (documento_identidad, nombre, cama_uci, created_by)
         VALUES (%s, %s, %s, %s)
@@ -1555,9 +1618,56 @@ def listar_audit_logs(
     cursor.close()
     return {"audit_logs": logs}
 
+def calcular_camas_uci(cursor):
+    """
+    Estado de las camas UCI en el instante de la consulta.
+    Una cama está ocupada cuando tiene un paciente hospitalizado: con algún encuentro en curso
+    o recién admitido (sin encuentros). Si todos sus encuentros ya finalizaron, la cama queda libre.
+    """
+    cursor.execute("""
+        SELECT c.codigo,
+               p.id AS paciente_id,
+               p.nombre AS paciente_nombre
+        FROM camas_uci c
+        LEFT JOIN LATERAL (
+            SELECT p.id, p.nombre
+            FROM pacientes p
+            WHERE p.cama_uci = c.codigo AND p.is_deleted = FALSE
+              AND (
+                  EXISTS (SELECT 1 FROM encuentros e WHERE e.paciente_id = p.id AND e.estado = 'in-progress' AND e.is_deleted = FALSE)
+                  OR NOT EXISTS (SELECT 1 FROM encuentros e WHERE e.paciente_id = p.id AND e.is_deleted = FALSE)
+              )
+            ORDER BY p.id
+            LIMIT 1
+        ) p ON TRUE
+        WHERE c.activa = TRUE
+        ORDER BY c.codigo
+    """)
+    camas = cursor.fetchall()
+    ocupadas = [c for c in camas if c["paciente_id"] is not None]
+    libres = [c["codigo"] for c in camas if c["paciente_id"] is None]
+    return {
+        "total": len(camas),
+        "ocupadas": len(ocupadas),
+        "disponibles": len(libres),
+        "camas_libres": libres,
+        "camas_ocupadas": [
+            {"cama": c["codigo"], "paciente_id": c["paciente_id"], "paciente_nombre": c["paciente_nombre"]}
+            for c in ocupadas
+        ],
+    }
+
+@app.get("/camas-uci", tags=["Dashboard"])
+def listar_camas_uci(conn = Depends(get_db)):
+    """Camas UCI con su ocupación actual (para elegir una cama libre al admitir pacientes)."""
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    camas = calcular_camas_uci(cursor)
+    cursor.close()
+    return camas
+
 @app.get("/dashboard-stats", tags=["Dashboard"])
 def get_dashboard_stats(conn = Depends(get_db)):
-    """Estadísticas agregadas para las tarjetas KPI del Dashboard."""
+    """Estadísticas en tiempo real para las tarjetas KPI: camas y equipos disponibles/en uso."""
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("SELECT count(*) as total FROM pacientes WHERE is_deleted = FALSE")
@@ -1566,15 +1676,32 @@ def get_dashboard_stats(conn = Depends(get_db)):
     cursor.execute("SELECT count(*) as total FROM encuentros WHERE estado = 'in-progress' AND is_deleted = FALSE")
     encuentros_activos = cursor.fetchone()["total"]
 
+    camas = calcular_camas_uci(cursor)
+
     cursor.execute("""
         SELECT 
             count(*) filter (where estado_operativo = 'En Uso') as en_uso,
             count(*) filter (where estado_operativo = 'Disponible') as disponibles,
-            count(*) filter (where estado_operativo = 'Mantenimiento' or estado_operativo = 'Descalibrado') as mantenimiento,
+            count(*) filter (where estado_operativo not in ('En Uso', 'Disponible')) as mantenimiento,
             count(*) as total
         FROM equipos_uci WHERE is_deleted = FALSE
     """)
     equipos_stat = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT c.nombre AS tipo,
+               count(*) AS total,
+               count(*) filter (where e.estado_operativo = 'En Uso') AS en_uso,
+               count(*) filter (where e.estado_operativo = 'Disponible') AS disponibles,
+               count(*) filter (where e.estado_operativo not in ('En Uso', 'Disponible')) AS mantenimiento
+        FROM equipos_uci e
+        JOIN hoja_vida_equipos hv ON e.hoja_vida_id = hv.id
+        JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
+        WHERE e.is_deleted = FALSE
+        GROUP BY c.nombre
+        ORDER BY count(*) DESC, c.nombre
+    """)
+    equipos_por_tipo = cursor.fetchall()
 
     cursor.execute("""
         SELECT count(*) as total FROM observaciones 
@@ -1589,9 +1716,12 @@ def get_dashboard_stats(conn = Depends(get_db)):
     return {
         "pacientes": pacientes_count,
         "camas_en_uso": encuentros_activos,
+        "camas": camas,
         "equipos": equipos_stat,
+        "equipos_por_tipo": equipos_por_tipo,
         "alertas_predictivas": alertas_count,
-        "auditorias_totales": audits_count
+        "auditorias_totales": audits_count,
+        "actualizado": datetime.now().isoformat(timespec="seconds")
     }
 
 @app.post("/simulate-telemetry", tags=["Simulador IoT"])

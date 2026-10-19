@@ -338,6 +338,10 @@
           <span id="kpi-pacientes" class="text-2xl font-bold font-mono text-slate-800">--</span>
           <span id="kpi-camas-detalle" class="text-xs text-slate-500">camas ocupadas</span>
         </div>
+        <div class="mt-1 text-xs text-slate-500">
+          <span id="kpi-camas-disp" class="font-bold text-emerald-600">-- camas disponibles</span>
+          <span id="kpi-camas-total" class="text-slate-400"></span>
+        </div>
       </div>
 
       <!-- Card 2: Equipos UCI -->
@@ -350,8 +354,9 @@
         </div>
         <div class="mt-3 flex items-baseline gap-2">
           <span id="kpi-equipos-uso" class="text-2xl font-bold font-mono text-slate-800">--</span>
-          <span id="kpi-equipos-disp" class="text-xs text-emerald-400 font-medium">-- disp</span>
+          <span id="kpi-equipos-disp" class="text-xs text-emerald-600 font-medium">-- disp</span>
         </div>
+        <div id="kpi-equipos-detalle" class="mt-1 text-xs text-slate-500"></div>
       </div>
 
       <!-- Card 3: Alertas Predictivas -->
@@ -382,6 +387,40 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- DISPONIBILIDAD EN TIEMPO REAL: CAMAS Y EQUIPOS -->
+    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800">Disponibilidad en tiempo real</h3>
+          <p class="text-xs text-slate-500">Camas libres y equipos disponibles en este instante</p>
+        </div>
+        <span id="disp-actualizado" class="text-[11px] text-slate-400 font-mono">--</span>
+      </div>
+      <div class="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-1">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            Camas disponibles: <span id="disp-camas-num" class="text-emerald-600 font-mono text-sm">--</span>
+            <span id="disp-camas-total" class="text-slate-400 normal-case"></span>
+          </div>
+          <div id="disp-camas-libres" class="flex flex-wrap gap-1.5"></div>
+        </div>
+        <div class="lg:col-span-2 overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="text-left text-slate-500 border-b border-slate-200">
+                <th class="py-1.5 pr-3 font-semibold">Tipo de equipo</th>
+                <th class="py-1.5 px-2 font-semibold text-right">Total</th>
+                <th class="py-1.5 px-2 font-semibold text-right text-emerald-700">Disponibles</th>
+                <th class="py-1.5 px-2 font-semibold text-right text-sky-700">En uso</th>
+                <th class="py-1.5 pl-2 font-semibold text-right text-amber-700">Mantenimiento</th>
+              </tr>
+            </thead>
+            <tbody id="disp-equipos-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ========================================================================= -->
@@ -1732,7 +1771,8 @@
         </div>
         <div>
           <label class="block text-slate-700 font-medium mb-1">Cama UCI Asignada:</label>
-          <input type="text" id="pac-cama" required placeholder="ej: Cama 04 - Box D" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500">
+          <select id="pac-cama" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"></select>
+          <p id="pac-camas-resumen" class="mt-1 text-[11px] text-slate-500"></p>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
           <button type="button" onclick="cerrarModal('modal-nuevo-paciente')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700">Cancelar</button>
@@ -2840,21 +2880,60 @@
 
     async function cargarEstadisticas() {
       try {
-        const res = await fetch("/dashboard-stats");
+        const res = await fetch("/dashboard-stats", { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
+        const camas = data.camas || {};
+        const eq = data.equipos || {};
+
         document.getElementById("kpi-pacientes").innerText = data.pacientes || 0;
-        document.getElementById("kpi-camas-detalle").innerText = `${data.camas_en_uso || 0} en monitoreo`;
-        const eqUso = data.equipos ? data.equipos.en_uso : 0;
-        const eqDisp = data.equipos ? data.equipos.disponibles : 0;
-        document.getElementById("kpi-equipos-uso").innerText = `${eqUso} en uso`;
-        document.getElementById("kpi-equipos-disp").innerText = `${eqDisp} disponibles`;
+        document.getElementById("kpi-camas-detalle").innerText = `${camas.ocupadas ?? data.camas_en_uso ?? 0} camas ocupadas`;
+        document.getElementById("kpi-camas-disp").innerText = `${camas.disponibles ?? 0} camas disponibles`;
+        document.getElementById("kpi-camas-total").innerText = camas.total ? ` de ${camas.total}` : "";
+
+        document.getElementById("kpi-equipos-uso").innerText = `${eq.en_uso || 0} en uso`;
+        document.getElementById("kpi-equipos-disp").innerText = `${eq.disponibles || 0} disponibles`;
+        document.getElementById("kpi-equipos-detalle").innerText =
+          `${eq.mantenimiento || 0} en mantenimiento · ${eq.total || 0} en total`;
+
         document.getElementById("kpi-alertas").innerText = data.alertas_predictivas || 0;
         document.getElementById("kpi-auditorias").innerText = data.auditorias_totales || 0;
+
+        // Panel de disponibilidad en tiempo real
+        document.getElementById("disp-camas-num").innerText = camas.disponibles ?? 0;
+        document.getElementById("disp-camas-total").innerText = camas.total ? ` de ${camas.total} (${camas.ocupadas} ocupadas)` : "";
+        const libres = camas.camas_libres || [];
+        document.getElementById("disp-camas-libres").innerHTML = libres.length
+          ? libres.map(c => `<span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[11px] font-bold">${c}</span>`).join("")
+          : `<span class="text-xs text-rose-600 font-semibold">No hay camas disponibles</span>`;
+
+        const filas = (data.equipos_por_tipo || []).map(t => `
+          <tr class="border-b border-slate-100">
+            <td class="py-1.5 pr-3 text-slate-700">${t.tipo}</td>
+            <td class="py-1.5 px-2 text-right font-mono text-slate-600">${t.total}</td>
+            <td class="py-1.5 px-2 text-right font-mono font-bold text-emerald-700">${t.disponibles}</td>
+            <td class="py-1.5 px-2 text-right font-mono text-sky-700">${t.en_uso}</td>
+            <td class="py-1.5 pl-2 text-right font-mono text-amber-700">${t.mantenimiento}</td>
+          </tr>`).join("");
+        document.getElementById("disp-equipos-body").innerHTML = filas + `
+          <tr class="font-bold text-slate-800">
+            <td class="py-1.5 pr-3">Total equipos</td>
+            <td class="py-1.5 px-2 text-right font-mono">${eq.total || 0}</td>
+            <td class="py-1.5 px-2 text-right font-mono text-emerald-700">${eq.disponibles || 0}</td>
+            <td class="py-1.5 px-2 text-right font-mono text-sky-700">${eq.en_uso || 0}</td>
+            <td class="py-1.5 pl-2 text-right font-mono text-amber-700">${eq.mantenimiento || 0}</td>
+          </tr>`;
+        document.getElementById("disp-actualizado").innerText =
+          "Actualizado " + new Date().toLocaleTimeString("es-CO");
       } catch (e) {
         console.error("Error stats:", e);
       }
     }
+
+    // Disponibilidad en tiempo real: refresca cada 20 s mientras la pestaña esté visible
+    setInterval(() => {
+      if (!document.hidden) cargarEstadisticas();
+    }, 20000);
 
     async function cargarPacientes() {
       if (!sesionActiva) return;
@@ -3636,7 +3715,7 @@
     }
 
     // Modal Pacientes & Encuentros (Exclusivo Médico)
-    function abrirModalNuevoPaciente() { 
+    async function abrirModalNuevoPaciente() { 
       if (!sesionActiva) {
         showToast("Debes iniciar sesión como Médico para admitir pacientes.", "warning");
         abrirModal("modal-login");
@@ -3645,6 +3724,19 @@
       if (sesionActiva.rol !== "Medico") {
         showToast(`Acceso denegado: El perfil '${sesionActiva.rol}' no tiene autorización para admitir pacientes. Exclusivo de Médicos asistenciales.`, "error");
         return;
+      }
+      const selectCama = document.getElementById("pac-cama");
+      try {
+        const res = await fetch("/camas-uci", { cache: "no-store" });
+        const camas = await res.json();
+        const libres = camas.camas_libres || [];
+        selectCama.innerHTML = libres.length
+          ? libres.map(c => `<option value="${c}">${c}</option>`).join("")
+          : `<option value="">No hay camas disponibles</option>`;
+        document.getElementById("pac-camas-resumen").innerText =
+          `${camas.disponibles} camas disponibles de ${camas.total} (${camas.ocupadas} ocupadas)`;
+      } catch (err) {
+        selectCama.innerHTML = `<option value="">No se pudo consultar las camas</option>`;
       }
       abrirModal("modal-nuevo-paciente"); 
     }
@@ -3694,11 +3786,13 @@
       const selectEq = document.getElementById("enc-equipo-id");
       selectPac.innerHTML = cachePacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.cama_uci})</option>`).join("");
       
-      // Categorizar equipos de la flota
-      const vents = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("VENT") || (eq.tipo_equipo || "").toLowerCase().includes("ventilador"));
-      const mons = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("MON") || (eq.tipo_equipo || "").toLowerCase().includes("monitor"));
-      const bombas = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("BVOL") || (eq.codigo_inventario || "").startsWith("BJER") || (eq.tipo_equipo || "").toLowerCase().includes("bomba"));
-      const moviles = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("ECO") || (eq.codigo_inventario || "").startsWith("RX") || (eq.codigo_inventario || "").startsWith("DEF") || (eq.codigo_inventario || "").startsWith("ECG") || (eq.codigo_inventario || "").startsWith("CRRT") || (eq.codigo_inventario || "").startsWith("POCT"));
+      // Categorizar equipos de la flota (solo los disponibles en este instante)
+      try { await cargarEquiposUCI(); } catch (e) { /* se usa la caché existente */ }
+      const equiposDisponibles = cacheEquipos.filter(eq => eq.estado_operativo === "Disponible");
+      const vents = equiposDisponibles.filter(eq => (eq.codigo_inventario || "").startsWith("VENT") || (eq.tipo_equipo || "").toLowerCase().includes("ventilador"));
+      const mons = equiposDisponibles.filter(eq => (eq.codigo_inventario || "").startsWith("MON") || (eq.tipo_equipo || "").toLowerCase().includes("monitor"));
+      const bombas = equiposDisponibles.filter(eq => (eq.codigo_inventario || "").startsWith("BVOL") || (eq.codigo_inventario || "").startsWith("BJER") || (eq.tipo_equipo || "").toLowerCase().includes("bomba"));
+      const moviles = equiposDisponibles.filter(eq => (eq.codigo_inventario || "").startsWith("ECO") || (eq.codigo_inventario || "").startsWith("RX") || (eq.codigo_inventario || "").startsWith("DEF") || (eq.codigo_inventario || "").startsWith("ECG") || (eq.codigo_inventario || "").startsWith("CRRT") || (eq.codigo_inventario || "").startsWith("POCT"));
 
       const formatEqOption = eq => `<option value="${eq.equipo_uci_id}">[${eq.codigo_inventario}] ${eq.tipo_equipo} - ${eq.marca} ${eq.modelo} (${eq.estado_operativo})</option>`;
 
