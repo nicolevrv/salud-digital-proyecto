@@ -1742,25 +1742,37 @@
     </div>
   </div>
 
-  <!-- Modal Encuentro -->
-  <div id="modal-nuevo-encuentro" class="fixed inset-0 z-50 hidden bg-slate-50/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+  <!-- Modal Encuentro (Permite agregar múltiples equipos a un mismo paciente) -->
+  <div id="modal-nuevo-encuentro" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-        <h4 class="font-bold text-slate-900 text-sm">Iniciar Encuentro Clínico / Monitoreo</h4>
-        <button onclick="cerrarModal('modal-nuevo-encuentro')" class="text-slate-400 hover:text-slate-700">&times;</button>
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Asignar Equipo / Iniciar Monitoreo</h4>
+            <p class="text-xs text-slate-500">Puedes vincular múltiples equipos biomédicos a un mismo paciente de UCI</p>
+          </div>
+        </div>
+        <button onclick="cerrarModal('modal-nuevo-encuentro')" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
       </div>
-      <form onsubmit="guardarNuevoEncuentro(event)" class="space-y-3 text-xs">
+      <form onsubmit="guardarNuevoEncuentro(event)" class="space-y-3.5 text-xs">
         <div>
-          <label class="block text-slate-700 font-medium mb-1">Seleccionar Paciente:</label>
-          <select id="enc-paciente-id" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"></select>
+          <label class="block text-slate-700 font-semibold mb-1">Paciente UCI:</label>
+          <select id="enc-paciente-id" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:ring-2 focus:ring-teal-500"></select>
         </div>
         <div>
-          <label class="block text-slate-700 font-medium mb-1">Asignar Equipo UCI / Sensor:</label>
-          <select id="enc-equipo-id" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"></select>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-slate-700 font-semibold">Equipo Biomédico a Vincular:</label>
+            <span class="text-[10px] text-teal-700 font-medium">Ventiladores, Monitores, Bombas o Equipos Móviles</span>
+          </div>
+          <select id="enc-equipo-id" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono focus:ring-2 focus:ring-teal-500"></select>
+          <p class="text-[11px] text-slate-500 mt-1">Selecciona el equipo a conectar (cada asignación suma un equipo al monitoreo simultáneo del paciente).</p>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
-          <button type="button" onclick="cerrarModal('modal-nuevo-encuentro')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold">Iniciar Monitoreo</button>
+          <button type="button" onclick="cerrarModal('modal-nuevo-encuentro')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold transition shadow-sm shadow-teal-500/25">Vincular Equipo al Paciente</button>
         </div>
       </form>
     </div>
@@ -2866,28 +2878,76 @@
         }
 
         cachePacientes.forEach(p => {
-          const tieneEncuentro = p.encuentro_activo_id;
+          const equiposList = p.equipos_asignados || [];
+          const tieneEncuentros = equiposList.length > 0;
           const tr = document.createElement("tr");
-          tr.className = "hover:bg-slate-100/40 transition";
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
 
-          let accionesHtml = `<span class="text-xs text-slate-500">Consulta</span>`;
+          // Renderizar lista de equipos asignados
+          let equiposHtml = "";
+          if (equiposList.length === 0) {
+            equiposHtml = `<span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-500">Sin equipos conectados</span>`;
+          } else {
+            equiposHtml = `
+              <div class="flex flex-wrap gap-1.5 max-w-md">
+                ${equiposList.map(eq => {
+                  let badgeColor = "bg-blue-50 text-blue-800 border-blue-200";
+                  if (eq.codigo_inventario.startsWith("VENT")) badgeColor = "bg-sky-50 text-sky-800 border-sky-200";
+                  else if (eq.codigo_inventario.startsWith("MON")) badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-200";
+                  else if (eq.codigo_inventario.startsWith("ECO") || eq.codigo_inventario.startsWith("RX")) badgeColor = "bg-purple-50 text-purple-800 border-purple-200";
+                  else if (eq.codigo_inventario.startsWith("HV-UCI-006") || eq.codigo_inventario.startsWith("BVOL")) badgeColor = "bg-amber-50 text-amber-800 border-amber-200";
+
+                  const btnCerrar = (sesionActiva && sesionActiva.rol === 'Medico') ? `
+                    <button onclick="ejecutarFinalizarEncuentro(${eq.encuentro_id}, '${p.nombre.replace(/'/g, "\\'")}')" title="Desconectar este equipo" class="ml-1 hover:text-rose-600 transition font-bold">&times;</button>
+                  ` : '';
+
+                  return `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold border ${badgeColor}" title="${eq.tipo_equipo} ${eq.marca} ${eq.modelo}">
+                      <span class="font-mono font-bold">${eq.codigo_inventario}</span>
+                      <span class="text-[10px] text-slate-500 hidden sm:inline">(${eq.modelo})</span>
+                      ${btnCerrar}
+                    </span>
+                  `;
+                }).join("")}
+              </div>
+            `;
+          }
+
+          let estadoEncuentroHtml = "";
+          if (tieneEncuentros) {
+            estadoEncuentroHtml = `
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>${equiposList.length} ${equiposList.length === 1 ? 'equipo activo' : 'equipos activos'}</span>
+              </span>
+            `;
+          } else {
+            estadoEncuentroHtml = `<span class="text-slate-400 text-[11px]">En espera</span>`;
+          }
+
+          let accionesHtml = `<span class="text-xs text-slate-400 font-mono">Solo lectura</span>`;
           if (sesionActiva && sesionActiva.rol === 'Medico') {
-            if (!tieneEncuentro) {
-              accionesHtml = `<button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-medium transition">+ Iniciar Monitoreo</button>`;
-            } else {
-              accionesHtml = `<button onclick="ejecutarFinalizarEncuentro(${p.encuentro_activo_id}, '${p.nombre.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-medium transition flex items-center gap-1 ml-auto"><span>⏹️ Finalizar</span></button>`;
-            }
+            accionesHtml = `
+              <div class="flex items-center justify-end gap-1.5">
+                <button onclick="iniciarEncuentroDirecto(${p.id})" class="px-2.5 py-1 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold transition flex items-center gap-1 shadow-2xs">
+                  <span>+ Agregar Equipo</span>
+                </button>
+              </div>
+            `;
           }
 
           tr.innerHTML = `
-            <td class="py-3 px-4 font-mono text-cyan-300">${p.documento_identidad}</td>
-            <td class="py-3 px-4 font-semibold text-slate-900">${p.nombre}</td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px] border border-slate-200">${p.cama_uci}</span></td>
-            <td class="py-3 px-4">${tieneEncuentro ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-teal-950 text-teal-300 border border-teal-800"><span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span> ID #${p.encuentro_activo_id} (Activo)</span>` : `<span class="text-slate-500 text-[11px]">Sin encuentro activo</span>`}</td>
-            <td class="py-3 px-4">${p.equipo_nombre ? `<span class="text-slate-800">${p.equipo_nombre} (${p.equipo_ubicacion})</span>` : `<span class="text-slate-500">Ninguno</span>`}</td>
-            <td class="py-3 px-4 text-right">
-              ${accionesHtml}
+            <td class="py-3 px-4 font-mono text-slate-700 font-semibold">${p.documento_identidad}</td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900">${p.nombre}</div>
+              <div class="text-[10px] text-slate-400">ID Paciente: #${p.id}</div>
             </td>
+            <td class="py-3 px-4">
+              <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono font-bold text-xs border border-sky-200 shadow-2xs">${p.cama_uci}</span>
+            </td>
+            <td class="py-3 px-4">${estadoEncuentroHtml}</td>
+            <td class="py-3 px-4">${equiposHtml}</td>
+            <td class="py-3 px-4 text-right">${accionesHtml}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -3237,49 +3297,94 @@
           return;
         }
 
+        // Agrupar encuentros activos por cama / paciente para reflejar la realidad de la UCI
+        const camasMap = {};
         activos.forEach(enc => {
+          const key = enc.cama_uci || `Paciente #${enc.paciente_id}`;
+          if (!camasMap[key]) {
+            camasMap[key] = {
+              cama_uci: enc.cama_uci || 'Cama UCI',
+              paciente_nombre: enc.paciente_nombre,
+              documento_identidad: enc.documento_identidad,
+              paciente_id: enc.paciente_id,
+              equipos: []
+            };
+          }
+          camasMap[key].equipos.push({
+            id: enc.id,
+            equipo_uci_id: enc.equipo_uci_id,
+            tipo_equipo: enc.tipo_equipo,
+            codigo_inventario: enc.codigo_inventario,
+            marca: enc.equipo_marca,
+            modelo: enc.equipo_modelo
+          });
+        });
+
+        const camasLista = Object.values(camasMap);
+        document.getElementById("camas-activas-count").innerText = `${camasLista.length} camas (${activos.length} equipos)`;
+
+        camasLista.forEach(cama => {
           const card = document.createElement("div");
-          card.className = "bg-white border border-slate-200 rounded-2xl p-4 shadow-md hover:border-sky-300 transition relative overflow-hidden flex flex-col justify-between";
+          card.className = "bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-sky-300 transition relative overflow-hidden flex flex-col justify-between";
           const esMedico = sesionActiva && sesionActiva.rol === "Medico";
+
           card.innerHTML = `
             <div>
               <div class="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-3">
                 <div class="flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span class="font-bold text-slate-900 text-sm">${enc.cama_uci || 'Cama UCI'}</span>
+                  <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span class="font-bold text-slate-900 text-sm">${cama.cama_uci}</span>
                 </div>
-                <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
-                  Encuentro #${enc.id}
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  ${cama.equipos.length} ${cama.equipos.length === 1 ? 'Equipo' : 'Equipos'}
                 </span>
               </div>
-              <div class="space-y-2 text-xs">
+              <div class="space-y-2.5 text-xs">
                 <div>
-                  <span class="text-slate-500">Paciente:</span>
-                  <strong class="text-slate-900 block font-semibold">${enc.paciente_nombre}</strong>
-                  <span class="text-[11px] text-slate-500 font-mono">CC: ${enc.documento_identidad}</span>
+                  <span class="text-slate-400 text-[10px] uppercase font-semibold">Paciente Asignado:</span>
+                  <strong class="text-slate-900 block font-bold text-xs">${cama.paciente_nombre}</strong>
+                  <span class="text-[11px] text-slate-500 font-mono">CC: ${cama.documento_identidad}</span>
                 </div>
                 <div>
-                  <span class="text-slate-500">Tecnología Biomédica:</span>
-                  <div class="flex items-center justify-between mt-0.5">
-                    <span class="text-cyan-300 font-medium">${enc.tipo_equipo || 'Monitor'}</span>
-                    <span class="text-[10px] text-slate-500 font-mono">${enc.codigo_inventario || 'N/A'}</span>
+                  <span class="text-slate-400 text-[10px] uppercase font-semibold">Tecnologías Conectadas:</span>
+                  <div class="space-y-1.5 mt-1">
+                    ${cama.equipos.map(eq => {
+                      let tagColor = "bg-blue-50 text-blue-800 border-blue-200";
+                      if ((eq.codigo_inventario || "").startsWith("VENT")) tagColor = "bg-sky-50 text-sky-800 border-sky-200";
+                      else if ((eq.codigo_inventario || "").startsWith("MON")) tagColor = "bg-emerald-50 text-emerald-800 border-emerald-200";
+                      else if ((eq.codigo_inventario || "").startsWith("ECO") || (eq.codigo_inventario || "").startsWith("RX")) tagColor = "bg-purple-50 text-purple-800 border-purple-200";
+
+                      const btnDesconectar = esMedico ? `
+                        <button onclick="ejecutarFinalizarEncuentro(${eq.id}, '${cama.paciente_nombre.replace(/'/g, "\\'")}')" title="Desconectar este equipo" class="ml-1 text-slate-400 hover:text-rose-600 font-bold">&times;</button>
+                      ` : '';
+
+                      return `
+                        <div class="flex items-center justify-between p-1.5 rounded-lg border ${tagColor} text-[11px]">
+                          <div>
+                            <span class="font-mono font-bold">${eq.codigo_inventario || 'EQ'}</span>
+                            <span class="text-slate-600 font-medium ml-1">${eq.tipo_equipo || 'Equipo'}</span>
+                          </div>
+                          <div class="flex items-center">
+                            <span class="text-[10px] text-slate-500 font-mono mr-1">${eq.modelo || ''}</span>
+                            ${btnDesconectar}
+                          </div>
+                        </div>
+                      `;
+                    }).join("")}
                   </div>
                 </div>
               </div>
             </div>
             ${esMedico ? `
-              <div class="mt-4 pt-2.5 border-t border-slate-200 flex items-center justify-between">
-                <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Activo
-                </span>
-                <button onclick="ejecutarFinalizarEncuentro(${enc.id}, '${enc.paciente_nombre.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 text-[11px] font-semibold transition flex items-center gap-1 shadow-sm">
-                  <span>⏹️ Finalizar Encuentro</span>
+              <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                <button onclick="iniciarEncuentroDirecto(${cama.paciente_id})" class="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold transition flex items-center gap-1 shadow-2xs">
+                  <span>+ Agregar Equipo</span>
                 </button>
               </div>
             ` : `
-              <div class="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
                 <span>Monitoreo Activo</span>
-                <span>Solo médico puede cerrar</span>
+                <span>UCI Adultos</span>
               </div>
             `}
           `;
@@ -3588,8 +3693,29 @@
       const selectPac = document.getElementById("enc-paciente-id");
       const selectEq = document.getElementById("enc-equipo-id");
       selectPac.innerHTML = cachePacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.cama_uci})</option>`).join("");
-      selectEq.innerHTML = `<option value="">-- Sin equipo asignado --</option>` + 
-        cacheEquipos.map(eq => `<option value="${eq.equipo_uci_id}">${eq.tipo_equipo} - ${eq.marca} (${eq.codigo_inventario})</option>`).join("");
+      
+      // Categorizar equipos de la flota
+      const vents = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("VENT") || (eq.tipo_equipo || "").toLowerCase().includes("ventilador"));
+      const mons = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("MON") || (eq.tipo_equipo || "").toLowerCase().includes("monitor"));
+      const bombas = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("BVOL") || (eq.codigo_inventario || "").startsWith("BJER") || (eq.tipo_equipo || "").toLowerCase().includes("bomba"));
+      const moviles = cacheEquipos.filter(eq => (eq.codigo_inventario || "").startsWith("ECO") || (eq.codigo_inventario || "").startsWith("RX") || (eq.codigo_inventario || "").startsWith("DEF") || (eq.codigo_inventario || "").startsWith("ECG") || (eq.codigo_inventario || "").startsWith("CRRT") || (eq.codigo_inventario || "").startsWith("POCT"));
+
+      const formatEqOption = eq => `<option value="${eq.equipo_uci_id}">[${eq.codigo_inventario}] ${eq.tipo_equipo} - ${eq.marca} ${eq.modelo} (${eq.estado_operativo})</option>`;
+
+      selectEq.innerHTML = `
+        <optgroup label="Ventiladores Mecánicos de Soporte Vital">
+          ${vents.map(formatEqOption).join("")}
+        </optgroup>
+        <optgroup label="Monitores Multiparámetro de Signos Vitales">
+          ${mons.map(formatEqOption).join("")}
+        </optgroup>
+        <optgroup label="Bombas de Infusión y Microinfusión">
+          ${bombas.map(formatEqOption).join("")}
+        </optgroup>
+        <optgroup label="Equipos de Procedimiento Móvil / Imagenología (Grupo B)">
+          ${moviles.map(formatEqOption).join("")}
+        </optgroup>
+      `;
       abrirModal("modal-nuevo-encuentro");
     }
 

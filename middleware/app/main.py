@@ -1378,15 +1378,28 @@ def listar_pacientes(
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by,
-               e.id as encuentro_activo_id, e.estado as encuentro_estado,
-               eq.ubicacion_uci as equipo_ubicacion, c.nombre as equipo_nombre
+               COUNT(e.id) as total_equipos_activos,
+               COALESCE(
+                   json_agg(
+                       json_build_object(
+                           'encuentro_id', e.id,
+                           'equipo_uci_id', eq.id,
+                           'codigo_inventario', hv.codigo_inventario,
+                           'tipo_equipo', c.nombre,
+                           'marca', hv.marca,
+                           'modelo', hv.modelo,
+                           'ubicacion_uci', eq.ubicacion_uci
+                       )
+                   ) FILTER (WHERE e.id IS NOT NULL), '[]'::json
+               ) as equipos_asignados
         FROM pacientes p
         LEFT JOIN encuentros e ON p.id = e.paciente_id AND e.estado = 'in-progress' AND e.is_deleted = FALSE
         LEFT JOIN equipos_uci eq ON e.equipo_uci_id = eq.id
         LEFT JOIN hoja_vida_equipos hv ON eq.hoja_vida_id = hv.id
         LEFT JOIN catalogo_equipos c ON hv.equipo_catalogo_id = c.id
         WHERE p.is_deleted = FALSE
-        ORDER BY p.id DESC
+        GROUP BY p.id, p.documento_identidad, p.nombre, p.cama_uci, p.created_by
+        ORDER BY p.id ASC
     """
     cursor.execute(query)
     pacientes = cursor.fetchall()
