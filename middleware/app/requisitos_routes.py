@@ -1863,6 +1863,7 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
     @app.get("/alertas/activas", tags=["Alertas Críticas UCI (R20)"])
     @app.get("/api/alertas", tags=["Alertas Críticas UCI (R20)"])
     def listar_alertas_criticas_r20(
+        request: Request,
         estado: Optional[str] = None,
         summary: bool = False,
         user: dict = Depends(verify_user_credentials),
@@ -1871,6 +1872,10 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
         cur = conn.cursor(cursor_factory=RealDictCursor)
         sql = "SELECT * FROM alertas_criticas WHERE 1=1"
         params = []
+        # Si la ruta llamada es /alertas/activas, filtrar por defecto solo las alertas activas
+        if "activas" in request.url.path and not estado:
+            estado = "activa"
+
         if estado and estado.lower() not in ("todas", "todos", "all"):
             sql += " AND LOWER(estado) = LOWER(%s)"
             params.append(estado.strip())

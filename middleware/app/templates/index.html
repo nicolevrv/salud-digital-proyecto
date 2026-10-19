@@ -6405,10 +6405,11 @@
       const list = document.getElementById("lista-alertas-criticas-r20");
       if (!banner || !list) return;
       try {
-        const res = await fetch("/alertas/activas", { headers: getAuthHeaders() });
+        const res = await fetch("/alertas/activas?estado=activa", { headers: getAuthHeaders() });
         if (!res.ok) return;
         const data = await res.json();
-        const activas = Array.isArray(data) ? data : (data.alertas || []);
+        const rawList = Array.isArray(data) ? data : (data.alertas || []);
+        const activas = rawList.filter(a => (a.estado || '').toLowerCase() === 'activa');
         if (activas.length === 0) {
           banner.classList.add("hidden");
           list.innerHTML = "";
