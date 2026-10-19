@@ -1036,6 +1036,8 @@
                 <option value="CRRT">Terapia Renal Continua CRRT (CRRT)</option>
                 <option value="POCT">Analizador Gases Sangre POCT (POCT)</option>
                 <option value="ECG">Electrocardiógrafo Digital (ECG)</option>
+                <option value="ECO">Ecógrafo Portátil Doppler (ECO)</option>
+                <option value="RX">Equipo de Rayos X Portátil (RX)</option>
               </select>
             </div>
 
@@ -1889,7 +1891,8 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-700 font-semibold mb-1">Placa / Llave Primaria (PK):</label>
-            <input type="text" id="doc-form-equipo-id" name="equipo_id" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 font-mono uppercase">
+            <input type="text" id="doc-form-equipo-id" name="equipo_id" list="lista-pks-subir-doc" required placeholder="ej: RX-01 o ECO-01" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 font-mono uppercase">
+            <datalist id="lista-pks-subir-doc"></datalist>
           </div>
           <div>
             <label class="block text-slate-700 font-semibold mb-1">Tipo de Documento:</label>
@@ -4974,7 +4977,9 @@
       { id_equipo: "CRRT-01", tipo: "CRRT", nombre: "Terapia Renal PrisMax", marca: "Baxter", modelo: "PrisMax", img: "/static/equipos/crrt_baxter_prismax.jpeg", cert: "CAL-2026-HV-007" },
       { id_equipo: "POCT-01", tipo: "POCT", nombre: "Analizador Gases ABL90", marca: "Radiometer", modelo: "ABL90 FLEX", img: "/static/equipos/poct_radiometer_abl90.jpg", cert: "CAL-2026-HV-008" },
       { id_equipo: "DEF-01", tipo: "DEF", nombre: "Desfibrilador BeneHeart D3", marca: "Mindray / Zoll", modelo: "BeneHeart D3", img: "/static/equipos/def_mindray_beneheart_d3.jpeg", cert: "CAL-2026-HV-009" },
-      { id_equipo: "ECG-01", tipo: "ECG", nombre: "Electrocardiógrafo MAC 2000", marca: "GE Healthcare", modelo: "MAC 2000", img: "/static/equipos/ecg_ge_mac2000.jpeg", cert: "CAL-2026-HV-010" }
+      { id_equipo: "ECG-01", tipo: "ECG", nombre: "Electrocardiógrafo MAC 2000", marca: "GE Healthcare", modelo: "MAC 2000", img: "/static/equipos/ecg_ge_mac2000.jpeg", cert: "CAL-2026-HV-010" },
+      { id_equipo: "ECO-01", tipo: "ECO", nombre: "Ecógrafo Portátil Sonosite Edge II", marca: "Sonosite", modelo: "Edge II", img: "/static/equipos/eco_sonosite_edge.jpg", cert: "CA-2026-011" },
+      { id_equipo: "RX-01", tipo: "RX", nombre: "Rayos X Portátil Carestream Motion", marca: "Carestream", modelo: "Motion Mobile", img: "/static/equipos/rx_mobilett_elara.jpg", cert: "CA-2026-012" }
     ];
 
     function alternarDespliegueCatalogo() {
@@ -5411,6 +5416,25 @@
       document.getElementById("doc-form-tipo").value = tipoDoc;
       const hoy = new Date().toISOString().slice(0, 10);
       document.getElementById("doc-form-fecha-emision").value = hoy;
+
+      // Sugerir título según tipo de documento
+      const titInput = document.getElementById("doc-form-titulo");
+      if (titInput) {
+        if (tipoDoc === "FOTO_EQUIPO") {
+          titInput.value = `Fotografía Clínica Oficial - ${cacheDocumentacionEquipoId}`;
+        } else if (tipoDoc === "CERTIFICADO_CALIBRACION") {
+          titInput.value = `Certificado de Calibración Metrológica - ${cacheDocumentacionEquipoId}`;
+        } else {
+          titInput.value = `Ficha Técnica / Manual Oficial - ${cacheDocumentacionEquipoId}`;
+        }
+      }
+
+      // Poblar datalist de equipos en el modal
+      const dl = document.getElementById("lista-pks-subir-doc");
+      if (dl && cacheEquiposDocumentosLista && cacheEquiposDocumentosLista.length > 0) {
+        dl.innerHTML = cacheEquiposDocumentosLista.map(e => `<option value="${e.id_equipo}">${e.tipo_nombre || e.nombre || ''}</option>`).join("");
+      }
+
       abrirModal("modal-subir-documento");
     }
 
