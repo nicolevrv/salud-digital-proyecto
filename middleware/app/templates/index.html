@@ -354,9 +354,15 @@
             <p class="text-[11px] text-rose-700">Las alertas de alta gravedad (Gravedad_Evento &ge; 8 o parámetro LOINC crítico) permanecen fijas hasta ser reconocidas con nota clínica/técnica.</p>
           </div>
         </div>
-        <button onclick="cargarAlertasCriticasR20()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold transition">
-          Refrescar Alertas
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button onclick="reconocerTodasAlertasR20()" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold shadow-xs transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Reconocer Todas</span>
+          </button>
+          <button onclick="cargarAlertasCriticasR20()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold transition">
+            Refrescar
+          </button>
+        </div>
       </div>
       <div id="lista-alertas-criticas-r20" class="space-y-2"></div>
     </div>
@@ -5044,6 +5050,20 @@
         eq = cacheEquiposEstado.equipos.find(e => (e.id_equipo || "").toUpperCase().replace(/-/g, '') === limpio.replace(/-/g, ''));
       }
 
+      // Si aún no coincide, probar si empieza por el prefijo (ej: VEN -> VENT-01)
+      if (!eq) {
+        eq = cacheEquiposEstado.equipos.find(e => (e.id_equipo || "").toUpperCase().startsWith(limpio));
+      }
+
+      // Si aún no coincide, buscar por nombre o modelo
+      if (!eq && limpio.length >= 3) {
+        eq = cacheEquiposEstado.equipos.find(e => 
+          (e.nombre || "").toUpperCase().includes(limpio) ||
+          (e.tipo || "").toUpperCase().includes(limpio) ||
+          (e.modelo || "").toUpperCase().includes(limpio)
+        );
+      }
+
       if (eq) {
         seleccionarEquipoGlobal(eq.id_equipo);
       }
@@ -6311,6 +6331,31 @@
         }
       } catch (e) {
         showToast(`Error al reconocer alerta: ${e.message}`, "error");
+      }
+    }
+
+    async function reconocerTodasAlertasR20() {
+      const nota = prompt("R20 · Ingrese nota clínica/técnica para reconocer TODAS las alertas críticas activas:", "Revisión global por equipo biomédico y clínico. Parámetros estabilizados y equipos verificados.");
+      if (!nota || !nota.trim()) {
+        showToast("R20: El reconocimiento exige obligatoriamente una nota clínica.", "warning");
+        return;
+      }
+      try {
+        const res = await fetch("/alertas/reconocer-todas", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ nota: nota.trim() })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.mensaje || "Todas las alertas fueron reconocidas.", "success");
+          cargarAlertasCriticasR20();
+          cargarNotificacionesYPendientes();
+        } else {
+          showToast(`Error: ${data.detail || 'No se pudieron reconocer las alertas'}`, "error");
+        }
+      } catch (e) {
+        showToast(`Error al reconocer alertas: ${e.message}`, "error");
       }
     }
 

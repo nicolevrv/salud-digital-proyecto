@@ -1971,6 +1971,45 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
             "alerta": actualizada,
         }
 
+    @app.post("/alertas/reconocer-todas", tags=["Alertas Críticas UCI (R20)"])
+    @app.post("/api/alertas/reconocer-todas", tags=["Alertas Críticas UCI (R20)"])
+    def reconocer_todas_las_alertas_r20(
+        data: Optional[AlertaReconocerRequest] = None,
+        user: dict = Depends(verify_user_credentials),
+        conn = Depends(get_db),
+    ):
+        rol_can = obtener_rol_canonico(user.get("rol_nombre"))
+        if rol_can not in ("medico", "especialista", "admin"):
+            raise HTTPException(
+                status_code=403,
+                detail="Solo un médico o especialista autorizado puede reconocer alertas críticas UCI.",
+            )
+        nota_txt = (((data.nota or data.observaciones or data.comentario) if data else None) or "Reconocimiento y resolución clínica en ronda médica.").strip()
+
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            UPDATE alertas_criticas
+            SET estado = 'reconocida',
+                nota_reconocimiento = %s,
+                reconocida_por = %s,
+                reconocida_por_nombre = %s,
+                fecha_reconocimiento = CURRENT_TIMESTAMP
+            WHERE estado = 'activa'
+            RETURNING id
+        """, (nota_txt, user["id"], user["nombre"]))
+        reconocidas = cur.fetchall()
+        cur.close()
+        conn.commit()
+
+        emitir_notificacion_y_sse(
+            conn,
+            rol_destino="todos",
+            tipo="ALERTA_RECONOCIDA",
+            mensaje=f"Se reconocieron {len(reconocidas)} alertas críticas activas por {user['nombre']}.",
+            severidad="INFO",
+        )
+        return {"reconocidas": len(reconocidas), "mensaje": f"Se reconocieron {len(reconocidas)} alertas críticas."}
+
     # --------------------------------------------------------------------------
     # R21: Webhook Reactivo con HAPI FHIR (POST /fhir/webhook y POST /fhir/Observation)
     # --------------------------------------------------------------------------
