@@ -1,0 +1,13 @@
+{
+  "archivo": "dataset_predictivo_metrologia_nivel3.xls",
+  "hoja": "Dataset_Predictivo",
+  "filas": 7630,
+  "fecha_min": "2024-01-01 00:00:00",
+  "fecha_max": "2026-10-01 00:00:00",
+  "particiones": {
+    "train": 4427,
+    "validacion": 1351,
+    "prueba": 1852
+  },
+  "nota": "Resultados académicos; validar procedencia de datos, umbrales y generalización antes de cualquier uso real."
+}

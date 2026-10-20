@@ -1,0 +1,5 @@
+cluster,cluster_nombre,registros,equipos,edad_media_meses,meses_desde_mtto_media,horas_uso_media,fallas_previas_media,mtbf_medio_dias,corriente_fuga_media,desviacion_calibracion_media,tasa_falla,tasa_mantenimiento
+0,Cluster 0: Operación Óptima en Activos Jóvenes (Bajo Riesgo),3094,158,35.16,3.34,18051.1,2.14,600.73,75.78,1.26,0.04,0.1
+1,Cluster 1: Degradación Metrológica e Incumplimiento IEC 62353 (Riesgo Crítico),856,191,71.85,7.24,35321.38,7.46,534.87,138.27,3.69,0.6,0.72
+2,Cluster 2: Zona de Confusión (Fatiga Acumulada con IEC 62353 Conforme),2731,134,87.59,3.18,48556.81,8.53,463.93,92.12,1.51,0.1,0.21
+3,Cluster 3: Activos Maduros de Alta Confiabilidad y Alto MTBF,949,51,79.91,3.64,45231.54,1.01,2060.11,89.15,1.49,0.04,0.08

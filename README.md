@@ -8,6 +8,7 @@
 [![Orthanc PACS](https://img.shields.io/badge/PACS-Orthanc%20DICOM-00599C?logo=medical&logoColor=white)](https://orthanc-server.com)
 [![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![Render](https://img.shields.io/badge/Render-Auto%20Deploy-46E3B7?logo=render&logoColor=white)](https://render.com)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nicolevrv/salud-digital-proyecto/blob/main/notebooks/mantenimiento_biomedico.ipynb)
 
 Sistema hospitalario integral de **Unidad de Cuidados Intensivos (UCI)** diseñado para la gestión metrológica biomédica, telemetría clínica continua (códigos internacionales LOINC), inferencia predictiva supervisada multi-objetivo (**3 targets binarios**), facturación y costos hospitalarios por estancia/kit tecnológico (MongoDB + PostgreSQL), e interoperabilidad reactiva impulsada por eventos (**Server-Sent Events - SSE** sin recargas de interfaz).
 
@@ -142,11 +143,11 @@ El sistema implementa **5 roles canónicos estrictos** conforme al contrato de v
 
 | Ley / Resolución | Artículos Aplicables | Control Técnico Implementado en el Código | Ubicación en el Repositorio |
 | :--- | :--- | :--- | :--- |
-| **Ley 1581 de 2012** *(Protección de Datos Personales / Habeas Data)* | **Art. 4 (Principios de Finalidad y Confidencialidad)**, **Art. 17 (Seguridad de la Información)**. | - Seudonimización estricta mediante SHA-256 (`pseudo_id`) eliminando nombres, cédulas y datos de contacto antes de enviar features al motor de ML (**R12**).<br>- Almacenamiento de credenciales con hashing unidireccional PBKDF2/bcrypt y tokens JWT firmados efímeros con expiración (**R03**).<br>- Aislamiento estricto del perfil contable frente a datos sensibles de diagnóstico clínico (**R03**). | [ml_model.py](file:///middleware/app/ml_model.py#L310-L360)<br>[requisitos_routes.py](file:///middleware/app/requisitos_routes.py#L740-L790) |
-| **Ley 2015 de 2020** *(Interoperabilidad de la Historia Clínica Electrónica - IHCE)* | **Art. 2 (Obligatoriedad de Intercambio)**, **Art. 3 (Estándares Abiertos)**. | - Soporte nativo HL7 FHIR R4 para intercambio estructurado de recursos `Observation`, `Patient` y `ServiceRequest` (**R21**).<br>- Endpoint Webhook FHIR (`/fhir/Observation`, `/fhir/webhook`) para ingesta estandarizada desde dispositivos y sistemas externos sin intervención humana. | [requisitos_routes.py](file:///middleware/app/requisitos_routes.py#L1980-L2050) |
-| **Resolución 866 de 2021** *(Conjunto Mínimo de Datos de la HCE)* | **Art. 5 (Estandarización de Variables Clínicas)**. | - Normalización de signos vitales y variables ventilatorias bajo terminología internacional **LOINC**:<br>&nbsp;&nbsp;• `59408-5`: Saturación de Oxígeno (SpO2, %)<br>&nbsp;&nbsp;• `8867-4`: Frecuencia Cardíaca (lpm)<br>&nbsp;&nbsp;• `19889-5`: Presión Inspiratoria Pico (PIP, cmH2O)<br>&nbsp;&nbsp;• `76530-5`: Presión Positiva al Final de la Espiración (PEEP, cmH2O)<br>&nbsp;&nbsp;• `19996-8`: Fracción Inspirada de Oxígeno (FiO2, %) | [main.py](file:///middleware/app/main.py#L120-L160)<br>[requisitos_routes.py](file:///middleware/app/requisitos_routes.py#L1990-L2030) |
-| **Resolución 1995 de 1999** *(Normas para el Manejo de la Historia Clínica)* | **Art. 5 (Inmutabilidad y Reserva)**, **Art. 8 (Diligenciamiento y Custodia)**. | - **Inmutabilidad Absoluta**: Prohibición de borrado físico (`DROP`/`DELETE`); implementación de borrado lógico (`is_deleted = TRUE`) con registro de motivo (**R03**).<br>- **Pista de Auditoría Forense (`audit_logs`)**: Registro inmutable de usuario, IP, marca temporal, acción ejecutada y valores previos/posteriores (**R03**, **R21**).<br>- **Supervisión Humana Obligatoria ("Soft Put")**: Ningún resultado predictivo de IA ingresa a la historia clínica en estado 'pendiente'; requiere aprobación médica explícita (**R10**).<br>- **Exportación Binaria en PDF Oficial**: Descarga estructurada con foliación digital, firma del profesional y fecha de atención (**R11**). | [requisitos_routes.py](file:///middleware/app/requisitos_routes.py#L1215-L1270)<br>[requisitos_routes.py](file:///middleware/app/requisitos_routes.py#L1450-L1480) |
-| **Resolución 3100 de 2019** *(Manual de Habilitación de Prestadores de Salud)* | **Criterio Dotación UCI (Estándar 2)**, **Mantenimiento y Metrología Biomédica**. | - Dotación estricta y obligatoria de **Kit Básico de Soporte Vital** para cada una de las 25 camas de UCI:<br>&nbsp;&nbsp;• 1 Ventilador Mecánico de Cuidado Intensivo<br>&nbsp;&nbsp;• 1 Monitor de Signos Vitales Multiparámetro (≥ 5 canales)<br>&nbsp;&nbsp;• 2 Bombas de Infusión Volumétricas<br>&nbsp;&nbsp;• 1 Bomba de Infusión a Jeringa<br>- Trazabilidad metrológica: control de corriente de fuga ($\mu$A), resistencia a tierra ($\Omega$), calibración anual certificada y cálculo de MTBF. | [main.py](file:///middleware/app/main.py#L820-L890)<br>[DATASETS.md](file:///docs/DATASETS.md#L1-L80) |
+| **Ley 1581 de 2012** *(Protección de Datos Personales / Habeas Data)* | **Art. 4 (Principios de Finalidad y Confidencialidad)**, **Art. 17 (Seguridad de la Información)**. | - Seudonimización estricta mediante SHA-256 (`pseudo_id`) eliminando nombres, cédulas y datos de contacto antes de enviar features al motor de ML (**R12**).<br>- Almacenamiento de credenciales con hashing unidireccional PBKDF2/bcrypt y tokens JWT firmados efímeros con expiración (**R03**).<br>- Aislamiento estricto del perfil contable frente a datos sensibles de diagnóstico clínico (**R03**). | [ml_model.py](middleware/app/ml_model.py#L310-L360)<br>[requisitos_routes.py](middleware/app/requisitos_routes.py#L740-L790) |
+| **Ley 2015 de 2020** *(Interoperabilidad de la Historia Clínica Electrónica - IHCE)* | **Art. 2 (Obligatoriedad de Intercambio)**, **Art. 3 (Estándares Abiertos)**. | - Soporte nativo HL7 FHIR R4 para intercambio estructurado de recursos `Observation`, `Patient` y `ServiceRequest` (**R21**).<br>- Endpoint Webhook FHIR (`/fhir/Observation`, `/fhir/webhook`) para ingesta estandarizada desde dispositivos y sistemas externos sin intervención humana. | [requisitos_routes.py](middleware/app/requisitos_routes.py#L1980-L2050) |
+| **Resolución 866 de 2021** *(Conjunto Mínimo de Datos de la HCE)* | **Art. 5 (Estandarización de Variables Clínicas)**. | - Normalización de signos vitales y variables ventilatorias bajo terminología internacional **LOINC**:<br>&nbsp;&nbsp;• `59408-5`: Saturación de Oxígeno (SpO2, %)<br>&nbsp;&nbsp;• `8867-4`: Frecuencia Cardíaca (lpm)<br>&nbsp;&nbsp;• `19889-5`: Presión Inspiratoria Pico (PIP, cmH2O)<br>&nbsp;&nbsp;• `76530-5`: Presión Positiva al Final de la Espiración (PEEP, cmH2O)<br>&nbsp;&nbsp;• `19996-8`: Fracción Inspirada de Oxígeno (FiO2, %) | [main.py](middleware/app/main.py#L120-L160)<br>[requisitos_routes.py](middleware/app/requisitos_routes.py#L1990-L2030) |
+| **Resolución 1995 de 1999** *(Normas para el Manejo de la Historia Clínica)* | **Art. 5 (Inmutabilidad y Reserva)**, **Art. 8 (Diligenciamiento y Custodia)**. | - **Inmutabilidad Absoluta**: Prohibición de borrado físico (`DROP`/`DELETE`); implementación de borrado lógico (`is_deleted = TRUE`) con registro de motivo (**R03**).<br>- **Pista de Auditoría Forense (`audit_logs`)**: Registro inmutable de usuario, IP, marca temporal, acción ejecutada y valores previos/posteriores (**R03**, **R21**).<br>- **Supervisión Humana Obligatoria ("Soft Put")**: Ningún resultado predictivo de IA ingresa a la historia clínica en estado 'pendiente'; requiere aprobación médica explícita (**R10**).<br>- **Exportación Binaria en PDF Oficial**: Descarga estructurada con foliación digital, firma del profesional y fecha de atención (**R11**). | [requisitos_routes.py](middleware/app/requisitos_routes.py#L1215-L1270)<br>[requisitos_routes.py](middleware/app/requisitos_routes.py#L1450-L1480) |
+| **Resolución 3100 de 2019** *(Manual de Habilitación de Prestadores de Salud)* | **Criterio Dotación UCI (Estándar 2)**, **Mantenimiento y Metrología Biomédica**. | - Dotación estricta y obligatoria de **Kit Básico de Soporte Vital** para cada una de las 25 camas de UCI:<br>&nbsp;&nbsp;• 1 Ventilador Mecánico de Cuidado Intensivo<br>&nbsp;&nbsp;• 1 Monitor de Signos Vitales Multiparámetro (≥ 5 canales)<br>&nbsp;&nbsp;• 2 Bombas de Infusión Volumétricas<br>&nbsp;&nbsp;• 1 Bomba de Infusión a Jeringa<br>- Trazabilidad metrológica: control de corriente de fuga ($\mu$A), resistencia a tierra ($\Omega$), calibración anual certificada y cálculo de MTBF. | [main.py](middleware/app/main.py#L820-L890)<br>[DATASETS.md](docs/DATASETS.md#L1-L80) |
 
 ---
 
@@ -199,11 +200,30 @@ graph LR
 | **`Target_Critico`** | Random Forest (Calibrado Isotónico) | **$0.38$** | **$0.9003$** | $0.5656$ | $64.3\%$ | **$51.4\%$** | $0.5714$ | **Función de Costo Asimétrico**: El costo de un falso negativo en soporte vital es inaceptable (muerte del paciente); por tanto, el umbral se reduce a $0.38$ para maximizar la sensibilidad y disparar alertas inmediatas. |
 
 ### Análisis de Sesgo y Agrupamiento No Supervisado (K-Means, $k=4$)
-Los pacientes y equipos fueron agrupados según severidad y demanda tecnológica para evaluar la equidad del modelo (justificación en [docs/DATASETS.md](file:///docs/DATASETS.md)):
+Los pacientes y equipos fueron agrupados según severidad y demanda tecnológica para evaluar la equidad del modelo (justificación en [docs/DATASETS.md](docs/DATASETS.md)):
 - **Cluster 0 (Riesgo Bajo / Estable)**: Falsos positivos < 2.1%. Comportamiento estable en infusión continua.
 - **Cluster 1 (Soporte Vital Crítico - Ventilado)**: Máxima sensibilidad lograda (> 93%). Ningún evento crítico omitido.
 - **Cluster 2 (Zona de Confusión / Glucosa e Inestabilidad Limítrofe)**: Zona donde el modelo presenta mayor variabilidad metrológica; señalizada con supervisión médica reforzada.
 - **Cluster 3 (Shock Séptico / Falla Multiorgánica)**: Alta tasa de eventos críticos; calibración con escalamiento rápido a especialista.
+
+
+### 📓 Notebook Oficial de Entrenamiento y Evaluación del Modelo (R07, R10)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nicolevrv/salud-digital-proyecto/blob/main/notebooks/mantenimiento_biomedico.ipynb)
+[![Jupyter Notebook](https://img.shields.io/badge/Jupyter-mantenimiento__biomedico.ipynb-orange?logo=jupyter&logoColor=white)](notebooks/mantenimiento_biomedico.ipynb)
+[![Evaluation Notebook](https://img.shields.io/badge/Jupyter-evaluation__of__biomedical.ipynb-blue?logo=jupyter&logoColor=white)](notebooks/evaluation_of_biomedical.ipynb)
+
+El flujo completo de ingeniería biomédica, partición temporal train/validation/test (previniendo *data leakage*), calibración isotónica de probabilidades, optimización de umbrales clínicos ($\\tau^*$), curvas Precision-Recall / ROC y agrupamiento no supervisado K-Means ($k=4$) se encuentra implementado y pre-ejecutado con todas sus gráficas y métricas incrustadas en:
+- **Notebook Principal**: [`notebooks/mantenimiento_biomedico.ipynb`](notebooks/mantenimiento_biomedico.ipynb)
+- **Notebook de Evaluación (`evaluation of biomedical`)**: [`notebooks/evaluation_of_biomedical.ipynb`](notebooks/evaluation_of_biomedical.ipynb)
+- **Dataset Tabular Nivel 3**: [`dataset_predictivo_metrologia_nivel3.xls`](dataset_predictivo_metrologia_nivel3.xls)
+- **Modelo Serializado en Producción**: [`middleware/app/models/modelo_biomedico_3targets.joblib`](middleware/app/models/modelo_biomedico_3targets.joblib)
+- **Módulo de Inferencia Backend**: [`middleware/app/ml_model.py`](middleware/app/ml_model.py)
+- **Resultados Exportados (Métricas y Clusters)**:
+  - [`notebooks/resultados_notebook/metricas_validacion.csv`](notebooks/resultados_notebook/metricas_validacion.csv)
+  - [`notebooks/resultados_notebook/metricas_prueba.csv`](notebooks/resultados_notebook/metricas_prueba.csv)
+  - [`notebooks/resultados_notebook/resumen_clusters.csv`](notebooks/resultados_notebook/resumen_clusters.csv)
+  - [`notebooks/resultados_notebook/resumen_ejecucion.json`](notebooks/resultados_notebook/resumen_ejecucion.json)
+
 
 ---
 
@@ -227,7 +247,7 @@ El módulo contable ofrece una vista consolidada de los costos operativos diario
 
 ## 7. Contrato de Verificación Automática (`tester.yaml`)
 
-El archivo [tester.yaml](file:///tester.yaml) ubicado en la raíz del repositorio define el contrato estandarizado de prueba para el evaluador automático:
+El archivo [tester.yaml](tester.yaml) ubicado en la raíz del repositorio define el contrato estandarizado de prueba para el evaluador automático:
 - **`yo`**: `GET /yo` -> `{"rol": "..."}`
 - **`login`**: `POST /login` -> `{"token": "...", "usuario": {...}}`
 - **`ia_analizar`**: `POST /ia/analizar` -> `{"id": ..., "estado": "pendiente"}`

@@ -160,3 +160,11 @@ A continuación se presentan los centroides reales almacenados en la tabla `clus
   - Columnas `origen = 'sintetico'`, `cluster_id` y `cluster_nombre` activas en las **232 unidades del inventario UCI**.
 - **Tabla `clusters_biomedicos_resumen` y Endpoint `/api/clusters-resumen`**:
   - Expone vía API los 4 clusters, sus centroides, el análisis de la **Zona de Confusión** y las métricas de validación (Codo WCSS y Coeficiente de Silueta).
+
+
+### 4. Notebook de Evaluación y Agrupamiento (`evaluation of biomedical`)
+El código completo de partición temporal, validación cruzada, entrenamiento de los modelos para los 3 objetivos, calibración isotónica y análisis del método del codo y silueta para $k=4$ clusters se encuentra disponible y enlazado en:
+- [Notebook de Entrenamiento y Evaluación: `notebooks/mantenimiento_biomedico.ipynb`](../notebooks/mantenimiento_biomedico.ipynb)
+- [Notebook de Evaluación Biomédica (`evaluation_of_biomedical.ipynb`)](../notebooks/evaluation_of_biomedical.ipynb)
+- [Dataset Nivel 3: `dataset_predictivo_metrologia_nivel3.xls`](../dataset_predictivo_metrologia_nivel3.xls)
+- [Resumen de Clusters Exportado](../notebooks/resultados_notebook/resumen_clusters.csv)
