@@ -170,13 +170,16 @@ def ensure_requisitos_tables_and_seed(conn):
                 (1, 'Admin Biomedico'),
                 (2, 'Medico'),
                 (3, 'Servicio'),
-                (5, 'ADMIN'),
                 (7, 'ING_PREVENTIVO'),
                 (8, 'ING_CORRECTIVO'),
                 (9, 'contable'),
                 (10, 'paciente'),
                 (11, 'especialista')
             ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
+
+            -- Limpieza preventiva de usuarios/roles obsoletos
+            DELETE FROM usuarios WHERE email IN ('admin.sistema@hospital.com', 'jefe.area@hospital.com');
+            DELETE FROM roles WHERE nombre IN ('JEFE_AREA', 'ADMIN');
             SELECT setval('roles_id_seq', COALESCE((SELECT MAX(id) FROM roles), 11));
 
             -- 2. Usuarios de prueba para los 5 roles requeridos (R01)

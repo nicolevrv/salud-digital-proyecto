@@ -690,14 +690,13 @@ def ensure_security_tables_and_roles(conn = None):
             (1, 'Admin Biomedico'),
             (2, 'Medico'),
             (3, 'Servicio'),
-            (5, 'ADMIN'),
             (7, 'ING_PREVENTIVO'),
             (8, 'ING_CORRECTIVO')
             ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
-            -- Eliminar el rol JEFE_AREA y su usuario de prueba si existían
-            DELETE FROM usuarios WHERE email = 'jefe.area@hospital.com' OR rol_id = 6;
-            DELETE FROM roles WHERE id = 6 OR nombre = 'JEFE_AREA';
+            -- Eliminar roles obsoletos/redundantes y sus usuarios
+            DELETE FROM usuarios WHERE email IN ('jefe.area@hospital.com', 'admin.sistema@hospital.com') OR rol_id IN (5, 6);
+            DELETE FROM roles WHERE id IN (5, 6) OR nombre IN ('JEFE_AREA', 'ADMIN');
 
             SELECT setval('roles_id_seq', COALESCE((SELECT MAX(id) FROM roles), 1));
 
@@ -718,7 +717,6 @@ def ensure_security_tables_and_roles(conn = None):
             INSERT INTO usuarios (nombre, email, password_hash, rol_id)
             SELECT v.nombre, v.email, v.password_hash, r.id
             FROM (VALUES
-                ('Administrador del Sistema', 'admin.sistema@hospital.com', 'pbkdf2:sha256:100000$a9d9b5fe08318a41eea86dc0664219aa$d62d945071758e230cb2d67df6d736f88e88681111f8947d2cfdadb04fb3a778', 'ADMIN'),
                 ('Ing. Mantenimiento Preventivo', 'ing.preventivo@hospital.com', 'pbkdf2:sha256:100000$574d817745c48d1cddca549857d44660$7d178807c8b3463fa381d956b756552dc9845148441fa997086e9479beac906e', 'ING_PREVENTIVO'),
                 ('Ing. Mantenimiento Correctivo', 'ing.correctivo@hospital.com', 'pbkdf2:sha256:100000$a323f2909707aca9d2e2bf8945115afc$e8b53e6feaae0cda5752892a7f4652916c33749724d4a1060f1e07e76705989f', 'ING_CORRECTIVO')
             ) AS v(nombre, email, password_hash, rol_nombre)
@@ -1007,6 +1005,15 @@ def ensure_camas_uci():
 
 @app.on_event("startup")
 def startup_event():
+    try:
+        conn_clean = get_connection()
+        with conn_clean.cursor() as cur_clean:
+            cur_clean.execute("DELETE FROM usuarios WHERE email IN ('admin.sistema@hospital.com', 'jefe.area@hospital.com');")
+            cur_clean.execute("DELETE FROM roles WHERE nombre IN ('JEFE_AREA', 'ADMIN');")
+        conn_clean.commit()
+        conn_clean.close()
+    except Exception as exc:
+        print(f"Aviso en limpieza inicial de roles redundantes: {exc}")
     ensure_security_tables_and_roles()
     ensure_camas_uci()
     initialize_database_on_startup()
@@ -1097,8 +1104,7 @@ def login(credentials: LoginRequest, request: Request, conn = Depends(get_db)):
 
     if not user:
         if email in {
-            "admin.sistema@hospital.com",
-            "ing.preventivo@hospital.com",
+                        "ing.preventivo@hospital.com",
             "ing.correctivo@hospital.com",
             "contable@hospital.com",
             "especialista@hospital.com",
@@ -1177,6 +1183,8 @@ def listar_usuarios(
             FROM usuarios u
             LEFT JOIN roles r ON u.rol_id = r.id
             WHERE u.is_deleted = FALSE
+              AND LOWER(u.email) NOT IN ('admin.sistema@hospital.com', 'jefe.area@hospital.com', 'paciente@hospital.com')
+              AND COALESCE(r.nombre, '') NOT IN ('JEFE_AREA', 'ADMIN', 'paciente')
             ORDER BY bloqueado DESC, u.id ASC
         """, (datetime.now(),))
         usuarios = cursor.fetchall()
@@ -1195,6 +1203,8 @@ def listar_usuarios(
             FROM usuarios u
             LEFT JOIN roles r ON u.rol_id = r.id
             WHERE u.is_deleted = FALSE
+              AND LOWER(u.email) NOT IN ('admin.sistema@hospital.com', 'jefe.area@hospital.com', 'paciente@hospital.com')
+              AND COALESCE(r.nombre, '') NOT IN ('JEFE_AREA', 'ADMIN', 'paciente')
             ORDER BY bloqueado DESC, u.id ASC
         """, (datetime.now(),))
         usuarios = cursor.fetchall()

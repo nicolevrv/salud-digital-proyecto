@@ -271,7 +271,7 @@
           <span>Área Clínica, Metrología & Telemetría UCI</span>
           <span class="text-[10px] text-slate-500 font-normal">Clic para cargar y probar credencial</span>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           
           <!-- Admin Biomédico -->
           <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-3 rounded-xl bg-slate-50/80 hover:bg-purple-50/60 border border-slate-200 border-l-4 border-l-purple-600 hover:border-purple-300 text-left transition-all flex items-start gap-2.5 group cursor-pointer shadow-xs transform hover:-translate-y-0.5">
@@ -291,9 +291,21 @@
               CT
             </div>
             <div class="min-w-0">
-              <div class="text-xs font-bold text-slate-800 group-hover:text-emerald-700 truncate">Médico Especialista</div>
+              <div class="text-xs font-bold text-slate-800 group-hover:text-emerald-700 truncate">Médico UCI</div>
               <div class="text-[10px] text-slate-500 font-mono truncate">medico@hospital.com</div>
               <div class="text-[10px] text-emerald-400 font-mono">clave: med123</div>
+            </div>
+          </button>
+
+          <!-- Esp. Soporte Vital -->
+          <button onclick="cargarPerfilDemo('especialista@hospital.com', 'especialista123')" type="button" class="p-3 rounded-xl bg-slate-50/80 hover:bg-indigo-50/60 border border-slate-200 border-l-4 border-l-indigo-600 hover:border-indigo-300 text-left transition-all flex items-start gap-2.5 group cursor-pointer shadow-xs transform hover:-translate-y-0.5">
+            <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5 border border-indigo-200">
+              ES
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-700 truncate">Esp. Soporte Vital</div>
+              <div class="text-[10px] text-slate-500 font-mono truncate">especialista@hospital.com</div>
+              <div class="text-[10px] text-indigo-400 font-mono">clave: especialista123</div>
             </div>
           </button>
 
@@ -2026,7 +2038,7 @@
       <!-- SECCIÓN 1: ROLES CLÍNICOS Y TELEMETRÍA UCI -->
       <div class="space-y-1.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Perfiles Clínicos & Biomédicos</div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           
           <!-- Perfil 1: Admin Biomédico -->
           <button onclick="cargarPerfilDemo('admin.biomedico@hospital.com', 'admin123')" type="button" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-sky-300 text-left transition flex items-start gap-2 group cursor-pointer shadow-sm">
@@ -2052,7 +2064,19 @@
             </div>
           </button>
 
-          <!-- Perfil 3: Servicio IoT -->
+          <!-- Perfil 3: Esp. Soporte Vital -->
+          <button onclick="cargarPerfilDemo('especialista@hospital.com', 'especialista123')" type="button" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-sky-300 text-left transition flex items-start gap-2 group cursor-pointer shadow-sm">
+            <div class="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-indigo-500/30">
+              ES
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-slate-800 group-hover:text-sky-700 truncate">Esp. Soporte Vital</div>
+              <div class="text-[10px] text-slate-500 font-mono truncate">especialista</div>
+              <div class="text-[9px] text-indigo-400 leading-tight font-mono">clave: especialista123</div>
+            </div>
+          </button>
+
+          <!-- Perfil 4: Servicio IoT -->
           <button onclick="cargarPerfilDemo('servicio.iot@hospital.com', 'service123')" type="button" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-sky-300 text-left transition flex items-start gap-2 group cursor-pointer shadow-sm">
             <div class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5 border border-cyan-500/30">
               ST
@@ -2976,9 +3000,9 @@
           if (closeBtn) closeBtn.classList.remove("hidden");
 
           // Redirigir a la pestaña correspondiente
-          if (sesionActiva.rol === "Medico") {
+          if (sesionActiva.rol === "Medico" || sesionActiva.rol === "medico" || sesionActiva.rol === "especialista" || sesionActiva.rol === "Especialista") {
             cambiarTab("pacientes");
-          } else if (sesionActiva.rol === "Contable UCI") {
+          } else if (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "contable") {
             cambiarTab("contabilidad");
           } else {
             cambiarTab("monitoreo");
@@ -3168,10 +3192,13 @@
             }
           });
 
-        } else if (sesionActiva.rol === "Medico") {
+        } else if (sesionActiva.rol === "Medico" || sesionActiva.rol === "medico" || sesionActiva.rol === "especialista" || sesionActiva.rol === "Especialista") {
+          const esEsp = (sesionActiva.rol === "especialista" || sesionActiva.rol === "Especialista");
           if (avatar) {
-            avatar.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-700 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
-            avatar.innerText = "CT";
+            avatar.className = esEsp
+              ? "w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-700 font-bold flex items-center justify-center text-xs border border-indigo-500/40"
+              : "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-700 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
+            avatar.innerText = esEsp ? "ES" : "CT";
           }
           
           // Botones clínicos

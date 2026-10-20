@@ -144,8 +144,6 @@ INSERT INTO roles (id, nombre) VALUES
 (1, 'Admin Biomedico'),
 (2, 'Medico'),
 (3, 'Servicio'),
-(5, 'ADMIN'),
-(6, 'JEFE_AREA'),
 (7, 'ING_PREVENTIVO'),
 (8, 'ING_CORRECTIVO')
 ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
@@ -167,8 +165,6 @@ SELECT setval('usuarios_id_seq', COALESCE((SELECT MAX(id) FROM usuarios), 1));
 INSERT INTO usuarios (nombre, email, password_hash, rol_id)
 SELECT v.nombre, v.email, v.password_hash, r.id
 FROM (VALUES
-    ('Administrador del Sistema', 'admin.sistema@hospital.com', 'pbkdf2:sha256:100000$a9d9b5fe08318a41eea86dc0664219aa$d62d945071758e230cb2d67df6d736f88e88681111f8947d2cfdadb04fb3a778', 'ADMIN'),
-    ('Jefe de Area UCI', 'jefe.area@hospital.com', 'pbkdf2:sha256:100000$ef3153ac01f40251fc10ec2787b543f4$e8187e48712ac4526d25c420e08911c2e464c7ffefd11e95977a720a3b2e8b59', 'JEFE_AREA'),
     ('Ing. Mantenimiento Preventivo', 'ing.preventivo@hospital.com', 'pbkdf2:sha256:100000$574d817745c48d1cddca549857d44660$7d178807c8b3463fa381d956b756552dc9845148441fa997086e9479beac906e', 'ING_PREVENTIVO'),
     ('Ing. Mantenimiento Correctivo', 'ing.correctivo@hospital.com', 'pbkdf2:sha256:100000$a323f2909707aca9d2e2bf8945115afc$e8b53e6feaae0cda5752892a7f4652916c33749724d4a1060f1e07e76705989f', 'ING_CORRECTIVO')
 ) AS v(nombre, email, password_hash, rol_nombre)
@@ -249,3 +245,6 @@ SELECT setval('equipos_uci_id_seq', COALESCE((SELECT MAX(id) FROM equipos_uci), 
 SELECT setval('pacientes_id_seq', COALESCE((SELECT MAX(id) FROM pacientes), 1));
 SELECT setval('encuentros_id_seq', COALESCE((SELECT MAX(id) FROM encuentros), 1));
 SELECT setval('observaciones_id_seq', COALESCE((SELECT MAX(id) FROM observaciones), 1));
+-- Limpiar usuarios y roles obsoletos
+DELETE FROM usuarios WHERE email IN ('admin.sistema@hospital.com', 'jefe.area@hospital.com');
+DELETE FROM roles WHERE nombre IN ('JEFE_AREA', 'ADMIN');
