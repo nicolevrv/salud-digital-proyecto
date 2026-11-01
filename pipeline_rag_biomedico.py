@@ -218,12 +218,50 @@ def llamar_groq_llm(mensajes: list[dict], model: str = GROQ_MODEL) -> tuple[str,
     except Exception as e:
         return "", f"fallback_error_{type(e).__name__}"
 
-def respuesta_extractiva(chunks_elegidos: list[dict]) -> str:
-    lineas = []
-    for n, c in enumerate(chunks_elegidos, start=1):
-        frase = c["texto"].split(".")[0].strip()
-        lineas.append(f"{frase}. [{n}]")
-    return " ".join(lineas)
+def es_encabezado_puro(idx: int, sent: str) -> bool:
+    if idx == 0:
+        tiene_unidades = bool(re.search(r'ohmios|microamperios|µA|mmHg|bar|psi|mL|hPa|voltios|%|minutos|horas|días|meses|kg|joules|julios', sent, re.I))
+        tiene_accion = bool(re.search(r'\b(ingresa|conecta|presuriza|mide|calibra|verifica|excede|supera|ajusta|detiene|establece|exige|sufren|requiere|corresponde|cuenta)\b', sent, re.I))
+        if not tiene_unidades and not tiene_accion:
+            return True
+        if len(sent.split()) <= 12 and not tiene_unidades:
+            return True
+    return False
+
+def respuesta_extractiva(chunks_elegidos: list[dict], pregunta: str = "") -> str:
+    q_tokens = set(re.findall(r'[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+', pregunta.lower())) - STOP_WORDS_ES
+    todas_oraciones = []
+    for n, f in enumerate(chunks_elegidos, start=1):
+        texto = f["texto"]
+        raw_sents = [s.strip() for s in re.split(r'\.\s+', texto) if s.strip()]
+        for idx, s in enumerate(raw_sents):
+            s_clean = s.strip()
+            if len(s_clean.split()) < 4 or es_encabezado_puro(idx, s_clean):
+                continue
+            s_tokens = set(re.findall(r'[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+', s_clean.lower())) - STOP_WORDS_ES
+            coincidencias = len(q_tokens.intersection(s_tokens))
+            tiene_cifras = bool(re.search(r'\d+', s_clean))
+            tiene_unidades = bool(re.search(r'ohmios|microamperios|µA|mmHg|bar|psi|mL|hPa|voltios|%|minutos|horas|días|meses|kg|joules|julios', s_clean, re.I))
+            tiene_accion = bool(re.search(r'conecta|ingresa|presuriza|mide|calibra|verifica|excede|supera|ajusta|utiliza|establece|requiere|permite|detiene', s_clean, re.I))
+            tiene_criterio = bool(re.search(r'límite|máximo|mínimo|tolerancia|norma|procedimiento|error|resistencia|corriente|fuga|exactitud|servicio', s_clean, re.I))
+            score = coincidencias * 3.5
+            if tiene_cifras: score += 3.0
+            if tiene_unidades: score += 4.0
+            if tiene_accion: score += 2.5
+            if tiene_criterio: score += 2.0
+            todas_oraciones.append({"score": score, "n": n, "idx": idx, "sent": s_clean})
+    todas_oraciones.sort(key=lambda x: -x["score"])
+    seleccionadas = todas_oraciones[:4]
+    seleccionadas.sort(key=lambda x: (x["n"], x["idx"]))
+    resultado = []
+    vistos = set()
+    for item in seleccionadas:
+        if item["sent"] not in vistos:
+            vistos.add(item["sent"])
+            resultado.append(f"{item['sent'].rstrip('.')} [{item['n']}].")
+    if not resultado:
+        return " ".join(f"{f['texto'][:240].rsplit(' ', 1)[0]}... [{n}]" for n, f in enumerate(chunks_elegidos, start=1))
+    return " ".join(resultado)
 
 # ==============================================================================
 # 6. EVALUACIÓN DE RECUPERACIÓN: 20 PREGUNTAS TÉCNICAS BIOMÉDICAS Y DE UCI
@@ -388,7 +426,7 @@ class SistemaRAGBiomedico:
         
         texto_llm, modo = llamar_groq_llm(mensajes)
         if not texto_llm:
-            texto_llm = respuesta_extractiva(chunks_recup)
+            texto_llm = respuesta_extractiva(chunks_recup, pregunta)
             modo = "extractivo"
             
         fuentes = [
