@@ -1,0 +1,14 @@
+ID: BE-15
+BASE: especifica
+TIPO: manual_servicio
+TITULO: B. Braun Perfusor Space: Manual de servicio técnico de bomba de jeringa - Calibración de avance micrométrico
+FUENTE: B. Braun Melsungen AG
+REFERENCIA_OFICIAL: B. Braun. (2021). Perfusor Space Syringe Pump Service Manual: Drive mechanism calibration, force sensor testing and maintenance (Ref: 8713030). Melsungen, Germany.
+CODIGO_NORMA: B. Braun Perfusor Space Service Manual 8713030
+--------------------------------------------------------------------------------
+
+Mecanismo de avance micrométrico y sensor de fuerza en Perfusor Space. La bomba a jeringa Perfusor Space utiliza un husillo roscado de alta precisión impulsado por un motor paso a paso para desplazar el émbolo de jeringas de 2 mL a 50 mL. El cabezal de accionamiento incorpora un sensor de fuerza piezorresistivo que monitorea continuamente la resistencia mecánica opuesta por el émbolo de la jeringa.
+
+Calibración de la detección automática del tamaño de jeringa. Al colocar una jeringa en el soporte, un potenciómetro lineal acoplado a la pinza de fijación mide el diámetro exterior de la jeringa. Si el potenciómetro se descalibra por desgaste de la pista resistiva, la bomba identificará erróneamente una jeringa de 50 mL como una jeringa de 20 mL, lo que provocaría un error masivo de sobredosificación si el operador no verifica la marca en pantalla. La calibración de diámetros debe verificarse con calibres patrón de 10, 20 y 50 mm.
+
+Prueba de detección de oclusión por sobrecarga mecánica. Con una celda de carga patrón colocada en lugar de la jeringa, se avanza el carro a una velocidad de 10 mL/h y se verifica que la alarma de Oclusión se active al alcanzar una fuerza de empuje de 70 N más o menos 10 N para el nivel de presión intermedio (nivel 5). Fuerzas superiores a 120 N pueden provocar la ruptura de los conectores luer-lock de la jeringa o dolor intenso por sobredistensión tisular en el sitio de punción.

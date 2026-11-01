@@ -1,0 +1,14 @@
+ID: BG-12
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-2-49: Requisitos particulares para la seguridad de equipos de monitorización de pacientes multifunción
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2018). Medical electrical equipment - Part 2-49: Particular requirements for the basic safety and essential performance of multifunction patient monitors (IEC Standard No. 60601-2-49:2018).
+CODIGO_NORMA: IEC 60601-2-49:2018
+--------------------------------------------------------------------------------
+
+Integración y aislamiento de canales en monitores multiparámetro. Los monitores multifunción integran canales de electrocardiograma (ECG), pulsioximetría (SpO2), presión no invasiva (PNI), presión arterial invasiva (PAI) y capnografía (EtCO2). Cada canal con contacto invasivo o intravascular debe mantener aislamiento galvánico de alta rigidez dieléctrica capaz de soportar pulsos de desfibrilación cardíaca de hasta 5000 voltios sin transmitir energía residual al paciente ni destruir los módulos electrónicos.
+
+Retardo de alarma y transmisión centralizada. El retardo total de detección y emisión de alarmas de arritmia letal (asistolia, fibrilación ventricular o taquicardia ventricular sostenida) no debe exceder los 10 segundos desde el inicio del evento fisiológico. La transmisión a centrales de enfermería mediante protocolos HL7 o sockets propietarios debe garantizar continuidad sin pérdida de paquetes críticos.
+
+Protección contra diafonía y artefactos de radiofrecuencia. El módulo de ECG debe implementar filtros notch sintonizados a 50 Hz o 60 Hz y filtros pasa-banda configurables (modo monitor y modo diagnóstico) para rechazar el ruido electromagnético de bisturíes electroquirúrgicos y cables de poder cercanos.

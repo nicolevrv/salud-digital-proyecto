@@ -1,0 +1,14 @@
+ID: BG-26
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Metrología de flujo en bombas de infusión: métodos de pesaje gravimétrico vs. volumen directo
+FUENTE: Flow Measurement and Instrumentation
+REFERENCIA_OFICIAL: Navarro, K., & Duarte, S. (2022). Gravimetric calibration and trumpet curve analysis for clinical syringe and volumetric infusion pumps. Flow Measurement and Instrumentation, 86, 102201. https://doi.org/10.1016/j.flowmeasinst.2022.102201
+CODIGO_NORMA: FMI-2022-102201
+--------------------------------------------------------------------------------
+
+Calibración gravimétrica según el método de la curva en trompeta (IEC 60601-2-24). La evaluación metrológica formal de bombas de infusión se realiza mediante el registro continuo de masa en una balanza analítica de cuatro dígitos decimales, corrigiendo la densidad del agua destilada y la evaporación superficial con un recipiente con sello de aceite.
+
+Curvas en trompeta y variabilidad a corto plazo. Las bombas peristálticas presentan fluctuaciones intrínsecas de caudal asociadas a la rotación periódica de los rodillos del rotor sobre el tubo flexible de PVC. La curva en trompeta grafica el error porcentual en función de la ventana de observación (desde 2 minutos hasta 31 minutos). En ventanas cortas, el error puede superar el diez por ciento, mientras que a régimen estacionario de 24 horas converge al más o menos cinco por ciento.
+
+Importancia clínica en neonatología y terapia intensiva. Para fármacos de vida media ultracorta, como la noradrenalina o la epinefrina, las fluctuaciones de caudal en ventanas menores a cinco minutos pueden generar inestabilidad hemodinámica transitoria con oscilaciones severas en la presión arterial media del paciente.

@@ -1,0 +1,12 @@
+ID: BG-19
+BASE: general
+TIPO: guia_oms_invima
+TITULO: OMS: Guía para la elaboración de especificaciones técnicas y evaluación de equipos médicos
+FUENTE: Organización Mundial de la Salud (OMS)
+REFERENCIA_OFICIAL: World Health Organization. (2014). Technical specifications for medical devices: Guidance for procurement and maintenance in intensive care units. Geneva: WHO.
+CODIGO_NORMA: WHO Procurement Guidelines 2014
+--------------------------------------------------------------------------------
+
+Criterios técnicos para la adquisición y homologación de ventiladores y monitores de UCI. La selección de equipamiento de soporte vital debe evaluar no solo el costo de adquisición, sino el costo total del ciclo de vida (TCO), incluyendo la disponibilidad de repuestos garantizada durante al menos 7 a 10 años, el costo de los consumibles obligatorios (sensores de flujo, celdas de O2 y circuitos de paciente) y la compatibilidad con analizadores biomédicos universales.
+
+Contratos de servicio con niveles de servicio (SLA) definidos. Los prestadores deben exigir a los fabricantes acuerdos de nivel de servicio que aseguren la entrega de repuestos críticos en un plazo no superior a 48 horas y la provisión de equipos de relevo temporal (backup) en caso de que una reparación mayor supere las 72 horas de inactividad de la cama crítica.

@@ -1,0 +1,14 @@
+ID: BG-07
+BASE: general
+TIPO: guia_oms_invima
+TITULO: OMS: Serie de documentos técnicos sobre dispositivos médicos - Introducción a la gestión del mantenimiento
+FUENTE: Organización Mundial de la Salud (OMS)
+REFERENCIA_OFICIAL: World Health Organization. (2012). Medical device technical series: Introduction to medical equipment maintenance. Geneva: WHO Guidelines Approved by the Guidelines Review Committee.
+CODIGO_NORMA: WHO Medical Device Technical Series 2012
+--------------------------------------------------------------------------------
+
+Estrategias de mantenimiento en instituciones hospitalarias según OMS. La gestión del ciclo de vida de los equipos biomédicos abarca tres estrategias fundamentales: mantenimiento preventivo programado basado en tiempo o uso, mantenimiento predictivo basado en monitoreo de condición física y operacional, y mantenimiento correctivo para el restablecimiento de funciones tras una falla.
+
+Mantenimiento predictivo mediante telemetría y sensores en tiempo real. La OMS destaca que el mantenimiento predictivo permite reducir los tiempos de parada imprevista en unidades críticas hasta en un cuarenta por ciento. El monitoreo continuo de variables como vibración de motores, temperatura de fuentes de poder conmutadas, resistencia de aislamiento y número de ciclos de compresión permite intervenir el equipo antes de que ocurra una interrupción en el soporte ventilatorio o infusional.
+
+Inventario activo y cálculo de criticidad técnica. Cada activo del inventario debe contar con un índice de criticidad derivado de su función clínica, riesgo físico intrínseco, requerimientos de mantenimiento y antecedentes históricos de confiabilidad, asignando frecuencias de inspección más rigurosas a los equipos de soporte vital clase A.

@@ -1,0 +1,14 @@
+ID: BG-18
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC TR 60601-4-2: Orientaciones para el desarrollo de sistemas de apoyo a la decisión médica
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2016). Medical electrical equipment - Part 4-2: Guidance and interpretation - Medical decision support software (IEC TR Standard No. 60601-4-2:2016).
+CODIGO_NORMA: IEC TR 60601-4-2
+--------------------------------------------------------------------------------
+
+Principios de transparencia y explicabilidad en software de apoyo clínico y técnico. El informe técnico IEC TR 60601-4-2 establece que los sistemas computacionales que emiten recomendaciones para el diagnóstico clínico o la priorización de mantenimiento de soporte vital deben basar sus sugerencias en fuentes verificables y trazables.
+
+Regla de abstención y ausencia de evidencia. Si el algoritmo o motor de inferencia no dispone de datos contextuales suficientes o si el grado de incertidumbre de la recuperación excede los límites permisibles, el sistema debe abstenerse de emitir una recomendación categórica y alertar al operador humano sobre la insuficiencia de evidencia en el repositorio.
+
+Trazabilidad de citas y referencias. Toda recomendación generada por herramientas de inteligencia artificial generativa debe vincular explícitamente los fragmentos de evidencia utilizados, garantizando que el profesional de la salud o el ingeniero biomédico conserve siempre el juicio crítico final sobre la intervención en el paciente o en el equipo.

@@ -1,0 +1,14 @@
+ID: BE-03
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Dräger Evita V800: Calibración y mantenimiento del sensor de flujo espiratorio SpiroLife
+FUENTE: Drägerwerk AG & Co. KGaA
+REFERENCIA_OFICIAL: Dräger Medical. (2021). Evita V800 / V600 Intensive Care Ventilator Technical Documentation and Service Instructions (Order No. 9055800). Lübeck, Germany: Drägerwerk AG.
+CODIGO_NORMA: Dräger Evita V800 Service Manual 9055800
+--------------------------------------------------------------------------------
+
+Tecnología de hilo caliente SpiroLife en ventiladores Dräger Evita V800. El sensor SpiroLife mide el flujo espiratorio mediante anemometría de hilo caliente de platino, calentado eléctricamente a una temperatura constante por encima de la temperatura del gas espirado. El enfriamiento del hilo por el paso del flujo genera una variación en la corriente necesaria para mantener la temperatura, permitiendo medir flujos bidireccionales con un tiempo de respuesta inferior a 5 milisegundos.
+
+Calibración y limpieza del hilo caliente. La calibración del sensor de flujo se realiza automáticamente durante el chequeo previo al uso del ventilador. Debido a la acumulación de secreciones y condensación en el bloque espiratorio, el hilo de platino puede sufrir recubrimiento térmico. Si la desviación de la calibración supera el siete por ciento respecto al valor de referencia del transductor inspiratorio, el sistema requiere una limpieza ultrasónica o desinfección térmica a 134 °C.
+
+Inspección de la válvula espiratoria y diafragma de silicona. La válvula espiratoria reutilizable incorpora un diafragma de silicona flexible que controla la PEEP. Si el diafragma presenta microfisuras o deformaciones por esterilizaciones repetidas en autoclave, la presión tele-espiratoria oscilará de forma inestable y el volumen corriente espirado reportado será significativamente menor al volumen suministrado, disparando la alarma de PEEP No Alcanzada.

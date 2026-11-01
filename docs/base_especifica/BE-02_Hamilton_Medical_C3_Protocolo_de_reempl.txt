@@ -1,0 +1,14 @@
+ID: BE-02
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Hamilton Medical C3: Protocolo de reemplazo y calibración de la celda de oxígeno
+FUENTE: Hamilton Medical AG
+REFERENCIA_OFICIAL: Hamilton Medical. (2019). HAMILTON-C3 Technical Specifications & Maintenance: Galvanic O2 cell replacement and 2-point calibration (Doc ID: 624130/03). Bonaduz, Switzerland.
+CODIGO_NORMA: Hamilton C3 O2 Cell Protocol
+--------------------------------------------------------------------------------
+
+Vida útil y desgaste electroquímico de la celda galvánica de O2 en Hamilton-C3. El ventilador utiliza una celda de combustible electroquímica que genera una señal de voltaje proporcional a la presión parcial de oxígeno en la cámara de mezcla. La celda tiene una expectativa de vida útil normal de 5000 horas de uso o un año cronológico. Conforme el electrodo de plomo se consume, el voltaje entregado a concentración del cien por ciento decae por debajo de 40 milivoltios.
+
+Procedimiento de calibración de oxígeno en pantalla. La calibración del sensor de O2 debe realizarse suministrando oxígeno de grado médico a una presión de entrada de 2,8 a 6,0 bar. El ventilador expone la celda primero a aire ambiente (21 % de O2) durante dos minutos y posteriormente a oxígeno puro (100 % de O2). Si la señal no se estabiliza dentro de los sesenta segundos o si la ganancia calculada está fuera de rango, el ventilador bloquea el modo y genera la alarma Sensor de O2 Defectuoso.
+
+Acción correctiva ante falla recurrente de FiO2. Ante el fallo de calibración, debe retirarse la celda defectuosa de la parte posterior del bloque de mezcla, verificar que los pines de contacto dorado no presenten oxidación y montar una celda nueva certificada por el fabricante, permitiendo un tiempo de aclimatación térmica de al menos 30 minutos antes de repetir la calibración oficial.

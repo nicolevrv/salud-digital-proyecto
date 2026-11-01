@@ -1,0 +1,14 @@
+ID: BG-24
+BASE: general
+TIPO: guia_oms_invima
+TITULO: INVIMA: Guía técnica de inspección y seguridad de desfibriladores bifásicos y marcapasos externos
+FUENTE: Instituto Nacional de Vigilancia de Medicamentos y Alimentos (INVIMA)
+REFERENCIA_OFICIAL: INVIMA. (2019). Guía de inspección de seguridad y desempeño de equipos de desfibrilación externa en servicios de urgencias y cuidado intensivo. Bogotá: INVIMA.
+CODIGO_NORMA: INVIMA Desfibriladores 2019
+--------------------------------------------------------------------------------
+
+Ensayos de energía entregada en desfibriladores bifásicos. El desfibrilador debe descargarse periódicamente sobre un analizador de desfibriladores con carga resistiva normalizada de 50 ohmios. La energía real suministrada debe concordar con la energía seleccionada dentro de una tolerancia del más o menos quince por ciento o más o menos 3 julios (el que sea mayor) en todos los niveles de energía (desde 10 J hasta 200 J en ondas bifásicas truncadas o rectilíneas).
+
+Tiempo de sincronización para cardioversión eléctrica. En el modo de cardioversión sincronizada, el tiempo transcurrido entre el pico de la onda R del electrocardiograma y la descarga efectiva del pulso de desfibrilación no debe superar los 60 milisegundos para evitar disparar el pulso sobre la onda T y causar fibrilación ventricular iatrogénica.
+
+Capacidad y envejecimiento de la batería interna. Los desfibriladores de carro de paro en UCI deben ser capaces de suministrar al menos 30 descargas de máxima energía (200 J o 360 J) seguidas de 120 minutos de monitoreo electrocardiográfico con una batería completamente cargada.

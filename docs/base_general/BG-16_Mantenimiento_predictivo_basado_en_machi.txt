@@ -1,0 +1,14 @@
+ID: BG-16
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Mantenimiento predictivo basado en machine learning para tecnología médica de soporte vital
+FUENTE: Biomedical Signal Processing and Control
+REFERENCIA_OFICIAL: Alvarez, D., Torres, P., & Morales, H. (2023). Machine learning-driven predictive maintenance framework for life support medical equipment. Biomedical Signal Processing and Control, 82, 104561. https://doi.org/10.1016/j.bspc.2023.104561
+CODIGO_NORMA: BSPC-2023-104561
+--------------------------------------------------------------------------------
+
+Arquitectura de datos para la predicción de fallas en dispositivos biomédicos. Los sistemas predictivos en tecnología médica combinan variables continuas de metrología (desviación porcentual de volumen, caudal o presión), parámetros de seguridad eléctrica (corriente de fuga en microamperios, resistencia de tierra en ohmios) e historial de uso (edad en meses, horas acumuladas y número de fallas previas).
+
+Clasificación multi-objetivo del riesgo técnico. El entrenamiento de clasificadores supervisados permite estimar simultáneamente tres riesgos complementarios: el riesgo inminente de falla funcional (Target Falla), la necesidad de mantenimiento preventivo inmediato (Target Mantenimiento Predictivo) y el riesgo crítico de evento adverso clínico (Target Crítico). La calibración de probabilidades mediante métodos como Platt Scaling o regresión isotónica optimiza los umbrales de decisión operativa.
+
+Integración de RAG para explicabilidad y sustentación de alertas. La incorporación de sistemas de generación aumentada por recuperación (RAG) permite conectar las alertas generadas por los modelos de machine learning con la evidencia normativa y los manuales de los fabricantes, permitiendo al personal de ingeniería clínica comprender el fundamento técnico y normativo de cada intervención preventiva recomendada.

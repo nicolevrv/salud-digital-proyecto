@@ -1,0 +1,14 @@
+ID: BE-08
+BASE: especifica
+TIPO: manual_servicio
+TITULO: B. Braun Infusomat Space: Manual de servicio técnico - Calibración del sensor de presión de oclusión
+FUENTE: B. Braun Melsungen AG
+REFERENCIA_OFICIAL: B. Braun. (2020). Infusomat Space Service Manual: Pressure sensor calibration, delivery rate verification and preventive maintenance (Ref: 8713050). Melsungen, Germany: B. Braun Melsungen AG.
+CODIGO_NORMA: B. Braun Infusomat Space Service Manual 8713050
+--------------------------------------------------------------------------------
+
+Calibración del sensor de presión aguas abajo (downstream) en Infusomat Space. La bomba volumétrica Infusomat Space detecta oclusiones en la vía venosa mediante un sensor piezorresistivo que mide la fuerza de expansión del tubo de infusión de silicona contra la celda de carga. La calibración exige el uso de la herramienta de calibración Space Service Tool conectada vía puerto infrarrojo o bus de servicio CAN.
+
+Niveles de alarma de oclusión configurables. La bomba permite ajustar el umbral de oclusión en nueve niveles, desde el nivel 1 (aproximadamente 0,3 bar o 4,3 psi) hasta el nivel 9 (aproximadamente 1,2 bar o 17,4 psi). En cuidados intensivos pediátricos se programa el nivel 2 o 3 para asegurar detección ultrarrápida de extravasaciones, mientras que en adultos se utiliza típicamente el nivel 5 (0,8 bar).
+
+Tolerancia metrológica de la presión de disparo. Al aplicar una presión controlada mediante un manómetro patrón conectado a la línea con una llave de tres vías cerrada, la alarma Oclusión Aguas Abajo debe activarse dentro del más o menos quince por ciento del valor nominal seleccionado. Si la bomba no dispara o si dispara de forma prematura a flujos bajos, el cabezal de sensado debe someterse a compensación de temperatura y ajuste de offset digital.

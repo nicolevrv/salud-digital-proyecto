@@ -1,0 +1,14 @@
+ID: BG-11
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-2-12: Requisitos particulares para la seguridad básica y funcionamiento esencial de ventiladores pulmonares
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2018). Medical electrical equipment - Part 2-12: Particular requirements for basic safety and essential performance of critical care ventilators (IEC Standard No. 60601-2-12:2018).
+CODIGO_NORMA: IEC 60601-2-12:2018
+--------------------------------------------------------------------------------
+
+Funcionamiento esencial de los ventiladores de cuidados intensivos. La norma IEC 60601-2-12 define como funcionamiento esencial del ventilador pulmonar la entrega del volumen corriente dentro de una tolerancia del diez por ciento o 20 mL (el que sea mayor), el control de la concentración de oxígeno inspirado (FiO2) con una exactitud de más o menos tres por ciento volumen, y el mantenimiento de la presión positiva al final de la espiración (PEEP) con una desviación máxima de más o menos 2 hPa.
+
+Sistemas de alarma de prioridad alta y redundancia neumática. Todo ventilador de cuidados intensivos debe contar con alarmas audibles y visuales de alta prioridad ante eventos de: presión excesiva en la vía aérea, presión insuficiente en la vía aérea por desconexión del circuito, pérdida de alimentación de gas médico (oxígeno y aire comprimido), y falla en la red de suministro eléctrico con transición automática y transparente a batería interna.
+
+Autonomía mínima de batería y desconexión segura. La batería de respaldo debe proporcionar un mínimo de 60 minutos de operación continua bajo condiciones ventilatorias estándar. En caso de agotamiento total de la batería o fallo del microprocesador central, el ventilador debe abrir de forma pasiva una válvula de alivio o anti-asfixia que permita al paciente ventilar aire ambiente libremente sin riesgo de asfixia mecánica.

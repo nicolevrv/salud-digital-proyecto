@@ -1,0 +1,12 @@
+ID: BG-25
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-2-16: Requisitos particulares para la seguridad de equipos de hemodiálisis y terapia de reemplazo renal continuo
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2018). Medical electrical equipment - Part 2-16: Particular requirements for basic safety and essential performance of haemodialysis and continuous renal replacement therapy equipment (IEC Standard No. 60601-2-16:2018).
+CODIGO_NORMA: IEC 60601-2-16:2018
+--------------------------------------------------------------------------------
+
+Seguridad en terapia de reemplazo renal continuo (CRRT) en camas críticas. Las máquinas de CRRT regulan de forma milimétrica la ultrafiltración, la restitución y el flujo de efluente en pacientes sépticos o con falla renal aguda. La exactitud de las balanzas y transductores de peso del sistema debe mantenerse con un error inferior a más o menos 30 gramos en rangos de hasta 20 kilogramos de líquido dializante.
+
+Detección de fuga hemática y temperatura del dializado. El detector óptico de fuga de sangre en la línea de efluente debe detectar concentraciones de sangre libre de 0,5 mL por litro de dializado a un flujo normalizado, deteniendo de inmediato las bombas de sangre y activando el clamp venoso para evitar pérdidas sanguíneas masivas. La temperatura del líquido de reposición debe mantenerse entre 35 °C y 39 °C mediante calentadores controlados por lazo cerrado con doble termostato de seguridad redundante.

@@ -1,0 +1,14 @@
+ID: BE-21
+BASE: especifica
+TIPO: manual_servicio
+TITULO: B. Braun Infusomat Space: Detección y calibración del sensor ultrasónico de burbujas de aire
+FUENTE: B. Braun Melsungen AG
+REFERENCIA_OFICIAL: B. Braun. (2020). Infusomat Space Air Detector Module: Ultrasonic sensor calibration and bubble size discrimination test (Ref: 8713075). Melsungen, Germany.
+CODIGO_NORMA: B. Braun Air Detector Ref 8713075
+--------------------------------------------------------------------------------
+
+Principio de funcionamiento del sensor ultrasónico de aire en Infusomat Space. El detector de aire consta de un emisor y un receptor piezoeléctricos montados a ambos lados de la ranura de sujeción del tubo de infusión. El emisor transmite ondas ultrasónicas continuas a una frecuencia de 2,5 MHz. Debido a que la impedancia acústica del aire es dramáticamente inferior a la del agua o suero, la presencia de una burbuja de aire atenúa fuertemente la señal acústica recibida.
+
+Discriminación de tamaño de burbuja y sensibilidad. La bomba está calibrada para activar una alarma inmediata y detener el flujo ante la detección de una burbuja individual de tamaño mayor o igual a 0,05 mL (50 microlitros), o ante la acumulación de microburbujas que sumen 1,0 mL en un intervalo rodante de 15 minutos.
+
+Prueba de verificación con émbolo calibrado de aire. Con una jeringa micrométrica se inyecta una burbuja controlada de 0,05 mL en la línea mientras la bomba infunde a 100 mL/h. La bomba debe detenerse en menos de 0,5 segundos tras el paso de la burbuja por el sensor y mostrar la alarma Aire en Línea en pantalla. Si la bomba no detecta la burbuja o emite falsas alarmas con líquido homogéneo, debe limpiarse el gel acoplador acústico o sustituirse el transductor ultrasónico.

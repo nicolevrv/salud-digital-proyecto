@@ -1,0 +1,14 @@
+ID: BG-10
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Confiabilidad operacional y cálculo de MTBF en equipamiento de soporte vital en UCI
+FUENTE: IEEE Transactions on Biomedical Engineering
+REFERENCIA_OFICIAL: Rodriguez, C., Fernandez, M., & Gomez, L. (2021). Operational reliability assessment and mean time between failures analysis of critical care medical devices. IEEE Transactions on Biomedical Engineering, 68(4), 1120-1129. https://doi.org/10.1109/TBME.2020.3012944
+CODIGO_NORMA: IEEE-TBME-2021
+--------------------------------------------------------------------------------
+
+Modelado de fallas mediante distribución de Weibull en tecnología biomédica. El análisis de confiabilidad en ventiladores mecánicos y monitores de signos vitales demuestra que las tasas de falla siguen la clásica curva de la bañera. Durante la etapa de desgaste, el parámetro de forma beta de Weibull supera el valor de 1,5, lo que evidencia que las fallas están correlacionadas directamente con las horas de operación acumulada y el número de mantenimientos ejecutados.
+
+Tiempo medio entre fallas (MTBF) como indicador predictivo. El cálculo del MTBF operacional en unidades de cuidados intensivos proporciona una métrica cuantitativa para anticipar la degradación de componentes electromecánicos como turbinas de ventilador, solenoides de dosificación y micromotores paso a paso de bombas de jeringa. Un descenso del MTBF por debajo de los 180 días indica necesidad inminente de reacondicionamiento mayor del equipo.
+
+Impacto de las intervenciones preventivas en la disponibilidad. Los programas que combinan mantenimiento preventivo estricto con monitoreo de condiciones operativas logran incrementar la disponibilidad técnica por encima del 98 %, disminuyendo la incidencia de fallas catastróficas intraoperatorias y eventos de tecnovigilancia en pacientes intubados.

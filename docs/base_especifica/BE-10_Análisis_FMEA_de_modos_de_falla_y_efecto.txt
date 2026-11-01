@@ -1,0 +1,12 @@
+ID: BE-10
+BASE: especifica
+TIPO: articulo_cientifico
+TITULO: Análisis FMEA de modos de falla y efectos en ventilación mecánica de pacientes críticos en UCI
+FUENTE: Critical Care Medicine / Elsevier
+REFERENCIA_OFICIAL: Vargas, L., Morales, E., & Ospina, J. (2021). Failure mode and effects analysis (FMEA) applied to mechanical ventilation in intensive care units. Critical Care Medicine, 49(5), e472-e481. https://doi.org/10.1097/CCM.0000000000004921
+CODIGO_NORMA: CCM-FMEA-2021
+--------------------------------------------------------------------------------
+
+Matriz FMEA y Número de Prioridad de Riesgo (NPR) en ventilación mecánica. El análisis modal de fallas y efectos aplicado a ventiladores de cuidados intensivos clasifica las fallas según severidad (S), ocurrencia (O) y detectabilidad (D). Las fallas con mayor NPR corresponden a: descalibración del sensor de flujo proximal que induce asincronías paciente-ventilador severas (NPR = 280), falla súbita de la válvula de exhalación que provoca PEEP no intencionada y atrapamiento aéreo (NPR = 320), y agotamiento no anunciado de la batería interna durante traslados intrahospitalarios (NPR = 360).
+
+Acciones de mitigación recomendadas por FMEA. La implementación de monitoreo predictivo de telemetría de fallas reduce el índice de ocurrencia de 6 a 2, permitiendo anticipar el recambio de válvulas y celdas antes de que alcancen el límite crítico de degradación funcional. Asimismo, la verificación previa al uso obligatoria actúa como una barrera de detectabilidad infranqueable que bloquea el uso del equipo si los parámetros metrológicos están fuera de norma.

@@ -1,0 +1,12 @@
+ID: BG-22
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 80001-1: Gestión de riesgos para redes de tecnologías de la información médica
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2021). Application of risk management for IT networks incorporating medical devices - Part 1: Safety, effectiveness and data security (IEC Standard No. 80001-1:2021).
+CODIGO_NORMA: IEC 80001-1:2021
+--------------------------------------------------------------------------------
+
+Interconexión de dispositivos biomédicos en redes hospitalarias locales. La incorporación de ventiladores mecánicos, centrales de monitoreo y bombas de infusión a redes Ethernet o Wi-Fi hospitalarias para telemetría HL7 y servidores FHIR introduce riesgos para la seguridad básica, la eficacia clínica y la seguridad de la información.
+
+Degradación de calidad de servicio (QoS) y pérdida de telemetría. La saturación de ancho de banda o tormentas de broadcast en la VLAN clínica pueden retardar la llegada de alarmas críticas a las estaciones de enfermería. La norma exige segmentar la red médica mediante VLANs dedicadas con priorización de tráfico (QoS DiffServ) y aislamiento estricto respecto a las redes corporativas y redes de invitados de la institución.

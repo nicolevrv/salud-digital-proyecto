@@ -1,0 +1,14 @@
+ID: BE-27
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Dräger Evita V800: Calibración y mantenimiento del sensor de presión de vía aérea PEEP/Paw
+FUENTE: Drägerwerk AG & Co. KGaA
+REFERENCIA_OFICIAL: Dräger Medical. (2020). Evita V800 Airway Pressure Transducer: Zeroing, span calibration and Barometric Pressure compensation (Technical Reference Manual). Lübeck, Germany.
+CODIGO_NORMA: Dräger Paw Reference Manual
+--------------------------------------------------------------------------------
+
+Compensación barométrica y calibración de transductores de presión de vía aérea en Evita V800. El ventilador integra dos transductores piezorresistivos redundantes para medir la presión inspiratoria y espiratoria en la vía aérea. Ambos sensores son referenciados a un sensor barométrico interno que compensa automáticamente las variaciones de presión atmosférica provocadas por altitud o cambios climáticos locales.
+
+Procedimiento de ajuste a cero y ganancia a 50 hPa. Durante el auto-test de encendido, las válvulas de derivación abren los transductores a presión atmosférica durante 500 milisegundos para registrar el offset de cero. Posteriormente, se inyecta una presión controlada de 50 hPa desde el módulo mezclador. La diferencia entre las lecturas de ambos sensores redundantes no debe exceder de 0,5 hPa.
+
+Falla por discordancia de sensores de presión redundantes. Si durante la ventilación clínica continua la discrepancia entre el sensor de presión principal y el sensor de control supera los 2 hPa durante más de tres ciclos respiratorios consecutivos, el ventilador emite la alarma de alta prioridad Medición de Presión en Vía Aérea Incompatible y conmuta a ciclado por volumen con válvula mecánica de seguridad abierta.

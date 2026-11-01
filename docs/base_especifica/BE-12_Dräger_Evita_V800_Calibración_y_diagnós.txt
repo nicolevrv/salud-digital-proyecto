@@ -1,0 +1,14 @@
+ID: BE-12
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Dräger Evita V800: Calibración y diagnóstico de los mezcladores de gas inspiratorios (O2 y Aire)
+FUENTE: Drägerwerk AG & Co. KGaA
+REFERENCIA_OFICIAL: Dräger Medical. (2021). Evita V800 Gas Mixing Unit: Proportional valve calibration, flow sensor offset and pressure regulation (Technical Bulletin No. 9055812). Lübeck, Germany.
+CODIGO_NORMA: Dräger Evita Gas Mixer Bulletin 9055812
+--------------------------------------------------------------------------------
+
+Unidad mezcladora de gases y válvulas proporcionales en Dräger Evita V800. La mezcla precisa de aire medicinal y oxígeno se efectúa mediante dos válvulas proporcionales electromagnéticas ultrarrápidas comandadas por modulación por ancho de pulsos (PWM). Cada línea de entrada cuenta con un regulador de presión que estabiliza el gas entrante entre 2,7 bar y 6,0 bar antes de ingresar al bloque mezclador.
+
+Prueba de respuesta dinámica y flujo inspiratorio pico. El ventilador debe ser capaz de suministrar un flujo inspiratorio pico de hasta 180 L/min con un tiempo de subida de presión inferior a 100 milisegundos en modo de ventilación asistida. Si las válvulas proporcionales acumulan micropartículas de las redes de gases hospitalarias, se produce retardo en la apertura de la válvula, manifestándose como un esfuerzo inspiratorio excesivo del paciente y caída brusca de la presión en la vía aérea (asincronía de disparo).
+
+Verificación de estanqueidad interna y flujo de fuga entre gases. Se presuriza la línea de O2 a 4 bar manteniendo la línea de aire a 0 bar, y se monitorea la celda de oxígeno interna. Si la concentración de O2 en reposo supera el 23 % sin comando de ventilación, se confirma una fuga interna en el asiento de la válvula de oxígeno, lo que exige el desmontaje y mantenimiento mayor del bloque mezclador.

@@ -1,0 +1,14 @@
+ID: BE-05
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Mindray BeneVision N17: Manual de servicio - Calibración metrológica del módulo de PNI
+FUENTE: Shenzhen Mindray Bio-Medical Electronics Co., Ltd.
+REFERENCIA_OFICIAL: Mindray. (2021). BeneVision N17/N15/N12 Patient Monitor Service Manual: Non-invasive blood pressure (NIBP) calibration and pneumatic leakage test (P/N: 046-008920-00). Shenzhen, China.
+CODIGO_NORMA: Mindray N17 Service Manual 046-008920-00
+--------------------------------------------------------------------------------
+
+Procedimiento de calibración del transductor de presión del módulo de PNI en Mindray N17. Para calibrar el transductor piezorresistivo de PNI, se ingresa al menú de Servicio Técnico protegido por contraseña de ingeniería. Se conecta una perilla de inflado manual con pera, un manómetro digital patrón calibrado (exactitud del 0,1 %) y un recipiente metálico rígido de 500 mL mediante una conexión en T a la toma de PNI del monitor.
+
+Puntos de calibración y prueba de linealidad. Se presuriza el circuito neumático sucesivamente a 50 mmHg, 150 mmHg y 250 mmHg. En cada punto de calibración, la diferencia entre la lectura indicada en la pantalla del monitor BeneVision N17 y la lectura del manómetro patrón no debe superar más o menos 2 mmHg. Si el error supera los 3 mmHg, debe ejecutarse el comando Calibrar Cero y Calibrar Ganancia en la interfaz de servicio.
+
+Prueba de fuga de aire en el circuito neumático. Tras la calibración de presión, se infla el circuito a 250 mmHg y se activa la prueba de fuga de PNI durante 60 segundos. La caída de presión en un minuto no debe exceder los 5 mmHg. Si la fuga es superior, deben inspeccionarse las válvulas de desinflado rápido y lento, el conector rápido hembra del panel frontal y los tubos internos de silicona en busca de fisuras o resecamiento.

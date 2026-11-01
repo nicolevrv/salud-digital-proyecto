@@ -1,0 +1,12 @@
+ID: BG-27
+BASE: general
+TIPO: norma_colombiana
+TITULO: Resolución 482 de 2018: Reglamentación del uso de equipos generadores de radiación ionizante en UCI
+FUENTE: Ministerio de Salud y Protección Social de Colombia
+REFERENCIA_OFICIAL: Ministerio de Salud y Protección Social. (2018). Resolución 482 de 2018: Por la cual se reglamenta el uso de equipos generadores de radiación ionizante, su control de calidad y la protección radiológica. Bogotá: Minsalud.
+CODIGO_NORMA: Resolución 482 de 2018
+--------------------------------------------------------------------------------
+
+Control de calidad en equipos de rayos X rodantes en unidades críticas. Los arcos en C y los equipos portátiles de rayos X utilizados para control de catéteres y radiografías de tórax a pie de cama en UCI deben someterse a pruebas anuales de control de calidad que evalúen: repetibilidad y exactitud del kilovoltaje (desviación máxima menor al 5 %), exactitud del tiempo de exposición y rendimiento del tubo en mGy/mAs.
+
+Blindaje y protección radiológica para el personal asistencial. El personal de enfermería y los médicos intensivistas deben disponer de delantales plomados con espesor equivalente no menor a 0,5 mm de plomo y mantener una distancia mínima de 2 metros respecto al punto focal durante el disparo radiográfico, verificando la adecuada colimación del haz útil para evitar radiación dispersa a pacientes de camas contiguas.

@@ -1,0 +1,14 @@
+ID: BG-02
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-1: Requisitos generales para la seguridad básica y el funcionamiento esencial
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2020). Medical electrical equipment - Part 1: General requirements for basic safety and essential performance (IEC Standard No. 60601-1:2005+AMD1:2012+AMD2:2020). Geneva: IEC.
+CODIGO_NORMA: IEC 60601-1 Ed. 3.2
+--------------------------------------------------------------------------------
+
+Clasificación de partes aplicadas y aislamiento eléctrico según IEC 60601-1. Las partes aplicadas de los equipos electromédicos se clasifican según el grado de protección contra choques eléctricos en Tipo B, Tipo BF y Tipo CF. Las partes aplicadas Tipo CF son aquellas destinadas a tener contacto directo con el corazón del paciente, como catéteres intracardíacos y transductores de presión invasiva en UCI.
+
+Límites de corriente de fuga de paciente. Para partes aplicadas Tipo CF, la corriente de fuga de paciente en corriente alterna no debe exceder los 10 microamperios en condición normal ni los 50 microamperios en condición de primer fallo. Para partes aplicadas Tipo BF, el límite es de 100 microamperios en condición normal y 500 microamperios en primer fallo. Para Tipo B, los límites se establecen en 100 microamperios en condición normal y 500 microamperios en condición de falla.
+
+Requerimientos de puesta a tierra funcional y de protección. El terminal de tierra de protección debe garantizar una trayectoria de baja impedancia a masa para desviar cualquier corriente de fuga generada por fallas en el aislamiento primario. La integridad mecánica y eléctrica del cableado de tierra debe verificarse inyectando una corriente de prueba de 25 amperios a frecuencia de red durante un mínimo de 5 segundos.

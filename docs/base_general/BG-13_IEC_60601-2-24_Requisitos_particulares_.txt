@@ -1,0 +1,14 @@
+ID: BG-13
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-2-24: Requisitos particulares para la seguridad de bombas y controladores de infusión
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2012). Medical electrical equipment - Part 2-24: Particular requirements for the basic safety and essential performance of infusion pumps and controllers (IEC Standard No. 60601-2-24:2012).
+CODIGO_NORMA: IEC 60601-2-24:2012
+--------------------------------------------------------------------------------
+
+Exactitud de flujo y dosificación en bombas de infusión volumétricas y a jeringa. La norma IEC 60601-2-24 exige que la tasa de flujo administrada por bombas volumétricas mantenga una exactitud dentro del más o menos cinco por ciento a lo largo de un período de 24 horas, y dentro del más o menos dos por ciento para bombas de jeringa microinfusoras utilizadas en la titulación de fármacos inotrópicos y vasopresores en UCI.
+
+Presión de oclusión y tiempo de alarma. El sistema de detección de oclusión debe activar una alarma audible y detener el bombeo antes de que la presión intraluminal en la línea de infusión alcance 100 kPa (1 bar) o el límite programado por el usuario. La liberación involuntaria de un bolo posterior a una oclusión no debe superar los 0,2 mL para bombas a jeringa neonatales y pediátricas.
+
+Detección de aire en línea y mecanismos de sujeción libre de flujo. Las bombas volumétricas deben incorporar sensores ultrasónicos de burbuja capaces de detectar burbujas individuales de 50 microlitros o aire acumulado superior a 1 mL por hora, activando el bloqueo inmediato de la línea mediante pinza clamp de cierre automático para evitar embolias gaseosas en accesos venosos centrales.

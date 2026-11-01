@@ -1,0 +1,12 @@
+ID: BG-28
+BASE: general
+TIPO: guia_oms_invima
+TITULO: Guía de Metrología Biomédica: Aseguramiento metrológico en equipos de soporte vital
+FUENTE: Instituto Nacional de Metrología de Colombia (INM) / UAO Biomédica
+REFERENCIA_OFICIAL: Instituto Nacional de Metrología & Universidad Autónoma de Occidente. (2020). Guía para el aseguramiento metrológico y calibración de instrumentos biomédicos en instituciones hospitalarias. Cali: UAO.
+CODIGO_NORMA: Guía Metrología Biomédica INM-UAO 2020
+--------------------------------------------------------------------------------
+
+Intervalos de calibración y criterios de ajuste metrológico. El aseguramiento metrológico en UCI exige establecer la periodicidad de calibración en función de la criticidad del equipo y los resultados históricos de derivas. Para ventiladores mecánicos y monitores de signos vitales, la calibración debe realizarse semestralmente o tras 2000 horas de operación continua.
+
+Criterios de descalificación metrológica. Se considera que un equipo biomédico está descalibrado cuando el error sistemático sumado a la incertidumbre expandida de medición sobrepasa el Error Máximo Permisible (EMP) estipulado por el fabricante o las normas internacionales. En tales casos, el equipo debe etiquetarse en estado Fuera de Servicio y derivarse a mantenimiento especializado para reajuste de sus constantes de transducción.

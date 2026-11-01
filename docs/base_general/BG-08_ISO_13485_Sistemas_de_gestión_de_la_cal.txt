@@ -1,0 +1,14 @@
+ID: BG-08
+BASE: general
+TIPO: norma_internacional
+TITULO: ISO 13485: Sistemas de gestión de la calidad para dispositivos médicos
+FUENTE: Organización Internacional de Normalización (ISO)
+REFERENCIA_OFICIAL: International Organization for Standardization. (2016). Medical devices - Quality management systems - Requirements for regulatory purposes (ISO Standard No. 13485:2016). Geneva: ISO.
+CODIGO_NORMA: ISO 13485:2016
+--------------------------------------------------------------------------------
+
+Requisitos de control de equipos de seguimiento y medición en servicios biomédicos. La norma ISO 13485 establece que los equipos utilizados para calibrar o verificar dispositivos médicos (analizadores de seguridad eléctrica, analizadores de flujo ventilatorio, simuladores de paciente y tacómetros) deben ser calibrados a intervalos especificados o antes de su utilización contra patrones trazables a institutos nacionales de metrología.
+
+Control de software utilizado en el mantenimiento y calibración. Cuando se empleen herramientas computacionales, modelos predictivos de inteligencia artificial o algoritmos de clasificación de fallas para decidir si un equipo biomédico es apto para uso clínico, dicho software debe ser formalmente validado antes de su puesta en producción y tras cualquier modificación o actualización.
+
+Acciones correctivas y preventivas (CAPA). La organización debe implementar un procedimiento documentado para identificar no conformidades sistemáticas en los lotes de equipos biomédicos, determinar sus causas raíz, evaluar la necesidad de acciones y verificar la eficacia de las medidas tomadas para prevenir su repetición en camas críticas.

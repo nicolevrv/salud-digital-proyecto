@@ -1,0 +1,14 @@
+ID: BG-04
+BASE: general
+TIPO: norma_colombiana
+TITULO: Resolución 3100 de 2019 de Minsalud Colombia: Estándar de dotación y mantenimiento en UCI Adultos
+FUENTE: Ministerio de Salud y Protección Social de Colombia
+REFERENCIA_OFICIAL: Ministerio de Salud y Protección Social. (2019). Resolución 3100 de 2019: Por la cual se definen los procedimientos y condiciones de inscripción de los prestadores de servicios de salud y de habilitación de los servicios de salud. Bogotá: Imprenta Nacional.
+CODIGO_NORMA: Resolución 3100 de 2019
+--------------------------------------------------------------------------------
+
+Criterios de habilitación para el servicio de Cuidado Intensivo Adultos. Toda institución que preste servicios de UCI Adultos en Colombia debe contar con un programa institucional de mantenimiento preventivo y metrología biomédica documentado y actualizado anualmente. Cada cama habilitada de UCI debe contar como dotación mínima obligatoria con: un ventilador mecánico microprocesado con modos invasivos y no invasivos, un monitor multiparámetro de signos vitales con registro continuo de ECG, respiración, presión no invasiva, temperatura y oximetría de pulso, al menos dos bombas de infusión volumétricas y una bomba de infusión a jeringa.
+
+Gestión de hojas de vida y trazabilidad metrológica. Las hojas de vida de los equipos biomédicos deben consignar de forma inalterable el código institucional, marca, modelo, serie, registro sanitario INVIMA vigente, clasificación de riesgo, periodicidad de mantenimientos preventivos y los certificados de calibración emitidos por laboratorios acreditados bajo la norma ISO/IEC 17025.
+
+Disponibilidad y soporte técnico. Se exige garantizar una disponibilidad operativa mínima del noventa y cinco por ciento para los equipos de soporte vital, así como contratos vigentes de soporte técnico o personal propio de ingeniería biomédica con dedicación exclusiva y respuesta para emergencias técnicas las 24 horas del día.

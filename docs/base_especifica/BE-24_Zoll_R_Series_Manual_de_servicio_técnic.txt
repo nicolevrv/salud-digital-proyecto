@@ -1,0 +1,14 @@
+ID: BE-24
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Zoll R Series: Manual de servicio técnico - Calibración de energía de descarga y prueba de carga resistiva
+FUENTE: Zoll Medical Corporation
+REFERENCIA_OFICIAL: Zoll Medical. (2021). R Series Defibrillator Service Manual: Energy delivery calibration, pacing pulse verification and safety testing (Doc No. 9650-0903-01 Rev. M). Chelmsford, MA: Zoll Medical.
+CODIGO_NORMA: Zoll R Series Service Manual 9650-0903
+--------------------------------------------------------------------------------
+
+Calibración del banco de condensadores de alta energía en Zoll R Series. El desfibrilador almacena hasta 200 julios de energía eléctrica en un condensador de película de polipropileno metalizado de alta tensión (aproximadamente 2200 voltios). La energía se descarga a través de un puente H con conmutadores semiconductores IGBT que conforman una onda bifásica rectilínea de duración controlada según la impedancia transtorácica del paciente.
+
+Prueba de energía descargada sobre carga normalizada de 50 ohmios. Conectando las palas o el cable multifunción OneStep al analizador de desfibriladores Fluke Impulse 7000DP, se realizan descargas consecutivas a 50 J, 100 J, 150 J y 200 J. La energía medida por el analizador debe encontrarse dentro del más o menos diez por ciento del valor nominal seleccionado en la consola. Si el error supera el quince por ciento, debe recalibrarse el divisor resistivo de tensión y el convertidor analógico-digital de la placa de control de alta tensión.
+
+Verificación del módulo de marcapasos transcutáneo no invasivo. El generador de marcapasos externo debe emitir pulsos de corriente constante de 40 milisegundos de duración con una amplitud seleccionable entre 10 mA y 140 mA a frecuencias de 30 a 180 pulsos por minuto. El error en la amplitud de la corriente de marcapasos no debe exceder de más o menos dos miliamperios en todo el rango.
