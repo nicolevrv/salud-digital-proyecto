@@ -1,0 +1,12 @@
+ID: BE-16
+BASE: especifica
+TIPO: articulo_cientifico
+TITULO: Fallas por descalibración en transductores de flujo de ventiladores y su impacto en la asincronía paciente-ventilador
+FUENTE: IEEE Reviews in Biomedical Engineering
+REFERENCIA_OFICIAL: Montero, G., Sanchez, K., & Restrepo, D. (2022). Flow sensor drift and patient-ventilator asynchrony: A failure mode and quantitative evaluation in ICU. IEEE Reviews in Biomedical Engineering, 15, 230-241. https://doi.org/10.1109/RBME.2021.3098765
+CODIGO_NORMA: IEEE-RBME-2022-230
+--------------------------------------------------------------------------------
+
+Impacto fisiopatológico de la deriva del sensor de flujo proximal. Los ventiladores modernos utilizan el flujo respiratorio para disparar la inspiración (disparo por flujo o flow-by) y para ciclar a la fase espiratoria (porcentaje de caída del flujo pico inspiratorio). Una deriva del sensor de flujo superior al diez por ciento altera radicalmente estos umbrales, provocando auto-ciclado (el ventilador dispara sin esfuerzo del paciente) o disparos inefectivos (el paciente realiza un esfuerzo respiratorio que no es detectado por el ventilador).
+
+Correlación con el Target Falla y Target Crítico del modelo predictivo. En el análisis del historial de mantenimiento de camas críticas, la desviación acumulada en la calibración del sensor de flujo (Desviacion_Calibracion_Pct) es la variable de mayor peso predictivo para la activación del Target Falla en ventiladores. Desviaciones mayores al 8 % elevan el trabajo respiratorio del paciente en un 45 % e incrementan la probabilidad de desadaptación ventilatoria, justificando la emisión inmediata de una Alerta R20 (Target Crítico = 1).

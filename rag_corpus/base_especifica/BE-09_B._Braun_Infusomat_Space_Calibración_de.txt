@@ -1,0 +1,14 @@
+ID: BE-09
+BASE: especifica
+TIPO: manual_servicio
+TITULO: B. Braun Infusomat Space: Calibración de tasa de infusión y mantenimiento del mecanismo peristáltico
+FUENTE: B. Braun Melsungen AG
+REFERENCIA_OFICIAL: B. Braun. (2019). Infusomat Space Volumetric Infusion Pump: Technical safety check and delivery rate calibration protocol. Melsungen, Germany.
+CODIGO_NORMA: B. Braun Delivery Rate Protocol
+--------------------------------------------------------------------------------
+
+Mecanismo de bombeo peristáltico lineal en Infusomat Space. El bombeo volumétrico se logra mediante doce dedos peristálticos metálicos accionados por un árbol de levas excéntrico acoplado a un motor paso a paso con encoder óptico de posición. El encoder reporta 200 pasos por revolución, lo que permite un control micrométrico del volumen desplazado en cada ciclo de compresión.
+
+Prueba gravimétrica de exactitud de entrega a 100 mL/h. Se purga una línea de infusión original Infusomat Space Lines con agua bidestilada a 22 °C y se programa la infusión a 100 mL/h durante un período continuo de dos horas, recolectando el líquido en un matraz sobre una balanza analítica con trampa de evaporación. La masa recolectada debe situarse entre 190,0 y 210,0 gramos (correspondientes a una exactitud de más o menos 5 %).
+
+Desgaste del mecanismo de levas y falla acumulada. Si la bomba acumula más de 10.000 horas de funcionamiento, el desgaste mecánico de los rodamientos de las levas o la fatiga del muelle del prensatubos provoca una subdosificación sistemática del caudal. Un desvío superior al cinco por ciento exige el cambio integral del módulo de motor y transmisión peristáltica.

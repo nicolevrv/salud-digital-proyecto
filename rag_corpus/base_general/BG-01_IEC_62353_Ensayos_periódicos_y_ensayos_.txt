@@ -1,0 +1,14 @@
+ID: BG-01
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 62353: Ensayos periódicos y ensayos posteriores a la reparación de equipos electromédicos
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2014). Medical electrical equipment - Recurrent test and test after repair of medical electrical equipment (IEC Standard No. 62353:2014). Geneva: IEC.
+CODIGO_NORMA: IEC 62353:2014
+--------------------------------------------------------------------------------
+
+Campo de aplicación y requisitos de la norma IEC 62353. La norma IEC 62353 establece los requisitos para los ensayos periódicos y los ensayos posteriores a la reparación de equipos electromédicos y sistemas electromédicos o partes de los mismos, conformes con la IEC 60601-1. Su objetivo principal es evaluar la seguridad eléctrica y verificar que el equipo continúe operando de manera segura tanto para el paciente como para el operador.
+
+Métodos de ensayo de corrientes de fuga y resistencia del conductor de protección. La norma describe tres métodos de ensayo: directo, alternativo y diferencial. Para la resistencia del conductor de protección a tierra en equipos de Clase I, el valor medido no debe exceder de 0,2 ohmios con un cable de alimentación desmontable, o 0,3 ohmios si se incluye un cable de alimentación fijo. Para la corriente de fuga a tierra, el valor límite no debe superar los 500 microamperios en condiciones normales, o 1000 microamperios en condición de primer fallo.
+
+Criterios de rechazo y trazabilidad en UCI. Todo incremento de la corriente de fuga superior al cincuenta por ciento respecto al valor de referencia inicial obtenido en la puesta en marcha, aun encontrándose por debajo del límite absoluto, constituye un indicador de envejecimiento del aislamiento dieléctrico y requiere mantenimiento correctivo preventivo antes de su retorno al servicio clínico en camas críticas.

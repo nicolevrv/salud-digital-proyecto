@@ -1,0 +1,14 @@
+ID: BE-19
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Mindray BeneVision N17: Protocolo de prueba del módulo de temperatura dual (T1 y T2)
+FUENTE: Shenzhen Mindray Bio-Medical Electronics Co., Ltd.
+REFERENCIA_OFICIAL: Mindray. (2020). BeneVision N17 Temperature Measurement Module Service Guide: YSI 400 series sensor calibration and drift verification (P/N: 046-009180-00). Shenzhen, China.
+CODIGO_NORMA: Mindray N17 Temp Guide 046-009180-00
+--------------------------------------------------------------------------------
+
+Metrología del canal de temperatura biológica en Mindray N17. El módulo de temperatura admite dos canales independientes compatibles con termistores de la serie YSI 400 (resistencia de 2252 ohmios a 25 °C). El rango de medición clínica abarca de 0 °C a 50 °C con una resolución de 0,1 °C.
+
+Procedimiento de verificación con resistencias patrón de precisión. La verificación metrológica se realiza conectando cajas de décadas de resistencias patrón calibradas con exactitud del 0,01 %. Se simulan temperaturas de 25,0 °C (2252 Ω), 37,0 °C (1355 Ω) y 42,0 °C (1124 Ω). El error entre la temperatura mostrada por el monitor y el valor simulado no debe exceder de más o menos 0,1 °C.
+
+Criterios de falla por humedad en conectores de panel. La penetración de soluciones desinfectantes en el conector circular LEMO de temperatura genera caminos resistivos paralelos que falsean la lectura hacia arriba o hacia abajo, simulando hipotermia o picos febriles artificiales que pueden desencadenar tratamientos farmacológicos innecesarios en el paciente crítico.

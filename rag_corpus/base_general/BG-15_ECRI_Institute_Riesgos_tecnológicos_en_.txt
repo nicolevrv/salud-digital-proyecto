@@ -1,0 +1,14 @@
+ID: BG-15
+BASE: general
+TIPO: guia_oms_invima
+TITULO: ECRI Institute: Riesgos tecnológicos en salud y gestión de alarmas clínicas en UCI
+FUENTE: Emergency Care Research Institute (ECRI)
+REFERENCIA_OFICIAL: ECRI Institute. (2022). Top 10 health technology hazards for 2022: Clinical alarm management and equipment reliability in intensive care units. Health Devices, 51(1), 1-18.
+CODIGO_NORMA: ECRI Top 10 Hazards 2022
+--------------------------------------------------------------------------------
+
+Fatiga de alarmas y seguridad del paciente en cuidados intensivos. Los estudios del ECRI Institute demuestran que entre el 70 % y el 90 % de las alarmas sonoras emitidas en una UCI son falsas o clínicamente irrelevantes. La sobrecarga acústica genera desensibilización sensorial en médicos y enfermeros, lo que puede provocar retrasos o falta de respuesta ante alarmas de falla real en ventiladores y bombas de infusión.
+
+Estandarización de umbrales y perfiles por paciente. Para mitigar este riesgo, los ingenieros biomédicos y los líderes clínicos deben configurar perfiles de límites de alarma acordes a la condición hemodinámica del paciente en lugar de mantener los valores predeterminados de fábrica. Las alarmas de parámetros críticos de soporte vital (apnea, desconexión del circuito, asistolia y oclusión de infusión) nunca deben silenciarse de forma indefinida ni desactivarse.
+
+Mantenimiento de transductores y cables de señal. Hasta un tercio de las falsas alarmas registradas en monitores se originan en cables de ECG degradados, derivaciones rotas, sensores de pulsioximetría saturados o líneas de presión invasiva amortiguadas por burbujas de aire. La inspección física y el recambio preventivo de accesorios deben ser parte obligatoria de la rutina de mantenimiento.

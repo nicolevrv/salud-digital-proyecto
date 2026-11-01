@@ -1,0 +1,14 @@
+ID: BG-06
+BASE: general
+TIPO: guia_oms_invima
+TITULO: Manual de Tecnovigilancia INVIMA: Protocolo FOREIA y gestión de eventos adversos
+FUENTE: Instituto Nacional de Vigilancia de Medicamentos y Alimentos (INVIMA)
+REFERENCIA_OFICIAL: INVIMA. (2018). Manual de Tecnovigilancia para prestadores de servicios de salud: Guía metodológica para la notificación, gestión y análisis de eventos e incidentes adversos asociados a dispositivos médicos. Bogotá: INVIMA.
+CODIGO_NORMA: Guía Tecnovigilancia INVIMA 2018
+--------------------------------------------------------------------------------
+
+Diferencia entre evento adverso e incidente adverso según INVIMA. Se define incidente adverso como un potencial daño no intencionado que pudo haber llevado a la muerte o al deterioro grave de la salud de no haber mediado una barrera de seguridad o la oportuna intervención de un profesional. El evento adverso ocurre cuando el daño efectivamente se materializa en el paciente o usuario.
+
+Diligenciamiento del formato FOREIA. El Formato de Reporte de Eventos e Incidentes Adversos (FOREIA) exige registrar: fecha y hora del evento, identificación del dispositivo (nombre comercial, marca, modelo, serie, lote y software), descripción detallada de la falla o síntoma observado, consecuencias clínicas en el paciente, medidas adoptadas de inmediato y el resultado de la inspección técnica preliminar realizada por el servicio de ingeniería clínica.
+
+Análisis de causa raíz en fallas de equipos en UCI. Ante un evento serio con equipos de soporte vital, el comité institucional de tecnovigilancia debe aplicar herramientas de análisis como el Protocolo de Londres o el diagrama de Ishikawa, diferenciando entre fallas técnicas intrínsecas del dispositivo, descalibración metrológica, errores de ensamble o desinfección, y errores humanos derivados de la fatiga o interfaces confusas.

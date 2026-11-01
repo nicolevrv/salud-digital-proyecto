@@ -1,0 +1,14 @@
+ID: BG-14
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Análisis de riesgos y microchoque eléctrico en pacientes críticos con accesos vasculares centrales
+FUENTE: Journal of Clinical Monitoring and Computing
+REFERENCIA_OFICIAL: Martinez, R., Silva, A., & Perez, J. (2020). Electrical microshock hazard and stray currents in modern intensive care units. Journal of Clinical Monitoring and Computing, 34(3), 541-550. https://doi.org/10.1007/s10877-019-00362-9
+CODIGO_NORMA: JCMC-2020
+--------------------------------------------------------------------------------
+
+Fisiopatología del microchoque en la Unidad de Cuidados Intensivos. Los pacientes críticos en UCI cuentan con catéteres venosos centrales, electrodos de marcapasos endocavitarios y líneas arteriales que proporcionan una vía de conducción eléctrica directa al miocardio. En estas condiciones, corrientes de fuga de tan solo 10 a 50 microamperios a 60 Hz son suficientes para desencadenar fibrilación ventricular por microchoque, mientras que un sujeto sano con piel intacta requiere más de 10 miliamperios para experimentar daño miocárdico.
+
+Equipotencialidad y barra de puesta a tierra hospitalaria. Para mitigar el microchoque, la instalación eléctrica de cada cama de UCI debe contar con un sistema de puesta a tierra equipotencial con una diferencia de potencial máxima entre partes metálicas accesibles inferior a 10 milivoltios. La resistencia de contacto entre las tomas de tierra y el chasis de los equipos debe medirse periódicamente con milióhmetro de 4 hilos (Kelvin).
+
+Factores determinantes en la degradación del aislamiento. La acumulación de humedad, polvo conductor y el uso de soluciones desinfectantes cloradas en los conectores de los transductores aceleran la pérdida de rigidez dieléctrica de las fuentes de poder conmutadas, elevando la corriente de fuga de paciente de forma imperceptible hasta que el equipo es intervenido con un analizador de seguridad eléctrica.

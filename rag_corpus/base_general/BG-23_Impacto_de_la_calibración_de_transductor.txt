@@ -1,0 +1,12 @@
+ID: BG-23
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Impacto de la calibración de transductores de presión no invasiva en la toma de decisiones en UCI
+FUENTE: Journal of Medical Engineering & Technology
+REFERENCIA_OFICIAL: Castro, M., & Ortiz, G. (2021). Oscillometric blood pressure measurement accuracy and calibration compliance in intensive care units. Journal of Medical Engineering & Technology, 45(6), 462-471. https://doi.org/10.1080/03091902.2021.1925345
+CODIGO_NORMA: JMET-2021-462
+--------------------------------------------------------------------------------
+
+Metodología oscilométrica y verificación metrológica del módulo de PNI. Los monitores multiparámetro determinan la presión arterial no invasiva mediante el método oscilométrico, analizando las microoscilaciones de presión transmitidas al manguito por la pared arterial durante el desinflado gradual. El transductor piezoeléctrico interno debe ser verificado periódicamente conectándolo a un manómetro patrón trazable y una cámara de presión rígida de 500 mL.
+
+Tolerancia de error estático y fuga de presión en manguitos. La norma IEC 80601-2-30 establece que el error estático del transductor de presión no debe exceder de más o menos 3 mmHg en todo el rango de 0 a 300 mmHg. Asimismo, la tasa de fuga neumática del sistema cerrado inflado a 250 mmHg no debe superar los 6 mmHg por minuto. Fugas mayores provocan desinflados anormales y lecturas espurias de hipertensión o hipotensión que inducen errores en la dosificación de vasopresores.

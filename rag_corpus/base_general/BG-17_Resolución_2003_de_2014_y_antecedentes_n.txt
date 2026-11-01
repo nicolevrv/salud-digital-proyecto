@@ -1,0 +1,12 @@
+ID: BG-17
+BASE: general
+TIPO: norma_colombiana
+TITULO: Resolución 2003 de 2014 y antecedentes normativos de habilitación tecnológica en Colombia
+FUENTE: Ministerio de Salud y Protección Social de Colombia
+REFERENCIA_OFICIAL: Ministerio de Salud y Protección Social. (2014). Resolución 2003 de 2014: Por la cual se definen los procedimientos y condiciones de inscripción de los prestadores de servicios de salud. Bogotá: Minsalud.
+CODIGO_NORMA: Resolución 2003 de 2014
+--------------------------------------------------------------------------------
+
+Evolución del estándar de mantenimiento biomédico en el sistema obligatorio de calidad. La Resolución 2003 sentó las bases para la obligatoriedad de los inventarios técnicos de tecnología médica, clasificados por riesgo y estado de funcionamiento. En el contexto de la UCI, prohibió expresamente el uso de equipos biomédicos en calidad de préstamo o comodato sin su correspondiente hoja de vida, registro sanitario INVIMA y protocolo de inducción al personal asistencial.
+
+Documentación de mantenimientos correctivos mayores. Todo mantenimiento correctivo que involucre el reemplazo de módulos principales (fuente de alimentación, tarjeta madre del microprocesador o bloque de válvulas neumáticas) requiere una verificación metrológica completa previa al reingreso del equipo a la cama del paciente, con registro formal de las piezas sustituidas y calibración de fábrica.

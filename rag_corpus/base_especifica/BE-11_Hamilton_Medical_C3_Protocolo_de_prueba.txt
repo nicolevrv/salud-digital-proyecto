@@ -1,0 +1,14 @@
+ID: BE-11
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Hamilton Medical C3: Protocolo de prueba de la válvula espiratoria y control de PEEP
+FUENTE: Hamilton Medical AG
+REFERENCIA_OFICIAL: Hamilton Medical. (2021). HAMILTON-C3 Expiratory Valve Set: Autoclaving cycles, membrane maintenance and calibration (Doc ID: 624145/02). Bonaduz, Switzerland.
+CODIGO_NORMA: Hamilton C3 Expiratory Valve Doc 624145
+--------------------------------------------------------------------------------
+
+Conjunto de válvula espiratoria desechable y reutilizable en Hamilton C3. La válvula espiratoria controla la resistencia de salida del gas y la presión PEEP mediante un actuador electromagnético lineal que ejerce fuerza precisa sobre la membrana de silicona de la válvula. El actuador es gobernado por un lazo de control PID con retroalimentación a 100 Hz desde el transductor de presión espiratoria.
+
+Criterios de falla por fatiga de la membrana de exhalación. La membrana de silicona reutilizable soporta hasta 50 ciclos de esterilización en autoclave a 134 °C. Superado este límite, el material sufre pérdida de elasticidad y deformación permanente, impidiendo un cierre hermético durante la fase inspiratoria. Esto provoca fuga inspiratoria masiva, caída en el volumen corriente entregado y alarmas repetidas de Pérdida de PEEP o Circuito con Fuga.
+
+Protocolo de verificación técnica de la válvula. Durante el pre-chequeo del ventilador, el sistema presuriza la válvula a 30 hPa y mide la corriente eléctrica consumida por el solenoide proporcional. Si la corriente necesaria para sellar la válvula supera los 800 mA, indica atascamiento mecánico del émbolo o acumulación de residuos secos, requiriendo reemplazo inmediato del conjunto de exhalación.

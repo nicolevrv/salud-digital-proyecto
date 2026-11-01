@@ -1,0 +1,14 @@
+ID: BG-03
+BASE: general
+TIPO: norma_internacional
+TITULO: IEC 60601-1-2: Compatibilidad electromagnética en entornos de cuidados intensivos
+FUENTE: Comisión Electrotécnica Internacional (IEC)
+REFERENCIA_OFICIAL: International Electrotechnical Commission. (2020). Medical electrical equipment - Part 1-2: Electromagnetic disturbances - Requirements and tests (IEC Standard No. 60601-1-2:2014+AMD1:2020).
+CODIGO_NORMA: IEC 60601-1-2:2020
+--------------------------------------------------------------------------------
+
+Entorno electromagnético en la Unidad de Cuidados Intensivos. La UCI alberga una alta densidad de equipos electromédicos operando simultáneamente junto a dispositivos de comunicación inalámbrica y sistemas electroquirúrgicos. La norma clasifica los entornos en instalaciones sanitarias profesionales y exige niveles de inmunidad radiada de 3 V/m a 10 V/m en el rango de frecuencia de 80 MHz a 2,7 GHz.
+
+Inmunidad a descargas electrostáticas y transitorios rápidos. Los dispositivos de soporte vital deben soportar descargas electrostáticas por contacto de 8 kV y por aire de 15 kV sin pérdida de funcionamiento esencial ni reinicios del procesador. Las perturbaciones conducidas en líneas de alimentación de corriente alterna pueden degradar las señales analógicas de bajo nivel, como el ECG o la fotopletismografía, simulando artefactos o falsas asistolias.
+
+Distancias de separación recomendadas. Se recomienda mantener una distancia de separación de al menos un metro entre transmisores de radiofrecuencia móviles, como teléfonos móviles o walkie-talkies de seguridad, y las consolas centrales de monitoreo y ventiladores mecánicos para prevenir interferencias transitorias en la sensórica respiratoria.

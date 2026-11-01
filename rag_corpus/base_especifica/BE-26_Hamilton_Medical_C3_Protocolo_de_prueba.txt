@@ -1,0 +1,14 @@
+ID: BE-26
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Hamilton Medical C3: Protocolo de prueba de software y actualización de firmware en placa base
+FUENTE: Hamilton Medical AG
+REFERENCIA_OFICIAL: Hamilton Medical. (2022). HAMILTON-C3 Software Update and Board-Level Diagnostic Procedures (Software Version 2.0.x Release Notes & Service Guide). Bonaduz, Switzerland.
+CODIGO_NORMA: Hamilton C3 Firmware v2.0 Guide
+--------------------------------------------------------------------------------
+
+Arquitectura de procesadores redundantes en consola Hamilton C3. El ventilador opera con dos microprocesadores independientes en comunicación síncrona: el procesador de control en tiempo real (CPU de control), responsable del ciclo respiratorio, apertura de válvulas y lectura de sensores a 1000 Hz, y el procesador de interfaz gráfica de usuario (CPU de GUI), responsable de la renderización en pantalla y gestión de alarmas táctiles.
+
+Filtro canario de integridad de memoria y watchdog timer. Cada microprocesador cuenta con circuitos de temporización por vigilancia (hardware watchdog). Si el hilo principal de control ventilatorio sufre un congelamiento de más de 20 milisegundos por corrupción de memoria RAM o error de bus de datos, el hardware watchdog conmuta automáticamente el ventilador a modo de ventilación de respaldo de seguridad y activa una alarma acústica continua independiente alimentada por un zumbador piezoeléctrico autónomo.
+
+Verificación de checksum criptográfico tras actualización de firmware. Tras cargar una nueva versión de software mediante la herramienta de servicio Hamilton Service Software, el sistema calcula el hash SHA-256 del binario instalado. Si el checksum difiere del valor oficial declarado en el boletín del fabricante, la placa base aborta el arranque y permanece en modo de recuperación protegido para evitar que el equipo ventile con código corrupto.

@@ -1,0 +1,14 @@
+ID: BE-18
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Dräger Evita V800: Diagnóstico de la batería de respaldo de litio y curvas de descarga
+FUENTE: Drägerwerk AG & Co. KGaA
+REFERENCIA_OFICIAL: Dräger Medical. (2021). Evita V800 Power Supply and Battery Management: Lithium battery capacity test and charging circuit calibration (Doc No. 9055845). Lübeck, Germany.
+CODIGO_NORMA: Dräger Battery Doc 9055845
+--------------------------------------------------------------------------------
+
+Gestión de baterías inteligentes de litio-hierro-fosfato (LiFePO4) en Dräger Evita V800. El ventilador cuenta con dos módulos de baterías inteligentes que suministran un mínimo de 180 minutos de ventilación continua en caso de corte total del suministro eléctrico. Cada batería integra un microcontrolador que reporta tensión de celda, corriente de carga/descarga, temperatura y el estado de salud relativo (State of Health - SOH).
+
+Prueba de capacidad y ciclo de acondicionamiento de batería. Cada seis meses debe ejecutarse una prueba de descarga controlada en el menú de servicio. El ventilador desconecta la alimentación de red y descarga las baterías sobre una carga resistiva interna hasta alcanzar la tensión de corte de 19,2 V. Si la capacidad calculada cae por debajo del ochenta por ciento de la capacidad nominal de 4,5 Ah, el sistema marca la batería como No Conforme y exige su reemplazo.
+
+Riesgo de falla por temperatura excesiva. Si la temperatura interna de las celdas supera los 55 °C durante una fase de carga rápida en una UCI con climatización deficiente, el circuito de protección desactiva el cargador y conmuta a modo seguro, reduciendo la disponibilidad operativa del equipo en transportes críticos.

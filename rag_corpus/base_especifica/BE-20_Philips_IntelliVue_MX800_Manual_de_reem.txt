@@ -1,0 +1,14 @@
+ID: BE-20
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Philips IntelliVue MX800: Manual de reemplazo de pantalla táctil y retroiluminación LED
+FUENTE: Philips Healthcare
+REFERENCIA_OFICIAL: Philips Medical Systems. (2020). IntelliVue MX800 Hardware Service Manual: Touchscreen display, optical bonding and backlight inverter troubleshooting (Part No. 453564998877). Boeblingen, Germany.
+CODIGO_NORMA: Philips MX800 Hardware 453564998877
+--------------------------------------------------------------------------------
+
+Módulo de visualización médica de 19 pulgadas en Philips IntelliVue MX800. La pantalla principal utiliza un panel LCD de grado médico con tecnología IPS y retroiluminación LED de alta luminosidad (mínimo 350 cd/m2) acoplada ópticamente a un sensor táctil resistivo de 5 hilos.
+
+Calibración de coordenadas táctiles y fallas de respuesta. Tras el recambio de la pantalla táctil o la placa de interfaz gráfica, debe ejecutarse la rutina de calibración táctil a cuatro puntos en las esquinas de la pantalla. Si la desviación entre el toque del usuario y la coordenada reconocida supera los 5 milímetros, el software técnico emite una alerta de Desalineación Táctil. En UCI esto representa un riesgo crítico de selección errónea de dosis o fármacos en la pantalla del monitor.
+
+Monitoreo de corriente de la retroiluminación LED. La placa de control monitorea la corriente suministrada a las tiras de LEDs. Si la corriente cae por debajo de 350 mA o si la temperatura interna del panel excede los 65 °C, el monitor activa el ventilador de refrigeración secundario y atenúa la retroiluminación en un veinte por ciento para prevenir el apagón súbito de la pantalla en plena intervención clínica.

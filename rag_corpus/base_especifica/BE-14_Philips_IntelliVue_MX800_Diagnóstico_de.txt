@@ -1,0 +1,14 @@
+ID: BE-14
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Philips IntelliVue MX800: Diagnóstico de fallas en módulo de pulsioximetría FAST-SpO2
+FUENTE: Philips Healthcare
+REFERENCIA_OFICIAL: Philips Medical Systems. (2021). IntelliVue Patient Monitoring: FAST-SpO2 technology, sensor fault isolation and cable integrity testing (Doc ID: 453564890123). Boeblingen, Germany.
+CODIGO_NORMA: Philips FAST-SpO2 Doc 453564890123
+--------------------------------------------------------------------------------
+
+Tecnología de pulsioximetría FAST-SpO2 de Philips y reducción de artefactos. El algoritmo FAST (Fourier Artifact Suppression Technology) utiliza procesamiento digital de señales para extraer la onda de pulso arterial en condiciones de baja perfusión periférica (índice de perfusión menor a 0,1 %) o movimiento del paciente crítico. Emplea emisión secuencial de luz roja (660 nm) e infrarroja (905 nm) para calcular la relación de absorción normalizada.
+
+Verificación metrológica con simulador óptico de SpO2. La calibración del canal de SpO2 se verifica conectando el sensor reusable a un simulador de pulsioximetría Fluke Index 2 o ProSim 8, ajustando saturaciones del 70 %, 80 %, 90 % y 98 % a frecuencias cardíacas de 60 lpm y 120 lpm. El error de saturación no debe exceder de más o menos dos por ciento en el rango de 70 % a 100 %.
+
+Modos de falla del sensor óptico y cable de extensión. Las roturas microscópicas en el blindaje de cobre del cable troncal generan pérdidas de paquetes de datos y fluctuaciones erráticas en la curva pletismográfica, disparando alarmas de Ruido en Señal de SpO2 o Sensor Desconectado. La medición de continuidad y resistencia óhmica entre los pines del conector permite identificar derivaciones abiertas o en cortocircuito antes de descartar el módulo interno.

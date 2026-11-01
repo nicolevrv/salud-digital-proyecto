@@ -1,0 +1,14 @@
+ID: BG-09
+BASE: general
+TIPO: norma_internacional
+TITULO: ISO/IEC 17025: Requisitos generales para la competencia de laboratorios de ensayo y calibración
+FUENTE: Organización Internacional de Normalización (ISO)
+REFERENCIA_OFICIAL: International Organization for Standardization. (2017). General requirements for the competence of testing and calibration laboratories (ISO/IEC Standard No. 17025:2017). Geneva: ISO.
+CODIGO_NORMA: ISO/IEC 17025:2017
+--------------------------------------------------------------------------------
+
+Trazabilidad metrológica e incertidumbre de medida en tecnología médica. Los certificados de calibración emitidos para analizadores biomédicos deben reportar la incertidumbre expandida de medición con un factor de cobertura k=2 para un nivel de confianza del noventa y cinco por ciento. Un reporte metrológico que omita el cálculo de incertidumbre no posee validez técnica formal.
+
+Reglas de decisión y conformidad de calibración. Al dictaminar si un ventilador o monitor cumple con las tolerancias clínicas del fabricante, la incertidumbre de calibración debe incorporarse explícitamente en la regla de decisión (banda de guarda). Si la medición más la incertidumbre supera la tolerancia permitida, el equipo debe declararse no conforme y someterse a ajuste o reemplazo de sensores.
+
+Condiciones ambientales durante la calibración. Las magnitudes de influencia, tales como temperatura ambiente (20 °C a 25 °C), humedad relativa (30 % a 60 %) y presión barométrica local, deben registrarse continuamente durante las pruebas de flujo y volumen ventilatorio para corregir las lecturas a condiciones estándar BTPS (temperatura corporal, presión ambiental saturada).

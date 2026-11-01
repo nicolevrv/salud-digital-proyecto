@@ -1,0 +1,14 @@
+ID: BE-04
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Dräger Evita V800: Protocolo de mantenimiento preventivo anual y cambio de filtros microbianos
+FUENTE: Drägerwerk AG & Co. KGaA
+REFERENCIA_OFICIAL: Dräger Medical. (2020). Evita Intensive Care Ventilation Systems: Annual preventive maintenance kit and pneumatic test procedure (Ref: 5110190). Lübeck, Germany.
+CODIGO_NORMA: Dräger Evita Annual PM Kit 5110190
+--------------------------------------------------------------------------------
+
+Rutina de mantenimiento preventivo preventivo anual en Dräger Evita V800. El kit de mantenimiento anual incluye el reemplazo obligatorio de: filtros de polvo y partículas del soplador de aire interno, filtro de entrada de gas O2 de alta presión, diafragma de la válvula de exhalación, juntas tóricas (O-rings) del bloque de válvulas neumáticas y la batería de respaldo de litio-ferrofosfato si ha cumplido dos años de instalación.
+
+Prueba de precisión de presión inspiratoria máxima (Pmax). Conectando un pulmón de prueba calibrado con resistencia de 5 hPa/L/s y distensibilidad de 50 mL/hPa, se ajusta el ventilador a modo controlado por volumen con PEEP de 10 hPa y presión límite de 40 hPa. La desviación entre la presión medida por el manómetro digital patrón y el valor mostrado en la pantalla de la Evita V800 no debe exceder de más o menos 1 hPa.
+
+Verificación de la válvula de seguridad y sobrepresión. La válvula mecánica de alivio de emergencia debe activarse mecánicamente a una presión máxima de 105 hPa para evitar neumotórax barotraumático en caso de que una falla del microprocesador o una válvula proporcional neumática quede completamente atascada en posición abierta.

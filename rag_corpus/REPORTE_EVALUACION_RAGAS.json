@@ -1,0 +1,28 @@
+{
+  "total_documentos": 56,
+  "total_chunks": 182,
+  "modo_embeddings": "lsa",
+  "retrieval_metrics": {
+    "TF-IDF / Lexico": {
+      "Recall@1": 0.85,
+      "Recall@3": 1.0,
+      "MRR": 0.917
+    },
+    "Denso": {
+      "Recall@1": 0.75,
+      "Recall@3": 0.95,
+      "MRR": 0.863
+    },
+    "Hibrido (RRF + MMR)": {
+      "Recall@1": 0.75,
+      "Recall@3": 0.9,
+      "MRR": 0.835
+    }
+  },
+  "ragas_metrics": {
+    "Fidelidad (Faithfulness)": 1.0,
+    "Relevancia (Answer Relevance)": 0.874,
+    "Precision (Context Precision)": 0.87,
+    "Exhaustividad (Context Recall)": 0.9
+  }
+}

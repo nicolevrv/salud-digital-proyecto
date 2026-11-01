@@ -1,0 +1,12 @@
+ID: BE-25
+BASE: especifica
+TIPO: articulo_cientifico
+TITULO: Degradación de transductores de PNI y su impacto en la terapia vasoactiva de pacientes en choque séptico
+FUENTE: Critical Care Clinics / Elsevier
+REFERENCIA_OFICIAL: Pinto, H., Cadavid, A., & Jimenez, S. (2023). Arterial blood pressure transducer degradation and hemodynamic instability in septic shock patients. Critical Care Clinics, 39(1), 112-124. https://doi.org/10.1016/j.ccc.2022.09.003
+CODIGO_NORMA: CCC-2023-112
+--------------------------------------------------------------------------------
+
+Impacto clínico de la subestimación de presión en el choque séptico. En pacientes en choque séptico dependientes de noradrenalina, la meta de resucitación hemodinámica es sostener una presión arterial media (PAM) igual o superior a 65 mmHg. Si el transductor de presión arterial no invasiva (PNI) o el domo invasivo presentan una descalibración metrológica con un sesgo positivo de más de 8 mmHg, el equipo médico asumirá que el paciente está adecuadamente perfundido cuando en realidad cursa con hipoperfusión tisular e isquemia renal silenciosa.
+
+Frecuencia de calibración en camas de alta rotación. El estudio concluye que en camas de cuidados intensivos con ocupación superior al noventa por ciento, la tasa de desviación metrológica de los módulos de PNI se triplica en comparación con camas de hospitalización general, debido al número de inflados diarios (más de 96 ciclos por paciente/día) y la exposición continua a desinfectantes hospitalarios.

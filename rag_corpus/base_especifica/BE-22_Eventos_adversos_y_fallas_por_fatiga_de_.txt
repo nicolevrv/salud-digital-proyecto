@@ -1,0 +1,12 @@
+ID: BE-22
+BASE: especifica
+TIPO: articulo_cientifico
+TITULO: Eventos adversos y fallas por fatiga de materiales en líneas de infusión de UCI: Estudio de tecnovigilancia
+FUENTE: Journal of Infusion Nursing / PubMed
+REFERENCIA_OFICIAL: Gomez, P., Herrera, F., & Castillo, R. (2022). Mechanical fatigue of infusion sets and delivery rate errors in intensive care units: A post-market surveillance study. Journal of Infusion Nursing, 45(2), 89-98. https://doi.org/10.1097/NAN.0000000000000458
+CODIGO_NORMA: JIN-2022-89
+--------------------------------------------------------------------------------
+
+Fatiga plástica del elastómero en líneas de infusión bajo bombeo peristáltico continuo. Las bombas volumétricas ejercen compresión cíclica repetida sobre el segmento de bombeo del tubo flexible. Con infusiones prolongadas que superan las 72 horas continuas en la misma posición, el PVC o poliuretano del tubo sufre deformación plástica permanente (aplanamiento transversal), reduciendo el diámetro luminal interno.
+
+Consecuencias en la tasa de infusión real (subinfusión). La deformación del tubo disminuye el volumen entregado en cada ciclo de bombeo, provocando una subinfusión silenciosa de hasta un veinte por ciento respecto a la tasa programada en la consola de la bomba. Este error no activa la alarma de oclusión porque la presión hidrostática permanece dentro de los límites normales, comprometiendo gravemente la estabilidad de pacientes que reciben soporte vasoactivo con norepinefrina o vasopresina.

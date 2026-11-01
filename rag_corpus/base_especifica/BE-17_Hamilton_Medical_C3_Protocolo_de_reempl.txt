@@ -1,0 +1,14 @@
+ID: BE-17
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Hamilton Medical C3: Protocolo de reemplazo de turbina y prueba de horas de funcionamiento
+FUENTE: Hamilton Medical AG
+REFERENCIA_OFICIAL: Hamilton Medical. (2020). HAMILTON-C3 Technical Documentation: High-performance blower unit replacement and runtime monitoring (Doc ID: 624135/04). Bonaduz, Switzerland.
+CODIGO_NORMA: Hamilton C3 Blower Protocol 624135
+--------------------------------------------------------------------------------
+
+Módulo de turbina soplador integrado en Hamilton C3. El ventilador genera el flujo inspiratorio mediante un soplador centrífugo accionado por un micromotor DC sin escobillas (brushless) que gira a velocidades de hasta 60.000 RPM. El módulo de la turbina cuenta con rodamientos cerámicos sellados de alta durabilidad y un silenciador acústico integrado.
+
+Límite de vida útil operativa del soplador (40.000 horas). El microprocesador del ventilador registra de forma inalterable las horas de operación acumuladas del soplador. Al superar las 35.000 horas, el software de diagnóstico emite un aviso preventivo de reemplazo de turbina. Al alcanzar las 40.000 horas, la probabilidad de falla catastrófica por desgaste de rodamientos o sobrecalentamiento del estator se incrementa exponencialmente, obligando a retirar el ventilador para reemplazo de la unidad neumática central.
+
+Monitoreo de corriente de consumo y vibración. La placa de control del motor monitorea continuamente la corriente consumida por las fases del motor brushless. Un incremento en la corriente RMS superior a 1,8 amperios a presión de 30 hPa indica incremento de fricción mecánica en los rodamientos cerámicos, constituyendo un indicador predictivo temprano de falla inminente antes de que se produzca el bloqueo físico del rotor.

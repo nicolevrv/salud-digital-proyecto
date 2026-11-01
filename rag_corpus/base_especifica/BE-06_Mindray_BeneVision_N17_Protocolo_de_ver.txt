@@ -1,0 +1,14 @@
+ID: BE-06
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Mindray BeneVision N17: Protocolo de verificación de seguridad eléctrica y aislamiento ECG tipo CF
+FUENTE: Shenzhen Mindray Bio-Medical Electronics Co., Ltd.
+REFERENCIA_OFICIAL: Mindray. (2020). BeneVision N-Series Patient Monitors: Electrical safety testing, leakage currents and defibrillation protection verification (Doc ID: MN17-EST-2020). Shenzhen, China.
+CODIGO_NORMA: Mindray N17 Safety Protocol MN17-EST
+--------------------------------------------------------------------------------
+
+Ensayos de seguridad eléctrica según IEC 62353 en monitor Mindray BeneVision N17. El chasis del monitor y los conectores de módulos auxiliares deben someterse a la prueba de resistencia del conductor de protección conectando el analizador de seguridad eléctrica Fluke ESA615 o Rigel 288+. La resistencia medida entre la espiga de tierra del enchufe de grado hospitalario y los pernos de fijación metálicos traseros debe ser inferior a 0,1 ohmios.
+
+Corrientes de fuga en canal de electrocardiograma tipo CF. Conectando las derivaciones de ECG (RA, LA, LL, RL, V1-V6) en cortocircuito al terminal del analizador, la corriente de fuga de paciente a tierra no debe superar los 10 microamperios en polaridad normal y reversa con tierra conectada, ni los 50 microamperios en condición de primer fallo con neutro interrumpido.
+
+Verificación de la protección contra descargas de desfibrilador. El circuito interno de entrada del ECG incorpora diodos supresores de transitorios (TVS) y resistencias limitadoras de corriente que amortiguan la descarga de 5000 V de un desfibrilador. La recuperación de la línea de base del trazado electrocardiográfico en la pantalla del N17 debe completarse en menos de 5 segundos tras la descarga para permitir al médico evaluar de inmediato si hubo retorno a ritmo sinusal.

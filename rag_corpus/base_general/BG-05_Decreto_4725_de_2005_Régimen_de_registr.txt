@@ -1,0 +1,14 @@
+ID: BG-05
+BASE: general
+TIPO: norma_colombiana
+TITULO: Decreto 4725 de 2005: Régimen de registros sanitarios y tecnovigilancia de dispositivos médicos
+FUENTE: Ministerio de la Protección Social de Colombia / INVIMA
+REFERENCIA_OFICIAL: Ministerio de la Protección Social. (2005). Decreto 4725 de 2005: Por el cual se reglamenta el régimen de registros sanitarios, permiso de comercialización y vigilancia sanitaria de los dispositivos médicos para uso humano. Bogotá: Diario Oficial No. 46.135.
+CODIGO_NORMA: Decreto 4725 de 2005
+--------------------------------------------------------------------------------
+
+Clasificación del riesgo de los dispositivos médicos según Decreto 4725. Los dispositivos médicos se clasifican en cuatro clases de riesgo: Clase I (bajo riesgo), Clase IIa (riesgo moderado), Clase IIb (alto riesgo) y Clase III (muy alto riesgo). Los ventiladores mecánicos y los desfibriladores externos se clasifican como Clase IIb o Clase III debido a su impacto directo en el mantenimiento de funciones fisiológicas vitales.
+
+Obligaciones de los prestadores en tecnovigilancia. Los prestadores de servicios de salud deben designar un responsable institucional de tecnovigilancia y notificar al INVIMA cualquier evento adverso serio dentro de las setenta y dos horas siguientes a su ocurrencia. Un evento adverso serio es aquel no intencionado que produce la muerte o el deterioro grave de la salud del paciente o usuario.
+
+Trazabilidad y retiro preventivo de mercado. Cuando se detecte una falla recurrente de diseño, fabricación o software que comprometa el funcionamiento esencial del dispositivo, el prestador debe inmovilizar preventivamente el lote o serial involucrado y notificar a la autoridad sanitaria para la emisión de alertas o recalls nacionales.

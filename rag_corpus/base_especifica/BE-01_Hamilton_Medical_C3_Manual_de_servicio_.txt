@@ -1,0 +1,14 @@
+ID: BE-01
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Hamilton Medical C3: Manual de servicio técnico - Calibración del sensor de flujo proximal
+FUENTE: Hamilton Medical AG
+REFERENCIA_OFICIAL: Hamilton Medical. (2020). HAMILTON-C3 Service Manual: Proximal flow sensor calibration, leak test and pneumatic maintenance (Doc ID: 624128/05). Bonaduz, Switzerland: Hamilton Medical AG.
+CODIGO_NORMA: Hamilton C3 Service Manual Ref 624128
+--------------------------------------------------------------------------------
+
+Procedimiento de calibración del sensor de flujo proximal en Hamilton-C3. El sensor de flujo proximal mide el flujo inspiratorio y espiratorio directamente en la pieza en Y del paciente mediante presión diferencial sobre una membrana deformable. La calibración debe ejecutarse con el circuito respiratorio conectado, ocluyendo el extremo distal del sensor de flujo según las instrucciones en pantalla de la consola.
+
+Criterios de aprobación y rechazo en la prueba de flujo. La consola realiza una verificación automática a tres puntos de flujo (flujo cero, flujo bajo y flujo alto). Si la desviación porcentual entre la lectura del sensor y los transductores de presión internos supera el ocho por ciento, la pantalla emitirá el mensaje de error Calibración Sensor de Flujo Fallida. Las causas típicas de fallo incluyen humedad residual en las líneas de sensado, fisuras en la membrana de orificio variable o inversión de los tubos azul y transparente de medición de presión diferencial.
+
+Prueba de estanqueidad y cumplimiento del circuito. Tras calibrar el sensor de flujo, es obligatorio ejecutar la prueba de estanqueidad del circuito de paciente. La fuga máxima permisible no debe exceder de 50 mL/min a una presión de prueba sostenida de 50 hPa. Fugas superiores provocan errores en el ciclado por flujo en ventilación espontánea y falsas alarmas de desconexión.

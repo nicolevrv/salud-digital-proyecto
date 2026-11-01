@@ -1,0 +1,12 @@
+ID: BG-21
+BASE: general
+TIPO: norma_colombiana
+TITULO: Ley 1581 de 2012: Protección de datos personales y seguridad de la información en salud digital
+FUENTE: Congreso de la República de Colombia
+REFERENCIA_OFICIAL: Congreso de Colombia. (2012). Ley Estatutaria 1581 de 2012: Por la cual se dictan disposiciones generales para la protección de datos personales. Bogotá: Diario Oficial No. 48.587.
+CODIGO_NORMA: Ley 1581 de 2012
+--------------------------------------------------------------------------------
+
+Naturaleza de los datos de salud como datos sensibles en Colombia. Los datos vinculados a la historia clínica del paciente, diagnósticos, constantes vitales y tratamientos médicos constituyen datos de carácter sensible bajo la Ley 1581 de 2012. Su tratamiento requiere autorización expresa e informada del titular, salvo en situaciones de urgencia médica o cuando se utilicen con fines históricos, estadísticos o científicos bajo estrictos procesos de disociación o anonimización.
+
+Seudonimización obligatoria previa a la indexación en modelos RAG. Cuando se transfiera información de pacientes hospitalizados en UCI hacia modelos de lenguaje o bases de datos vectorizadas, debe aplicarse una seudonimización determinística y robusta mediante algoritmos criptográficos (como HMAC-SHA256) antes de la ingesta en el índice vectorial. Ningún identificador directo (nombre, cédula de ciudadanía, teléfono o dirección) debe formar parte del texto indexado ni viajar en los prompts remitidos a proveedores externos de inteligencia artificial.

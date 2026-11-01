@@ -1,0 +1,14 @@
+ID: BE-07
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Philips IntelliVue MX800: Manual de mantenimiento y calibración de módulos invasivos
+FUENTE: Philips Healthcare
+REFERENCIA_OFICIAL: Philips Medical Systems. (2019). IntelliVue MX800/MX700 Patient Monitor Service Guide: Invasive blood pressure and parameter module testing (Part No. 453564234561). Boeblingen, Germany: Philips Healthcare.
+CODIGO_NORMA: Philips IntelliVue MX800 Service Guide
+--------------------------------------------------------------------------------
+
+Calibración y verificación del módulo de presión arterial invasiva (PAI) en Philips MX800. El módulo de PAI M1006B utiliza un puente de Wheatstone para amplificar señales milivoltímetricas provenientes de transductores desechables tipo domo. La verificación metrológica se realiza mediante un simulador de señales hemodinámicas de alta precisión calibrado a 5 µV/V/mmHg.
+
+Prueba de respuesta en frecuencia y rango dinámico. Se inyectan presiones simuladas de 0 mmHg, 100 mmHg y 200 mmHg. La tolerancia máxima admisible en la lectura del monitor es de más o menos 1 mmHg o más o menos uno por ciento (el que sea mayor). Si la señal presenta atenuación excesiva o artefactos oscilatorios en escalón, debe sustituirse el cable troncal de interfase del módulo de presión invasiva.
+
+Aislamiento de red y redundancia de fuente conmutada. El IntelliVue MX800 cuenta con doble fuente de alimentación redundante conmutada para garantizar operación ininterrumpida ante caídas de línea. Si la corriente de fuga al chasis se eleva por encima de los 150 microamperios, indica deterioro en los condensadores de desacoplo de modo común (condensadores clase Y) de la etapa de entrada de la fuente primaria.

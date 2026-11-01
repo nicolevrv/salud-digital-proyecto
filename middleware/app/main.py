@@ -4128,3 +4128,17 @@ def eliminar_documento_equipo(
 register_requisitos_routes(app, get_db, verify_user_credentials, decode_session_token, get_user_by_id)
 
 
+
+
+# Registrar Router RAG Biomédico de Salud Digital (Semana 12)
+try:
+    from app.rag.router import router as rag_router
+    app.include_router(rag_router)
+    print("Router RAG registrado exitosamente en /rag")
+except Exception as e:
+    try:
+        from rag.router import router as rag_router
+        app.include_router(rag_router)
+        print("Router RAG registrado exitosamente en /rag")
+    except Exception as e2:
+        print("Aviso: No se pudo registrar rag_router:", e2)

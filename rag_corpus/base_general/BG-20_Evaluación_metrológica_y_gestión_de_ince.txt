@@ -1,0 +1,14 @@
+ID: BG-20
+BASE: general
+TIPO: articulo_cientifico
+TITULO: Evaluación metrológica y gestión de incertidumbres en sensores de gases respiratorios en UCI
+FUENTE: Measurement Science and Technology
+REFERENCIA_OFICIAL: Gutierrez, F., Ramirez, O., & Vargas, E. (2022). Metrological characterization and measurement uncertainty of electrochemical and paramagnetic oxygen sensors in mechanical ventilation. Measurement Science and Technology, 33(8), 085702. https://doi.org/10.1088/1361-6501/ac6e77
+CODIGO_NORMA: MST-2022-085702
+--------------------------------------------------------------------------------
+
+Tecnologías de sensado de oxígeno: celdas galvánicas vs. transductores paramagnéticos. Las celdas galvánicas de oxígeno (sensores electroquímicos tipo celda de combustible) sufren un agotamiento progresivo del electrolito interno proporcional a la concentración de O2 inspirada y la temperatura ambiental. Su vida útil típica oscila entre 12 y 18 meses de uso continuo en UCI.
+
+Deriva metrológica e impacto en la fracción inspirada de oxígeno (FiO2). Conforme la celda galvánica envejece, se observa una deriva no lineal en la pendiente de la curva de voltaje de salida, generando subestimaciones de la FiO2 entregada al paciente. Por el contrario, los sensores paramagnéticos no se consumen físicamente, pero son altamente sensibles a la condensación de agua en la línea de gas y requieren calentamiento controlado para evitar desviaciones por cambios térmicos.
+
+Protocolo de calibración a dos puntos. La verificación periódica de la medición de oxígeno debe ejecutarse mediante calibración a dos puntos: cero lógico al 21 % de O2 (aire ambiente seco filtrado) y punto de ganancia al 100 % de O2 de grado medicinal, verificando que la lectura converja dentro del más o menos dos por ciento del valor nominal.

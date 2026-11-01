@@ -1,0 +1,14 @@
+ID: BE-13
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Mindray BeneVision N17: Protocolo de calibración del módulo de capnografía sidestream
+FUENTE: Shenzhen Mindray Bio-Medical Electronics Co., Ltd.
+REFERENCIA_OFICIAL: Mindray. (2020). BeneVision N17 Microstream/Sidestream CO2 Module Service and Calibration Manual (P/N: 046-009140-00). Shenzhen, China.
+CODIGO_NORMA: Mindray N17 CO2 Manual 046-009140-00
+--------------------------------------------------------------------------------
+
+Metrología del módulo de capnografía sidestream de CO2 en Mindray N17. El módulo de CO2 por aspiración lateral extrae una muestra continua de gas respiratorio a un flujo micro-aspirado de 50 mL/min hacia una celda de absorción óptica infrarroja no dispersiva (NDIR). La calibración metrológica debe realizarse anualmente o tras 4000 horas de uso de la bomba de vacío interna.
+
+Procedimiento de calibración con gas patrón certificado. Se conecta una botella de gas de calibración patrón compuesta por 5,0 % de CO2, 21,0 % de O2 y balance de N2 (con certificado de análisis trazable). Tras estabilizar la temperatura del banco óptico a 45 °C, se inicia la rutina Calibración de CO2 en el menú de mantenimiento. La lectura del monitor debe converger a 38 mmHg (5,0 kPa) con una tolerancia máxima de más o menos 2 mmHg.
+
+Fallas comunes de la línea de muestreo y trampa de agua. La acumulación de condensación y secreciones en la trampa de agua Dryline provoca obstrucción en la línea de sensado. Si el caudal de aspiración decae por debajo de 40 mL/min, el monitor activa la alarma Línea de CO2 Ocluida y apaga la bomba de muestreo para evitar que el líquido alcance los filtros hidrofóbicos y contamine la cámara óptica del sensor.

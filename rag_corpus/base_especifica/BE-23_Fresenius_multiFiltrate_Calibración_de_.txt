@@ -1,0 +1,14 @@
+ID: BE-23
+BASE: especifica
+TIPO: manual_servicio
+TITULO: Fresenius multiFiltrate: Calibración de bombas peristálticas y balanzas de pesaje en CRRT
+FUENTE: Fresenius Medical Care AG & Co. KGaA
+REFERENCIA_OFICIAL: Fresenius Medical Care. (2020). multiFiltrate Acute Dialysis System Service Manual: Peristaltic pumps calibration, weight sensors and air bubble detector (Doc ID: 550604). Bad Homburg, Germany.
+CODIGO_NORMA: Fresenius multiFiltrate Manual 550604
+--------------------------------------------------------------------------------
+
+Calibración de balanzas gravimétricas de alta precisión en Fresenius multiFiltrate. El sistema de terapia de reemplazo renal continuo utiliza dos balanzas electrónicas de flexión con galgas extensiométricas para cuantificar la solución de filtrado y el efluente. La verificación metrológica se realiza mediante masas patrón clase M1 de 5 kg y 10 kg con certificación ONAC.
+
+Tolerancia de balance de fluidos y alarma de balance erróneo. El error máximo tolerado en la medición de balance neto acumulado es de más o menos 30 gramos por hora. Si el sistema detecta una discrepancia superior a 50 gramos entre el volumen medido por los giros de las bombas peristálticas y el cambio de peso en las balanzas, activa la alarma de alta prioridad Balance de Fluidos No Conforme y detiene de inmediato la ultrafiltración para prevenir hipovolemia severa o sobrecarga pulmonar en el paciente séptico.
+
+Inspección y lubricación de rotores de bombeo de sangre. Los rodillos de la bomba de sangre peristáltica deben inspeccionarse semestralmente en busca de juego axial o desgaste de los cojinetes. Una presión de oclusión excesiva del rodillo sobre el tubo de sangre provoca hemólisis mecánica masiva, mientras que una oclusión insuficiente causa reflujo y pérdida del flujo sanguíneo efectivo.

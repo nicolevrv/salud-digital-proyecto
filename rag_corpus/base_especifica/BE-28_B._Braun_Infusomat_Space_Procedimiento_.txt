@@ -1,0 +1,14 @@
+ID: BE-28
+BASE: especifica
+TIPO: manual_servicio
+TITULO: B. Braun Infusomat Space: Procedimiento de ajuste y mantenimiento del sensor de presión aguas arriba (upstream)
+FUENTE: B. Braun Melsungen AG
+REFERENCIA_OFICIAL: B. Braun. (2021). Infusomat Space Upstream Pressure Sensor Calibration and Bag Empty Alarm Verification (Technical Service Guide). Melsungen, Germany.
+CODIGO_NORMA: B. Braun Upstream Guide 8713090
+--------------------------------------------------------------------------------
+
+Detección de contenedor vacío y oclusión aguas arriba en Infusomat Space. El sensor de presión aguas arriba (upstream sensor) monitorea la presión negativa en el segmento de tubo ubicado entre la bolsa de infusión y el rotor peristáltico de la bomba. Su función es detectar el colapso del tubo generado cuando la bolsa de suero se vacía por completo o si la pinza de rodillo manual aguas arriba fue cerrada inadvertidamente.
+
+Calibración del umbral de presión negativa. Con una columna de líquido patrón o bomba de vacío conectada al puerto de entrada de la línea, se calibra el umbral de disparo de la alarma a una presión negativa de menos 20 kPa (menos 0,2 bar). Al alcanzar este valor, la bomba debe detener el motor en menos de 1 segundo y activar la alarma sonora y visual Contenedor Vacío / Oclusión Aguas Arriba.
+
+Prueba de retorno elástico del tubo. Si el tubo de infusión permanece instalado en la bomba apagada durante más de 24 horas, el sensor aguas arriba puede perder el contacto mecánico adecuado debido a la deformación del plástico. Por esta razón, el software del sistema exige que al iniciar una nueva infusión se abra y cierre la compuerta de la bomba para verificar el asentamiento correcto del sensor antes de permitir el inicio del bombeo.
