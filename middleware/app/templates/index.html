@@ -5,255 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BIOT UAO - Salud Digital</title>
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com">
-    // =========================================================================
-    // FUNCIONES DEL ASISTENTE RAG BIOMÉDICO (SEMANA 12 UAO)
-    // =========================================================================
-    function seleccionarPreguntaRapida(pregunta) {
-      const input = document.getElementById("rag-input-pregunta");
-      if (input) {
-        input.value = pregunta;
-        ejecutarConsultaRAG(new Event('submit'));
-      }
-    }
-
-    function limpiarChatRAG() {
-      const cont = document.getElementById("rag-mensajes-container");
-      if (cont) {
-        cont.innerHTML = `
-          <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-700 leading-relaxed">
-              <p class="font-semibold text-slate-800">Chat reiniciado.</p>
-              <p class="text-slate-600 mt-1">Escribe una consulta sobre normatividad o manuales de equipos UCI.</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    async function ejecutarConsultaRAG(event) {
-      if (event) event.preventDefault();
-      const input = document.getElementById("rag-input-pregunta");
-      const filtro = document.getElementById("rag-filtro-base").value || null;
-      const btn = document.getElementById("rag-btn-enviar");
-      const cont = document.getElementById("rag-mensajes-container");
-      
-      const pregunta = input.value.trim();
-      if (!pregunta) return;
-
-      // 1. Mostrar mensaje del usuario en el chat
-      const userDiv = document.createElement("div");
-      userDiv.className = "flex items-start justify-end gap-3";
-      userDiv.innerHTML = `
-        <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3.5 max-w-xl text-xs leading-relaxed shadow-sm">
-          ${pregunta}
-        </div>
-        <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-bold shrink-0">TÚ</div>
-      `;
-      cont.appendChild(userDiv);
-      input.value = "";
-      cont.scrollTop = cont.scrollHeight;
-
-      // 2. Indicador de carga
-      const loadDiv = document.createElement("div");
-      loadDiv.id = "rag-loading-indicator";
-      loadDiv.className = "flex items-start gap-3";
-      loadDiv.innerHTML = `
-        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-500 flex items-center gap-2">
-          <svg class="w-4 h-4 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          Buscando en 56 documentos y razonando evidencia técnica...
-        </div>
-      `;
-      cont.appendChild(loadDiv);
-      cont.scrollTop = cont.scrollHeight;
-      if (btn) btn.disabled = true;
-
-      try {
-        const resp = await fetch("/rag/preguntar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pregunta: pregunta, base_filtro: filtro, k: 3 })
-        });
-        
-        const data = await resp.json();
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-
-        const aiDiv = document.createElement("div");
-        aiDiv.className = "flex items-start gap-3";
-        
-        let fuentesHtml = "";
-        if (data.fuentes && data.fuentes.length > 0) {
-          fuentesHtml = `
-            <div class="mt-3 pt-3 border-t border-slate-200/80">
-              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fuentes Oficiales Citadas:</div>
-              <div class="space-y-1">
-                ${data.fuentes.map(f => `
-                  <div class="text-[11px] bg-white border border-slate-200/80 rounded-lg p-2 flex items-center justify-between text-slate-700">
-                    <span class="font-medium"><strong class="text-emerald-700">[${f.n}]</strong> ${f.titulo}</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 font-mono text-slate-600">${f.chunk_id}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        const modoBadge = data.modo === "abstencion" 
-          ? `<span class="px-2 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 rounded-full">Abstención por Umbral</span>`
-          : `<span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 rounded-full">${data.modo}</span>`;
-
-        aiDiv.innerHTML = `
-          <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-800 leading-relaxed shadow-sm">
-            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200/60">
-              <span class="font-bold text-slate-700">Respuesta con Soporte de Evidencia:</span>
-              ${modoBadge}
-            </div>
-            <div class="text-slate-800 font-medium whitespace-pre-wrap">${data.respuesta}</div>
-            ${fuentesHtml}
-          </div>
-        `;
-        cont.appendChild(aiDiv);
-        cont.scrollTop = cont.scrollHeight;
-
-      } catch (err) {
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-        showToast("Error consultando el Asistente RAG: " + err.message, "error");
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    }
-
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js">
-    // =========================================================================
-    // FUNCIONES DEL ASISTENTE RAG BIOMÉDICO (SEMANA 12 UAO)
-    // =========================================================================
-    function seleccionarPreguntaRapida(pregunta) {
-      const input = document.getElementById("rag-input-pregunta");
-      if (input) {
-        input.value = pregunta;
-        ejecutarConsultaRAG(new Event('submit'));
-      }
-    }
-
-    function limpiarChatRAG() {
-      const cont = document.getElementById("rag-mensajes-container");
-      if (cont) {
-        cont.innerHTML = `
-          <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-700 leading-relaxed">
-              <p class="font-semibold text-slate-800">Chat reiniciado.</p>
-              <p class="text-slate-600 mt-1">Escribe una consulta sobre normatividad o manuales de equipos UCI.</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    async function ejecutarConsultaRAG(event) {
-      if (event) event.preventDefault();
-      const input = document.getElementById("rag-input-pregunta");
-      const filtro = document.getElementById("rag-filtro-base").value || null;
-      const btn = document.getElementById("rag-btn-enviar");
-      const cont = document.getElementById("rag-mensajes-container");
-      
-      const pregunta = input.value.trim();
-      if (!pregunta) return;
-
-      // 1. Mostrar mensaje del usuario en el chat
-      const userDiv = document.createElement("div");
-      userDiv.className = "flex items-start justify-end gap-3";
-      userDiv.innerHTML = `
-        <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3.5 max-w-xl text-xs leading-relaxed shadow-sm">
-          ${pregunta}
-        </div>
-        <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-bold shrink-0">TÚ</div>
-      `;
-      cont.appendChild(userDiv);
-      input.value = "";
-      cont.scrollTop = cont.scrollHeight;
-
-      // 2. Indicador de carga
-      const loadDiv = document.createElement("div");
-      loadDiv.id = "rag-loading-indicator";
-      loadDiv.className = "flex items-start gap-3";
-      loadDiv.innerHTML = `
-        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-500 flex items-center gap-2">
-          <svg class="w-4 h-4 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          Buscando en 56 documentos y razonando evidencia técnica...
-        </div>
-      `;
-      cont.appendChild(loadDiv);
-      cont.scrollTop = cont.scrollHeight;
-      if (btn) btn.disabled = true;
-
-      try {
-        const resp = await fetch("/rag/preguntar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pregunta: pregunta, base_filtro: filtro, k: 3 })
-        });
-        
-        const data = await resp.json();
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-
-        const aiDiv = document.createElement("div");
-        aiDiv.className = "flex items-start gap-3";
-        
-        let fuentesHtml = "";
-        if (data.fuentes && data.fuentes.length > 0) {
-          fuentesHtml = `
-            <div class="mt-3 pt-3 border-t border-slate-200/80">
-              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fuentes Oficiales Citadas:</div>
-              <div class="space-y-1">
-                ${data.fuentes.map(f => `
-                  <div class="text-[11px] bg-white border border-slate-200/80 rounded-lg p-2 flex items-center justify-between text-slate-700">
-                    <span class="font-medium"><strong class="text-emerald-700">[${f.n}]</strong> ${f.titulo}</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 font-mono text-slate-600">${f.chunk_id}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        const modoBadge = data.modo === "abstencion" 
-          ? `<span class="px-2 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 rounded-full">Abstención por Umbral</span>`
-          : `<span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 rounded-full">${data.modo}</span>`;
-
-        aiDiv.innerHTML = `
-          <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-800 leading-relaxed shadow-sm">
-            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200/60">
-              <span class="font-bold text-slate-700">Respuesta con Soporte de Evidencia:</span>
-              ${modoBadge}
-            </div>
-            <div class="text-slate-800 font-medium whitespace-pre-wrap">${data.respuesta}</div>
-            ${fuentesHtml}
-          </div>
-        `;
-        cont.appendChild(aiDiv);
-        cont.scrollTop = cont.scrollHeight;
-
-      } catch (err) {
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-        showToast("Error consultando el Asistente RAG: " + err.message, "error");
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    }
-
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,130 +32,7 @@
         }
       }
     }
-  
-    // =========================================================================
-    // FUNCIONES DEL ASISTENTE RAG BIOMÉDICO (SEMANA 12 UAO)
-    // =========================================================================
-    function seleccionarPreguntaRapida(pregunta) {
-      const input = document.getElementById("rag-input-pregunta");
-      if (input) {
-        input.value = pregunta;
-        ejecutarConsultaRAG(new Event('submit'));
-      }
-    }
-
-    function limpiarChatRAG() {
-      const cont = document.getElementById("rag-mensajes-container");
-      if (cont) {
-        cont.innerHTML = `
-          <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-700 leading-relaxed">
-              <p class="font-semibold text-slate-800">Chat reiniciado.</p>
-              <p class="text-slate-600 mt-1">Escribe una consulta sobre normatividad o manuales de equipos UCI.</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    async function ejecutarConsultaRAG(event) {
-      if (event) event.preventDefault();
-      const input = document.getElementById("rag-input-pregunta");
-      const filtro = document.getElementById("rag-filtro-base").value || null;
-      const btn = document.getElementById("rag-btn-enviar");
-      const cont = document.getElementById("rag-mensajes-container");
-      
-      const pregunta = input.value.trim();
-      if (!pregunta) return;
-
-      // 1. Mostrar mensaje del usuario en el chat
-      const userDiv = document.createElement("div");
-      userDiv.className = "flex items-start justify-end gap-3";
-      userDiv.innerHTML = `
-        <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3.5 max-w-xl text-xs leading-relaxed shadow-sm">
-          ${pregunta}
-        </div>
-        <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-bold shrink-0">TÚ</div>
-      `;
-      cont.appendChild(userDiv);
-      input.value = "";
-      cont.scrollTop = cont.scrollHeight;
-
-      // 2. Indicador de carga
-      const loadDiv = document.createElement("div");
-      loadDiv.id = "rag-loading-indicator";
-      loadDiv.className = "flex items-start gap-3";
-      loadDiv.innerHTML = `
-        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-500 flex items-center gap-2">
-          <svg class="w-4 h-4 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          Buscando en 56 documentos y razonando evidencia técnica...
-        </div>
-      `;
-      cont.appendChild(loadDiv);
-      cont.scrollTop = cont.scrollHeight;
-      if (btn) btn.disabled = true;
-
-      try {
-        const resp = await fetch("/rag/preguntar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pregunta: pregunta, base_filtro: filtro, k: 3 })
-        });
-        
-        const data = await resp.json();
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-
-        const aiDiv = document.createElement("div");
-        aiDiv.className = "flex items-start gap-3";
-        
-        let fuentesHtml = "";
-        if (data.fuentes && data.fuentes.length > 0) {
-          fuentesHtml = `
-            <div class="mt-3 pt-3 border-t border-slate-200/80">
-              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fuentes Oficiales Citadas:</div>
-              <div class="space-y-1">
-                ${data.fuentes.map(f => `
-                  <div class="text-[11px] bg-white border border-slate-200/80 rounded-lg p-2 flex items-center justify-between text-slate-700">
-                    <span class="font-medium"><strong class="text-emerald-700">[${f.n}]</strong> ${f.titulo}</span>
-                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 font-mono text-slate-600">${f.chunk_id}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        const modoBadge = data.modo === "abstencion" 
-          ? `<span class="px-2 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 rounded-full">Abstención por Umbral</span>`
-          : `<span class="px-2 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 rounded-full">${data.modo}</span>`;
-
-        aiDiv.innerHTML = `
-          <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-slate-800 leading-relaxed shadow-sm">
-            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200/60">
-              <span class="font-bold text-slate-700">Respuesta con Soporte de Evidencia:</span>
-              ${modoBadge}
-            </div>
-            <div class="text-slate-800 font-medium whitespace-pre-wrap">${data.respuesta}</div>
-            ${fuentesHtml}
-          </div>
-        `;
-        cont.appendChild(aiDiv);
-        cont.scrollTop = cont.scrollHeight;
-
-      } catch (err) {
-        const loadEl = document.getElementById("rag-loading-indicator");
-        if (loadEl) loadEl.remove();
-        showToast("Error consultando el Asistente RAG: " + err.message, "error");
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    }
-
-</script>
+  </script>
   <style>
     /* Custom scrollbars */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -2371,6 +2002,15 @@
             <p class="text-slate-300 text-xs max-w-2xl mt-1.5 leading-relaxed">
               Sistema de generación aumentada por recuperación (RAG) alimentado con <strong>56 documentos reales</strong> (normas IEC/INVIMA/Minsalud y manuales de servicio de ventiladores, monitores y bombas). Responde con citas estrictas y regla de abstención.
             </p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-semibold">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Perfiles Autorizados (RBAC): Ingeniería Biomédica &bull; Médicos UCI &bull; Ing. Preventivo & Correctivo
+              </span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/30 text-rose-300 text-[10px] font-medium">
+                Acceso Restringido: Contable UCI &bull; Servicio IoT &bull; Pacientes
+              </span>
+            </div>
           </div>
           
           <!-- Badges de Métricas RAGAS -->
@@ -3327,18 +2967,37 @@
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
       const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "contable");
       const esRolClinicoOAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "Medico" || sesionActiva.rol === "Especialista");
+      const esRolRAG = sesionActiva && (
+        sesionActiva.rol === "Admin Biomedico" ||
+        sesionActiva.rol === "ADMIN" ||
+        sesionActiva.rol === "Administrador" ||
+        sesionActiva.rol === "admin" ||
+        sesionActiva.rol === "Biomedico" ||
+        sesionActiva.rol === "biomedico" ||
+        sesionActiva.rol === "Ingeniero Biomedico" ||
+        sesionActiva.rol === "Medico" ||
+        sesionActiva.rol === "medico" ||
+        sesionActiva.rol === "Especialista" ||
+        sesionActiva.rol === "especialista" ||
+        sesionActiva.rol === "ING_PREVENTIVO" ||
+        sesionActiva.rol === "ING_CORRECTIVO" ||
+        sesionActiva.rol === "Ingeniero Preventivo" ||
+        sesionActiva.rol === "Ingeniero Correctivo"
+      );
 
       const tabBtnPrediccion = document.getElementById("tab-btn-prediccion");
       const tabBtnGobernanzaIA = document.getElementById("tab-btn-gobernanza-ia");
       const tabBtnRegistros = document.getElementById("tab-btn-registros");
       const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
+      const tabBtnRAG = document.getElementById("tab-btn-rag-asistente");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
+      if (tabBtnRAG) tabBtnRAG.classList.toggle("hidden", !esRolRAG);
 
       if (sesionActiva) {
         if (!esAdminUI && tabName === "auditoria") {
@@ -3361,8 +3020,12 @@
           showToast("Acceso restringido: El módulo de Facturación y Costos UCI es exclusivo de Contabilidad UCI y Dirección Biomédica.", "warning");
           return;
         }
+        if (!esRolRAG && tabName === "rag-asistente") {
+          showToast("Acceso restringido: El Asistente RAG está reservado exclusivamente para Ingeniería Biomédica (Preventivo/Correctivo/Admin) y Médicos de UCI.", "warning");
+          return;
+        }
       } else {
-        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "gobernanza-ia" || tabName === "registros" || tabName === "documentacion" || tabName === "contabilidad") {
+        if (tabName === "auditoria" || tabName === "seguridad" || tabName === "prediccion" || tabName === "gobernanza-ia" || tabName === "registros" || tabName === "documentacion" || tabName === "contabilidad" || tabName === "rag-asistente") {
           showToast("Inicia sesión con un perfil autorizado para acceder a esta sección.", "info");
           abrirModalLogin();
           return;
@@ -3639,16 +3302,35 @@
       const tabBtnAuditoria = document.getElementById("tab-btn-auditoria");
       const tabBtnSeguridad = document.getElementById("tab-btn-seguridad");
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
+      const tabBtnRAG = document.getElementById("tab-btn-rag-asistente");
 
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
       const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "contable");
       const esRolClinicoOAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "Medico" || sesionActiva.rol === "Especialista");
+      const esRolRAG = sesionActiva && (
+        sesionActiva.rol === "Admin Biomedico" ||
+        sesionActiva.rol === "ADMIN" ||
+        sesionActiva.rol === "Administrador" ||
+        sesionActiva.rol === "admin" ||
+        sesionActiva.rol === "Biomedico" ||
+        sesionActiva.rol === "biomedico" ||
+        sesionActiva.rol === "Ingeniero Biomedico" ||
+        sesionActiva.rol === "Medico" ||
+        sesionActiva.rol === "medico" ||
+        sesionActiva.rol === "Especialista" ||
+        sesionActiva.rol === "especialista" ||
+        sesionActiva.rol === "ING_PREVENTIVO" ||
+        sesionActiva.rol === "ING_CORRECTIVO" ||
+        sesionActiva.rol === "Ingeniero Preventivo" ||
+        sesionActiva.rol === "Ingeniero Correctivo"
+      );
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
       if (tabBtnRegistros) tabBtnRegistros.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnDocumentacion) tabBtnDocumentacion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
+      if (tabBtnRAG) tabBtnRAG.classList.toggle("hidden", !esRolRAG);
 
       if (sesionActiva) {
         if (btnOpen) btnOpen.classList.add("hidden");
@@ -3706,8 +3388,9 @@
           if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.add("hidden");
           if (tabBtnRegistros) tabBtnRegistros.classList.add("hidden");
           if (tabBtnDocumentacion) tabBtnDocumentacion.classList.add("hidden");
+          if (tabBtnRAG) tabBtnRAG.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-gobernanza-ia", "tab-registros", "tab-documentacion", "tab-equipos", "tab-observaciones"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-gobernanza-ia", "tab-registros", "tab-documentacion", "tab-equipos", "tab-observaciones", "tab-rag-asistente"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("contabilidad");
@@ -3771,8 +3454,9 @@
           if (tabBtnContabilidad) tabBtnContabilidad.classList.add("hidden");
           if (tabBtnPrediccion) tabBtnPrediccion.classList.add("hidden");
           if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.add("hidden");
+          if (tabBtnRAG) tabBtnRAG.classList.add("hidden");
 
-          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad"].forEach(idTab => {
+          ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad", "tab-rag-asistente"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
             if (currentTab && !currentTab.classList.contains("hidden")) {
               cambiarTab("monitoreo");
@@ -8304,6 +7988,19 @@
       const btn = document.getElementById("rag-btn-enviar");
       const cont = document.getElementById("rag-mensajes-container");
       
+      // Control de Acceso RBAC: solo perfiles biomédicos, clínicos y de ingeniería de mantenimiento
+      const rolesAutorizadosRAG = [
+        "Admin Biomedico", "ADMIN", "Administrador", "admin", "Biomedico", "biomedico", "Ingeniero Biomedico",
+        "Medico", "medico", "Especialista", "especialista",
+        "ING_PREVENTIVO", "ING_CORRECTIVO", "Ingeniero Preventivo", "Ingeniero Correctivo"
+      ];
+
+      if (!sesionActiva || !rolesAutorizadosRAG.includes(sesionActiva.rol)) {
+        const rolActual = sesionActiva ? sesionActiva.rol : "Sin Sesión";
+        showToast(`Acceso denegado: El perfil '${rolActual}' no tiene permisos para consultar el Asistente RAG. Módulo exclusivo de Ingeniería Biomédica (Preventivo/Correctivo/Admin) y Médicos de UCI.`, "error");
+        return;
+      }
+
       const pregunta = input.value.trim();
       if (!pregunta) return;
 
@@ -8338,13 +8035,33 @@
       try {
         const resp = await fetch("/rag/preguntar", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ pregunta: pregunta, base_filtro: filtro, k: 3 })
         });
         
-        const data = await resp.json();
         const loadEl = document.getElementById("rag-loading-indicator");
         if (loadEl) loadEl.remove();
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          const msgError = errData.detail || "Error al consultar el Asistente RAG.";
+          showToast(msgError, "error");
+
+          const errDiv = document.createElement("div");
+          errDiv.className = "flex items-start gap-3";
+          errDiv.innerHTML = `
+            <div class="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-bold shrink-0">!</div>
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl rounded-tl-none p-4 max-w-2xl text-xs text-rose-800 leading-relaxed shadow-sm">
+              <div class="font-bold text-rose-900 mb-1">Acceso Denegado por Política RBAC</div>
+              <div>${msgError}</div>
+            </div>
+          `;
+          cont.appendChild(errDiv);
+          cont.scrollTop = cont.scrollHeight;
+          return;
+        }
+
+        const data = await resp.json();
 
         const aiDiv = document.createElement("div");
         aiDiv.className = "flex items-start gap-3";
