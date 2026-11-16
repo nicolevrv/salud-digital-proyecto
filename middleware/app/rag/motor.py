@@ -229,26 +229,54 @@ def sintetizar_respuesta_extractiva(pregunta: str, fragmentos: list[dict], max_o
         
     return " ".join(resultado)
 
-def construir_mensajes(pregunta: str, fragmentos: list[dict]) -> list[dict]:
+def construir_mensajes(pregunta: str, fragmentos: list[dict], rol: str = "medico", contexto_paciente: dict | None = None) -> list[dict]:
+    rol_lower = (rol or "").lower()
+    if "medico" in rol_lower:
+        prompt_rol = (
+            "Eres un asistente de apoyo a la decisión clínica y metrología biomédica para el Médico Especialista de UCI del Hospital Universitario UCI Digital. "
+            "El médico es la máxima autoridad clínica responsable de ratificar, aprobar o rechazar conductas diagnósticas, remisiones y ajustes de soporte vital (R10, R24). "
+            "Responde con rigor clínico, relacionando los signos vitales y parámetros del paciente con las guías y normas técnicas del CONTEXTO. "
+            "Cita siempre cada afirmación con [n] y si no hay suficiente evidencia di exactamente: \"No hay evidencia suficiente en las fuentes del sistema.\""
+        )
+    elif "biomedico" in rol_lower or "ing" in rol_lower:
+        prompt_rol = (
+            "Eres un asistente de ingeniería clínica y metrología hospitalaria para el personal biomédico de UCI. "
+            "Orienta la respuesta hacia protocolos de calibración, verificación metrológica (IEC 62353, Res. 3100 de 2019) y mantenimiento predictivo. "
+            "Cita cada afirmación con [n] y si no hay evidencia di exactamente: \"No hay evidencia suficiente en las fuentes del sistema.\""
+        )
+    else:
+        prompt_rol = PROMPT_SISTEMA
+
     contexto = "\n\n".join(
         f"[{n}] ({f['titulo']} - {f.get('codigo_norma', '')})\n{f['texto']}"
         for n, f in enumerate(fragmentos, start=1)
     )
+
+    info_paciente = ""
+    if contexto_paciente:
+        info_paciente = (
+            f"\nDATOS CLÍNICOS Y TELEMETRÍA DEL PACIENTE (SEUDONIMIZADO R12):\n"
+            f"- Alias: {contexto_paciente.get('alias', 'Paciente UCI')}\n"
+            f"- Cama: {contexto_paciente.get('cama_uci', 'No asignada')}\n"
+            f"- Parámetros: {contexto_paciente.get('parametros', {})}\n"
+            f"- Dispositivos de Soporte Vital: {contexto_paciente.get('equipos', 'No reportados')}\n\n"
+        )
+
     return [
-        {"role": "system", "content": PROMPT_SISTEMA},
-        {"role": "user", "content": f"CONTEXTO:\n{contexto}\n\nPREGUNTA TÉCNICA/CLÍNICA: {pregunta}"}
+        {"role": "system", "content": prompt_rol},
+        {"role": "user", "content": f"{info_paciente}CONTEXTO DOCUMENTAL Y METROLÓGICO:\n{contexto}\n\nPREGUNTA DEL USUARIO ({rol}): {pregunta}"}
     ]
 
 def generar(pregunta: str, mensajes: list[dict], fragmentos: list[dict]) -> tuple[str, str]:
     llave = os.getenv("GROQ_API_KEY")
-    modelo = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+    modelo = os.getenv("MODELO_GROQ", os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"))
     if llave:
         try:
             import httpx
             r = httpx.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {llave}"},
-                json={"model": modelo, "messages": mensajes, "temperature": 0.0, "max_tokens": 400},
+                json={"model": modelo, "messages": mensajes, "temperature": 0.0, "max_tokens": 500},
                 timeout=15
             )
             r.raise_for_status()
@@ -260,7 +288,7 @@ def generar(pregunta: str, mensajes: list[dict], fragmentos: list[dict]) -> tupl
     resp_ext = sintetizar_respuesta_extractiva(pregunta, fragmentos, max_oraciones=4)
     return resp_ext, "extractivo"
 
-def responder(pregunta: str, base_filtro: str | None = None, k: int = 3) -> dict:
+def responder(pregunta: str, base_filtro: str | None = None, k: int = 3, rol: str = "medico", contexto_paciente: dict | None = None) -> dict:
     fragmentos = buscar(pregunta, base_filtro, k=k)
     if not fragmentos:
         return {
@@ -269,7 +297,7 @@ def responder(pregunta: str, base_filtro: str | None = None, k: int = 3) -> dict
             "fuentes": [],
             "mensajes": []
         }
-    mensajes = construir_mensajes(pregunta, fragmentos)
+    mensajes = construir_mensajes(pregunta, fragmentos, rol=rol, contexto_paciente=contexto_paciente)
     texto, modo = generar(pregunta, mensajes, fragmentos)
     fuentes = [
         {

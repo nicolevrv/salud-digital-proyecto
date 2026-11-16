@@ -1,7 +1,11 @@
-
 .env
+env/
 venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .vscode/
+reportes_exportados/*.docx
+reportes_exportados/*.xml
+reportes_exportados/*.md
+!reportes_exportados/.gitkeep

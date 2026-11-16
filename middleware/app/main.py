@@ -408,6 +408,7 @@ def verify_and_upgrade_password(conn, user_id, provided_password, stored_hash):
             return False
 
     if secrets.compare_digest(str(stored_hash), str(provided_password)):
+        
         salt = secrets.token_hex(16)
         iterations = 100000
         new_hash = hashlib.pbkdf2_hmac(

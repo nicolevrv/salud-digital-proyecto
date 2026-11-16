@@ -168,3 +168,88 @@ El código completo de partición temporal, validación cruzada, entrenamiento d
 - [Notebook de Evaluación Biomédica (`evaluation_of_biomedical.ipynb`)](../notebooks/evaluation_of_biomedical.ipynb)
 - [Dataset Nivel 3: `dataset_predictivo_metrologia_nivel3.xls`](../dataset_predictivo_metrologia_nivel3.xls)
 - [Resumen de Clusters Exportado](../notebooks/resultados_notebook/resumen_clusters.csv)
+
+
+---
+
+## Corpus
+
+### Declaración Formal de Fuentes Documentales del Asistente RAG y Agente Clínico (R23)
+
+El sistema integra un corpus documental técnico y clínico compuesto por **56 documentos oficiales indexados** y **guías de práctica clínica internacionales y nacionales**. La base documental responde de forma directa a la operación de la Unidad de Cuidados Intensivos (UCI Adultos), la seguridad del paciente crítico, el soporte vital y el aseguramiento metrológico biomédico.
+
+#### 1. Resumen Estructural del Corpus
+- **Total de Documentos**: 56 documentos oficiales (`docs/base_general` y `docs/base_especifica`) + 4 Guías Clínicas de Referencia.
+- **Formato y Fragmentación**: Chunks semánticos con metadatos (`chunk_id`, `doc_id`, `base`, `tipo`, `codigo_norma`, `titulo`, `fuente`, `texto`).
+- **Indexación y Persistencia**: Tabla relacional `rag_chunks` en Neon PostgreSQL y respaldo local en `middleware/app/rag/fragmentos.json`.
+- **Motor de Recuperación**: Híbrido BM25 Okapi + TF-IDF Vectorial + Reciprocal Rank Fusion (RRF, $k=60$) y umbrales estrictos de abstención contra alucinaciones.
+
+#### 2. Base General: Normatividad Sanitaria, Metrología y Seguridad Eléctrica (28 Documentos)
+| Doc ID | Código de Norma | Título / Tema Principal | Enfoque Clínico y Regulatorio |
+| :--- | :--- | :--- | :--- |
+| **BG-01** | IEC 62353:2014 | Ensayos Periódicos y de Seguridad Eléctrica en Equipos Médicos | Límites de corriente de fuga a tierra ($500\ \mu\text{A}$) y resistencia de conductor protector ($0.2\ \Omega$). |
+| **BG-02** | IEC 60601-1:2020 | Requisitos Generales para Seguridad Básica y Funcionamiento Esencial | Protección contra microchoque cardíaco, partes aplicadas tipo CF y aislamiento. |
+| **BG-03** | IEC 60601-1-2 | Compatibilidad Electromagnética en Entornos de Cuidados Críticos | Inmunidad a radiofrecuencia y perturbaciones en salas de cuidados intensivos. |
+| **BG-04** | Res. 3100 de 2019 | Estándar de Dotación y Mantenimiento Hospitalario (MinSalud Colombia) | Criterios obligatorios de habilitación para UCI: hojas de vida, calibración y mantenimientos vigentes. |
+| **BG-05** | Decreto 4725 de 2005 | Régimen de Registros Sanitarios y Vigilancia de Dispositivos Médicos | Clasificación de riesgo biomédico (Clase I, IIa, IIb, III) y control post-comercialización. |
+| **BG-06** | Manual INVIMA | Programa Nacional de Tecnovigilancia Hospitalaria | Reporte y gestión de incidentes y eventos adversos serios asociados a equipos biomédicos. |
+| **BG-07** | OMS Serie Técnica | Gestión y Mantenimiento de Dispositivos Médicos en Hospitales | Ciclo de vida de tecnología médica, priorización de inventarios y tasas de reemplazo. |
+| **BG-08** | ISO 13485:2016 | Sistemas de Gestión de Calidad para Dispositivos Médicos | Trazabilidad metrológica y gestión de registros de mantenimiento y calibración. |
+| **BG-09** | ISO/IEC 17025:2017 | Requisitos Generales para Competencia de Laboratorios de Ensayo y Calibración | Estimación de incertidumbre de medición y calibración con patrones trazables a ONAC. |
+| **BG-10** | Confiabilidad Ops | Cálculo de MTBF, MTTR y Disponibilidad Operacional en UCI | Métricas de confiabilidad predictiva para equipos de soporte vital en servicio continuo. |
+| **BG-11** | IEC 60601-2-12 | Requisitos Particulares para Ventiladores de Cuidados Críticos | Tolerancias de volumen corriente ($\pm 10\%$), presión inspiratoria ($\pm 2\ \text{hPa}$) y alarmas. |
+| **BG-12** | IEC 60601-2-49 | Requisitos Particulares para Monitores Multiparámetro | Exactitud de transductores de presión invasiva, oximetría SpO2 y frecuencia cardíaca. |
+| **BG-13** | IEC 60601-2-24 | Requisitos Particulares para Bombas y Controladores de Infusión | Tolerancias de flujo volumétrico ($\pm 5\%$) y detección de oclusiones en línea. |
+| **BG-14** | Análisis de Riesgo | Microchoque Eléctrico y Protección al Paciente Cateterizado | Riesgo de fibrilación ventricular con corrientes mayores a $50\ \mu\text{A}$ en electrodos intracardíacos. |
+| **BG-15** | ECRI Institute | Top 10 Riesgos Tecnológicos en Salud y Alarm Fatigue | Fatiga por alarmas clínicas en UCI y errores de configuración en ventiladores y bombas. |
+| **BG-16** | Mtto Predictivo | Machine Learning Aplicado a Gestión de Equipos Biomédicos | Detección temprana de degradación en electroválvulas y transductores piezoeléctricos. |
+| **BG-17** | Res. 2003 de 2014 | Antecedentes Normativos del Sistema Único de Habilitación en Colombia | Disposiciones de infraestructura física y red eléctrica hospitalaria aislada. |
+| **BG-18** | IEC TR 60601-4-2 | Orientaciones sobre Compatibilidad Electromagnética Médica | Mitigación de interferencias por telemetría inalámbrica y telefonía móvil. |
+| **BG-19** | OMS Guía Especif. | Especificaciones Técnicas de Dispositivos Médicos en Cuidados Críticos | Requerimientos de durabilidad de baterías, consumibles y respaldo de energía. |
+| **BG-20** | Gestión Incert. | Evaluación Metrológica y Gestión de Incertidumbre en UCI | Cálculo de deriva instrumental y calibración periódica obligatoria. |
+| **BG-21** | Ley 1581 de 2012 | Protección de Datos Personales y Habeas Data en Salud | Principio de minimización, confidencialidad y tratamiento seguro de historias clínicas. |
+| **BG-22** | IEC 80001-1 | Gestión de Riesgos para Redes Médicas que Incorporan Equipos Médicos | Seguridad en interfaces de comunicación entre monitores UCI y servidor PACS/HIS. |
+| **BG-23** | Calibración Transd. | Impacto Clínico de la Descalibración de Sensores de Presión y Flujo | Errores en dosificación de drogas vasoactivas por descalibración de bombas. |
+| **BG-24** | INVIMA Guía Insp. | Guía Técnica de Inspección y Seguridad en Equipamiento Hospitalario | Protocolos de parada técnica y rotulado de equipos no conformes o dados de baja. |
+| **BG-25** | IEC 60601-2-16 | Requisitos Particulares para Equipos de Hemodiálisis y Terapia Continua | Control de ultrafiltración y balance de fluidos en máquinas de hemodiálisis/CRRT. |
+| **BG-26** | Metrología Flujo | Metrología de Flujo en Infusores Pediátricos y de Adultos | Métodos gravimétricos y de bureta patrón para ensayo metrológico semestral. |
+| **BG-27** | Res. 482 de 2018 | Reglamentación de Equipos Generadores de Radiación Ionizante | Blindaje, dosimetría y control de calidad en equipos de rayos X portátiles de UCI. |
+| **BG-28** | Aseguramiento Met. | Guía de Aseguramiento Metrológico Biomédico Hospitalario | Intervalos de calibración según criticidad clínica y matriz de riesgo FMEA. |
+
+#### 3. Base Específica: Manuales de Servicio y Protocolos Técnicos de Fabricante (28 Documentos)
+| Doc ID | Marca y Modelo Oficial | Tipo de Documento | Procedimientos Cubiertos |
+| :--- | :--- | :--- | :--- |
+| **BE-01** | Hamilton Medical C3 | Manual de Servicio Técnico Oficial | Calibración de sensor de flujo proximal, prueba de estanqueidad y ajuste de celda O2. |
+| **BE-02** | Hamilton Medical C3 | Protocolo de Reemplazo de Válvulas | Sustitución preventiva de válvula espiratoria y diafragma de silicona cada 5,000 h. |
+| **BE-03** | Dräger Evita V800 | Manual de Calibración y Mantenimiento | Ajuste de transductores PEEP/Pmax y calibración de mezclador de gases con analizador. |
+| **BE-04** | Dräger Evita V800 | Protocolo de Inspección Semestral | Verificación de tiempo de respuesta de alarmas y prueba de batería interna de respaldo. |
+| **BE-05** | Mindray BeneVision N17 | Manual de Servicio Técnico | Calibración de módulo MPM (ECG, SpO2, PNI, Temp) y prueba de fugas neumáticas PNI. |
+| **BE-06** | Mindray BeneVision N17 | Protocolo de Verificación Metrológica | Ensayo con simulador multiparámetro Fluke ProSim 8 y ajuste de ganancia ECG. |
+| **BE-07** | Philips IntelliVue MX800 | Manual de Mantenimiento y Diagnóstico | Calibración de transductores de Presión Arterial Invasiva (PAI) a $0\ \text{mmHg}$ y $200\ \text{mmHg}$. |
+| **BE-08** | B. Braun Infusomat Space | Manual de Servicio Oficial | Calibración de sensor de presión de oclusión aguas arriba y aguas abajo. |
+| **BE-09** | B. Braun Infusomat Space | Calibración de Mecanismo Peristáltico | Ensayo de flujo gravimétrico a $10\ \text{mL/h}$, $100\ \text{mL/h}$ y tolerancia admisible $\pm 5\%$. |
+| **BE-10** | Análisis FMEA | Modos de Falla y Efectos en UCI | Severidad, ocurrencia y detectabilidad (NPR) en ventiladores y bombas de infusión. |
+| **BE-11** | Hamilton Medical C3 | Protocolo de Prueba de Seguridad Eléctrica | Verificación IEC 62353 con analizador Rigel/Fluke ESA612 antes de retorno a cama. |
+| **BE-12** | Dräger Evita V800 | Diagnóstico de Alarmas Críticas | Manejo de alarmas "Baja presión de suministro O2/Aire" y "Desconexión de paciente". |
+| **BE-13** | Mindray BeneVision N17 | Calibración de Presión No Invasiva (PNI) | Prueba de sobrepresión a $300\ \text{mmHg}$ y verificación a $50$, $100$ y $200\ \text{mmHg}$. |
+| **BE-14** | Philips IntelliVue MX800 | Diagnóstico de Interfaz de Red y PACS | Configuración de salida HL7 a través de interfaz MIB/RS-232 y puerto LAN. |
+| **BE-15** | B. Braun Perfusor Space | Manual de Servicio para Bombas a Jeringa | Calibración de émbolo óptico y reconocimiento automático de marcas de jeringas. |
+| **BE-16** | Fallas Transductores | Descalibración en Sensores de Flujo | Efecto de la condensación de humedad en sensores de hilo caliente y orificio variable. |
+| **BE-17** | Hamilton Medical C3 | Protocolo de Batería de Respaldo | Ensayo de descarga bajo carga de trabajo y criterio de cambio por degradación $> 20\%$. |
+| **BE-18** | Dräger Evita V800 | Diagnóstico de Turbina de Ventilación | Detección de vibraciones acústicas y desgaste en rodamientos cerámicos de soplador. |
+| **BE-19** | Mindray BeneVision N17 | Verificación de Algoritmo de Arritmias | Prueba con simulador de fibrilación ventricular, taquicardia ventricular y asistolia. |
+| **BE-20** | Philips IntelliVue MX800 | Reemplazo de Pantalla Táctil y Frontal | Procedimiento ESD y calibración de panel resistivo/capacitivo de grado médico. |
+| **BE-21** | B. Braun Infusomat Space | Detección y Calibración de Sensor de Aire | Sensibilidad del detector ultrasónico de burbujas ($> 50\ \mu\text{L}$) para prevenir embolias. |
+| **BE-22** | Fatiga de Materiales | Eventos Adversos por Fatiga en Soporte Vital | Rotura de sellos elastoméricos en ventiladores y su impacto en PEEP intrínseco. |
+| **BE-23** | Fresenius multiFiltrate | Calibración de Balanzas de Ultrafiltración | Ajuste de celdas de carga con pesas patrón clase F1 para control de balance hídrico. |
+| **BE-24** | Zoll R Series | Manual de Servicio de Desfibrilador | Prueba de descarga a $200\ \text{J}$ sobre carga de $50\ \Omega$ y tiempo de sincronización ECG. |
+| **BE-25** | Degradación PNI | Envejecimiento de Manguitos y Válvulas | Fugas lentas en desinflado que causan error en estimación de presión arterial media. |
+| **BE-26** | Hamilton Medical C3 | Protocolo de Prueba Automatizada Pre-uso | Validación de circuito paciente, distensibilidad y resistencia antes de conectar. |
+| **BE-27** | Dräger Evita V800 | Desinfección y Mantenimiento de Bloque | Protocolo de esterilización en autoclave ($134^\circ\text{C}$) del bloque espiratorio. |
+| **BE-28** | B. Braun Infusomat Space | Mantenimiento Preventivo de Carcasa y Clamp | Inspección del clamp anti-flujo libre para evitar sobreinfusión accidental. |
+
+#### 4. Guías de Práctica Clínica y Metas Antropométricas (Semana 13 / Corte 3)
+- **GC-01 · Guía de Práctica Clínica · Diagnóstico y Metas Glucémicas (ADA/MinSalud)**: Criterios HbA1c $\ge 6.5\%$, glicemia en ayunas $\ge 126\ \text{mg/dL}$, meta general $< 7.0\%$.
+- **GC-02 · Guía de Práctica Clínica · Retinopatía Diabética**: Tamizaje al diagnóstico de DM2 y anual; remisión prioritaria a oftalmología en retinopatía no proliferativa moderada o superior.
+- **GC-03 · Guía de Práctica Clínica · Hipoglucemia y Emergencias**: Definición de glucosa $< 70\ \text{mg/dL}$, regla 15-15 y traslado prioritario si hay alteración de conciencia.
+- **GC-04 · Guía OMS · Riesgo Cardiometabólico y Composición Antropométrica**: Criterios de IMC $\ge 30\ \text{kg/m}^2$ (Obesidad Grado I, II o III) y fórmula de Deurenberg para porcentaje de grasa corporal ($> 25\%$ en hombres, $> 32\%$ en mujeres).
