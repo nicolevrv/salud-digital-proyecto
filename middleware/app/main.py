@@ -4164,3 +4164,17 @@ except Exception as e:
         print("Router RAG registrado exitosamente en /rag con control de acceso RBAC")
     except Exception as e2:
         print("Aviso: No se pudo registrar rag_router:", e2)
+
+
+# Registrar Router Asistente Clínico & Antropometría UCI (Semana 13) con Control de Acceso RBAC y Tools
+try:
+    from app.agente_router import get_agente_router
+    app.include_router(get_agente_router(verify_user_credentials))
+    print('Router Agente Clínico registrado exitosamente en /agente con control de acceso RBAC')
+except Exception as e:
+    try:
+        from agente_router import get_agente_router
+        app.include_router(get_agente_router(verify_user_credentials))
+        print('Router Agente Clínico registrado exitosamente en /agente con control de acceso RBAC')
+    except Exception as e2:
+        print('Aviso: No se pudo registrar agente_router:', e2)
