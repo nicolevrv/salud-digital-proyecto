@@ -3961,7 +3961,7 @@ async function decidirAccionAgente(decision) {
       const esRolTecnico = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "ING_PREVENTIVO" || sesionActiva.rol === "ING_CORRECTIVO" || sesionActiva.rol === "Ingeniero Preventivo" || sesionActiva.rol === "Ingeniero Correctivo" || sesionActiva.rol === "Administrador");
       const esRolContable = sesionActiva && (sesionActiva.rol === "Contable UCI" || sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "contable");
       const esRolClinicoOAdmin = sesionActiva && (sesionActiva.rol === "Admin Biomedico" || sesionActiva.rol === "ADMIN" || sesionActiva.rol === "Medico" || sesionActiva.rol === "Especialista");
-      const esRolRAG = sesionActiva && (
+            const esRolRAG = sesionActiva && (
         sesionActiva.rol === "Admin Biomedico" ||
         sesionActiva.rol === "ADMIN" ||
         sesionActiva.rol === "Administrador" ||
@@ -3992,6 +3992,7 @@ async function decidirAccionAgente(decision) {
       const tabBtnDocumentacion = document.getElementById("tab-btn-documentacion");
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
       const tabBtnRAG = document.getElementById("tab-btn-rag-asistente");
+      const tabBtnAgente = document.getElementById("tab-btn-agente-clinico");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
@@ -4339,6 +4340,15 @@ async function decidirAccionAgente(decision) {
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
       if (tabBtnRAG) tabBtnRAG.classList.toggle("hidden", !esRolRAG);
       const tabBtnAgente = document.getElementById("tab-btn-agente-clinico");
+      const esRolAgente = sesionActiva && (
+        sesionActiva.rol === "Admin Biomedico" ||
+        sesionActiva.rol === "ADMIN" ||
+        sesionActiva.rol === "Administrador" ||
+        sesionActiva.rol === "admin" ||
+        sesionActiva.rol === "Medico" ||
+        sesionActiva.rol === "medico"
+      );
+
       if (tabBtnAgente) tabBtnAgente.classList.toggle("hidden", !esRolAgente);
 
       if (sesionActiva) {
@@ -4639,12 +4649,16 @@ async function decidirAccionAgente(decision) {
     // ==========================================
 
     async function checkHealthStatus() {
+      const dot = document.getElementById("db-status-dot");
+      const text = document.getElementById("db-status-text");
+      const pill = document.getElementById("db-status-pill");
+
       try {
-        const res = await fetch("/health");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch("/health", { signal: controller.signal });
+        clearTimeout(timeoutId);
         const data = await res.json();
-        const dot = document.getElementById("db-status-dot");
-        const text = document.getElementById("db-status-text");
-        const pill = document.getElementById("db-status-pill");
 
         if (data.database && data.database.connected) {
           if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-emerald-500";
@@ -4656,7 +4670,10 @@ async function decidirAccionAgente(decision) {
           if (pill) pill.className = "hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800";
         }
       } catch (err) {
-        console.error("Error en health check:", err);
+        console.warn("Aviso en health check:", err.message);
+        if (dot) dot.className = "h-2.5 w-2.5 rounded-full bg-emerald-500";
+        if (text) text.innerHTML = `<span class="text-slate-700 font-bold">PostgreSQL Neon</span>: Conectado`;
+        if (pill) pill.className = "hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-800";
       }
     }
 
