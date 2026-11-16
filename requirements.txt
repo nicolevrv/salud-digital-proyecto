@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 requests>=2.31.0
 pydantic>=2.0.0
 cryptography>=41.0.0
+python-docx>=0.8.11

@@ -1,7 +1,19 @@
 # agente/herramientas.py · Herramientas del agente clínico y metrología UCI
 import hashlib, hmac, os, uuid
 from dataclasses import dataclass
-from langchain.tools import tool, ToolRuntime
+try:
+    from langchain.tools import tool, ToolRuntime
+except ImportError:
+    def tool(fn):
+        def _invoke(args=None, **kwargs):
+            if isinstance(args, dict):
+                return fn(**args)
+            elif args is not None:
+                return fn(args)
+            return fn(**kwargs)
+        fn.invoke = _invoke
+        return fn
+    ToolRuntime = None
 
 # ---------- Contexto que fija el harness en cada solicitud ----------
 @dataclass
