@@ -2213,7 +2213,7 @@ def register_requisitos_routes(app, get_db, verify_user_credentials, decode_sess
     # --------------------------------------------------------------------------
     # R29 / R30 / R31: Endpoint Autenticado para Recepción de Remisiones de Socio
     # --------------------------------------------------------------------------
-    @app.post("/interoperabilidad/remisiones", tags=["Interoperabilidad entre Sistemas (R29, R30, R31)"])
+    # Nota: /interoperabilidad/remisiones es gestionado por interoperabilidad_router.py (R30-R33 completo)
     @app.post("/api/socios/remisiones", tags=["Interoperabilidad entre Sistemas (R29, R30, R31)"])
     def recibir_remision_socio_r30(
         payload: Dict[str, Any],

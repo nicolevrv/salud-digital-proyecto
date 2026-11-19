@@ -577,6 +577,13 @@
           <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-800 rounded-md">MÉDICO</span>
         </button>
 
+        <!-- 9. Interoperabilidad Hospitalaria FHIR (R30-R33) -->
+        <button onclick="cambiarTab('interoperabilidad')" id="tab-btn-interoperabilidad" class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/80 transition-all flex items-center gap-2 border border-slate-200/80 hover:border-indigo-300 transform hover:-translate-y-0.5 cursor-pointer">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          <span class="font-bold text-indigo-700">Interoperabilidad FHIR</span>
+          <span id="badge-interop-pendientes" class="px-1.5 py-0.5 text-[9px] font-bold bg-indigo-100 text-indigo-800 rounded-md">R30-R33</span>
+        </button>
+
         <!-- Dropdown: Más Módulos Hospitalarios (Pacientes, Inventario, Telemetría, Auditoría, Seguridad) -->
         <div class="relative inline-block text-left" id="dropdown-mas-modulos-container">
           <button type="button" onclick="alternarDropdownModulos()" id="btn-dropdown-modulos" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1.5 shadow-2xs transform hover:-translate-y-0.5 cursor-pointer">
@@ -2340,7 +2347,188 @@
       </div>
     </section>
 
-    </main>
+    <!-- ========================================================= -->
+    <!-- PESTAÑA 9: INTEROPERABILIDAD HOSPITALARIA HL7 FHIR (R30-R33) -->
+    <!-- ========================================================= -->
+    <section id="tab-interoperabilidad" class="tab-content hidden space-y-6">
+
+      <!-- Encabezado Institucional -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Interoperabilidad Hospitalaria &amp; Red de Remisiones FHIR R4</h2>
+            <p class="text-xs text-slate-500">Intercambio seguro máquina a máquina (M2M) con autenticación API Key (R31), Consentimiento Ley 1581 (R32) y Auditoría Encadenada (R28).</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="cargarModuloInteroperabilidad()" type="button" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Actualizar Bandeja</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. BARRA SUPERIOR: CONFIGURACIÓN DE CONEXIÓN INSTITUCIONAL -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <!-- Nuestra Identidad Institucional (Para copiar y entregar al otro grupo) -->
+        <div class="bg-white rounded-2xl border border-indigo-200/90 shadow-xs p-5 space-y-3.5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Nuestra Información Institucional (Entregar al Socio)</h3>
+            </div>
+            <button onclick="copiarCredencialNuestra()" type="button" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
+              Copiar Credenciales
+            </button>
+          </div>
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Público de Recepción (POST):</span>
+              <div id="interop-mi-endpoint" class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/remisiones</div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Header de Autenticación:</span>
+                <div class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 select-all">X-System-Key</div>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Nuestra API Key (R31):</span>
+                <div id="interop-mi-apikey" class="mt-0.5 font-mono text-[11px] bg-indigo-50/70 border border-indigo-200 rounded-lg px-3 py-2 text-indigo-900 font-bold select-all">HOSPITAL-UCI-INTEROP-KEY-2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conexión con el Hospital Socio (Espacios en blanco para pegar URL y API Key) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3.5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span id="interop-socio-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Conexión con el Hospital Socio (Destino)</h3>
+            </div>
+            <button onclick="probarConexionSocio()" type="button" id="btn-interop-ping" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
+              Probar Conexión
+            </button>
+          </div>
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <label for="interop-socio-url" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">URL del Endpoint del Hospital Socio:</label>
+              <input type="url" id="interop-socio-url" value="" placeholder="Pegue aquí la URL del otro grupo (ej. https://.../interoperabilidad/remisiones)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label for="interop-socio-key" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">API Key del Hospital Socio:</label>
+                <input type="text" id="interop-socio-key" value="" placeholder="Pegue aquí la API Key del socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre Institución Socio (Opcional):</label>
+                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Clínica Socio Grupo 2" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+            <div id="interop-ping-status" class="hidden text-[11px] font-semibold px-3 py-1.5 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. PANEL DIVIDIDO: IZQUIERDA RECEPCIÓN / DERECHA ENVÍO -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- LADO IZQUIERDO: BANDEJA DE ENTRADA (LO QUE NOS MANDA EL OTRO GRUPO) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Bandeja de Entrada · Remisiones Recibidas</h3>
+              <p class="text-[11px] text-slate-500">Pacientes remitidos por el hospital socio. Asigne cama UCI y equipo biomédico para aceptar.</p>
+            </div>
+            <span id="interop-contador-entrantes" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">0 pendientes</span>
+          </div>
+          <div id="interop-bandeja-entrantes" class="p-5 space-y-4 flex-1 max-h-[540px] overflow-y-auto">
+            <div class="text-center py-10 text-xs text-slate-400">
+              No hay remisiones entrantes pendientes en este momento. Cuando el hospital socio envíe un Bundle FHIR, aparecerá aquí automáticamente.
+            </div>
+          </div>
+        </div>
+
+        <!-- LADO DERECHO: EMISIÓN Y ENVÍO (LO QUE NOSOTROS MANDAMOS AL OTRO GRUPO) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900">Emisión y Envío · Remitir Paciente al Socio</h3>
+            <p class="text-[11px] text-slate-500">Empaqueta Patient, ServiceRequest (SNOMED), Observations (LOINC) y Consent (Ley 1581) en un Bundle FHIR R4.</p>
+          </div>
+          <form onsubmit="emitirRemisionFHIR(event)" class="p-5 space-y-4 flex-1 text-xs">
+            <div>
+              <label for="interop-select-paciente" class="block font-bold text-slate-700 mb-1.5">Paciente UCI a Remitir:</label>
+              <select id="interop-select-paciente" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">Cargando pacientes de UCI...</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="interop-servicio-solicitado" class="block font-bold text-slate-700 mb-1.5">Especialidad / Servicio Solicitado (SNOMED CT):</label>
+              <input type="text" id="interop-servicio-solicitado" required value="Interconsulta y Valoración Especializada" placeholder="Ej. Interconsulta Cardiología / Traslado UCI" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div>
+              <label for="interop-motivo-clinico" class="block font-bold text-slate-700 mb-1.5">Resumen Clínico y Motivo de Remisión:</label>
+              <textarea id="interop-motivo-clinico" rows="3" required placeholder="Describa la condición clínica actual, soporte biomédico y objetivo de la remisión..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+
+            <div class="space-y-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <label class="flex items-start gap-2.5 cursor-pointer">
+                <input type="checkbox" id="interop-incluir-telemetria" checked class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                <span class="text-[11px] text-slate-700 font-medium">Adjuntar últimas observaciones clínicas y telemetría de signos vitales (códigos LOINC: FC, PA, SpO2, Temperatura).</span>
+              </label>
+              <label class="flex items-start gap-2.5 cursor-pointer">
+                <input type="checkbox" id="interop-consentimiento" required class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                <span class="text-[11px] text-slate-800 font-bold">R32 · Confirmo que el paciente cuenta con Consentimiento Informado activo (Ley 1581/2012) para transferencia interinstitucional minimizada.</span>
+              </label>
+            </div>
+
+            <button type="submit" id="btn-interop-enviar" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <span>Emitir Bundle FHIR al Hospital Socio</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. ZONA INFERIOR: REGISTRO HISTÓRICO Y AUDITORÍA DE ESTADOS EN VIVO -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Registro y Auditoría de Intercambio Interinstitucional</h3>
+            <p class="text-[11px] text-slate-500">Trazabilidad en vivo de remisiones enviadas y recibidas (Pendiente / Aceptada / Rechazada) con hash encadenado SHA-256 (R28).</p>
+          </div>
+          <span id="interop-total-historial" class="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">0 registros</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="px-4 py-3">ID / Dirección</th>
+                <th class="px-4 py-3">Institución Origen / Destino</th>
+                <th class="px-4 py-3">Paciente &amp; Servicio</th>
+                <th class="px-4 py-3">Cama &amp; Equipo UCI</th>
+                <th class="px-4 py-3">Estado</th>
+                <th class="px-4 py-3">Fecha &amp; Hash Auditoría</th>
+              </tr>
+            </thead>
+            <tbody id="interop-tabla-historial" class="divide-y divide-slate-100 text-slate-700">
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin intercambios registrados aún.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
 
   <!-- ========================================================================= -->
   <!-- MODAL DE AUTENTICACIÓN (LOGIN E INTENTOS FALLIDOS) -->
@@ -3189,6 +3377,7 @@
       const tabBtnContabilidad = document.getElementById("tab-btn-contabilidad");
       const tabBtnRAG = document.getElementById("tab-btn-rag-asistente");
       const tabBtnAgente = document.getElementById("tab-btn-agente-clinico");
+      const tabBtnInterop = document.getElementById("tab-btn-interoperabilidad");
 
       if (tabBtnPrediccion) tabBtnPrediccion.classList.toggle("hidden", !esRolTecnico);
       if (tabBtnGobernanzaIA) tabBtnGobernanzaIA.classList.toggle("hidden", !esRolClinicoOAdmin);
@@ -3197,6 +3386,9 @@
       if (tabBtnContabilidad) tabBtnContabilidad.classList.toggle("hidden", !esRolContable);
       if (tabBtnRAG) tabBtnRAG.classList.toggle("hidden", !esRolRAG);
       if (tabBtnAgente) tabBtnAgente.classList.toggle("hidden", !esRolAgente);
+      const tabBtnInteropPerfil = document.getElementById("tab-btn-interoperabilidad");
+      if (tabBtnInteropPerfil) tabBtnInteropPerfil.classList.toggle("hidden", !esRolAgente);
+      if (tabBtnInterop) tabBtnInterop.classList.toggle("hidden", !esRolAgente);
 
       if (sesionActiva) {
         if (!esAdminUI && tabName === "auditoria") {
@@ -3225,6 +3417,10 @@
         }
         if (!esRolAgente && tabName === "agente-clinico") {
           showToast("Acceso restringido: El Asistente Clínico está reservado exclusivamente para Médicos UCI y Dirección Biomédica.", "warning");
+          return;
+        }
+        if (!esRolAgente && tabName === "interoperabilidad") {
+          showToast("Acceso restringido: Interoperabilidad FHIR está reservada para Médicos UCI y Dirección Biomédica.", "warning");
           return;
         }
       } else {
@@ -3285,6 +3481,9 @@
       if (tabName === "contabilidad") {
         cargarFacturasUCI();
         cargarLiquidacionCamasContables();
+      }
+      if (tabName === "interoperabilidad") {
+        cargarModuloInteroperabilidad();
       }
     }
 
@@ -3401,6 +3600,8 @@
           conectarSSE();
           cargarAlertasCriticasR20();
           cargarNotificacionesYPendientes();
+          const tabInt = document.getElementById("tab-interoperabilidad");
+          if (tabInt && !tabInt.classList.contains("hidden")) cargarModuloInteroperabilidad();
         } else {
           // CONTRASEÑA ERRÓNEA O USUARIO INCORRECTO: BLOQUEO INMEDIATO DE LA INTERFAZ
           sesionActiva = null;
@@ -3609,6 +3810,8 @@
           if (tabBtnRAG) tabBtnRAG.classList.add("hidden");
         const tabBtnAgenteC = document.getElementById("tab-btn-agente-clinico");
         if (tabBtnAgenteC) tabBtnAgenteC.classList.add("hidden");
+        const tabBtnInteropC = document.getElementById("tab-btn-interoperabilidad");
+        if (tabBtnInteropC) tabBtnInteropC.classList.add("hidden");
 
           ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-gobernanza-ia", "tab-registros", "tab-documentacion", "tab-equipos", "tab-observaciones", "tab-rag-asistente"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
@@ -3674,6 +3877,8 @@
           if (tabBtnRAG) tabBtnRAG.classList.add("hidden");
         const tabBtnAgenteC = document.getElementById("tab-btn-agente-clinico");
         if (tabBtnAgenteC) tabBtnAgenteC.classList.add("hidden");
+        const tabBtnInteropC = document.getElementById("tab-btn-interoperabilidad");
+        if (tabBtnInteropC) tabBtnInteropC.classList.add("hidden");
 
           ["tab-auditoria", "tab-seguridad", "tab-prediccion", "tab-registros", "tab-documentacion", "tab-contabilidad", "tab-rag-asistente"].forEach(idTab => {
             const currentTab = document.getElementById(idTab);
@@ -8598,6 +8803,378 @@ async function decidirAccionAgente(decision) {
     }
   } catch (e) {
     showToast("Error en decisión HITL: " + e.message, "error");
+  }
+}
+
+
+// =========================================================================
+// MÓDULO DE INTEROPERABILIDAD HOSPITALARIA HL7 FHIR R4 (R30 - R33)
+// =========================================================================
+
+async function cargarModuloInteroperabilidad() {
+  if (!sesionActiva) return;
+
+  // 1. Cargar nuestras credenciales institucionales
+  try {
+    const resCred = await fetch("/interoperabilidad/credenciales", { headers: getAuthHeaders() });
+    if (resCred.ok) {
+      const cred = await resCred.json();
+      const elEnd = document.getElementById("interop-mi-endpoint");
+      const elKey = document.getElementById("interop-mi-apikey");
+      if (elEnd && cred.endpoint_remisiones) elEnd.innerText = cred.endpoint_remisiones;
+      if (elKey && cred.api_key) elKey.innerText = cred.api_key;
+    }
+  } catch (e) {
+    console.warn("Aviso credenciales interoperabilidad:", e.message);
+  }
+
+  // 2. Poblar selector de pacientes UCI para envío
+  const selPac = document.getElementById("interop-select-paciente");
+  if (selPac) {
+    let listaPac = Array.isArray(cachePacientes) && cachePacientes.length > 0 ? cachePacientes : [];
+    if (listaPac.length === 0) {
+      try {
+        const resPac = await fetch("/pacientes", { headers: getAuthHeaders() });
+        if (resPac.ok) {
+          const dataPac = await resPac.json();
+          listaPac = Array.isArray(dataPac) ? dataPac : (dataPac.pacientes || []);
+        }
+      } catch (e) {}
+    }
+    if (listaPac.length > 0) {
+      selPac.innerHTML = listaPac.map(p => {
+        const nombre = `${p.nombre || ''} ${p.apellido || ''}`.trim() || `Paciente #${p.id}`;
+        return `<option value="${p.id}">PAC-${p.id} · ${escapeHtml(nombre)}</option>`;
+      }).join("");
+    } else {
+      selPac.innerHTML = `<option value="1">PAC-1 · Paciente UCI Demo</option>`;
+    }
+  }
+
+  // 3. Cargar historial y bandeja de entrada en vivo
+  try {
+    const resHist = await fetch("/interoperabilidad/historial", { headers: getAuthHeaders() });
+    if (!resHist.ok) return;
+    const data = await resHist.json();
+    const remisiones = data.remisiones || [];
+    const entrantesPendientes = remisiones.filter(r => r.direccion === "ENTRANTE" && r.estado === "PENDIENTE");
+
+    const badgeTop = document.getElementById("badge-interop-pendientes");
+    const badgeCont = document.getElementById("interop-contador-entrantes");
+    const totalEl = document.getElementById("interop-total-historial");
+
+    if (badgeTop) {
+      badgeTop.innerText = entrantesPendientes.length > 0 ? `${entrantesPendientes.length} NUEVA(S)` : "R30-R33";
+    }
+    if (badgeCont) {
+      badgeCont.innerText = `${entrantesPendientes.length} pendiente(s)`;
+    }
+    if (totalEl) {
+      totalEl.innerText = `${remisiones.length} registros`;
+    }
+
+    renderizarBandejaEntrantes(entrantesPendientes);
+    renderizarTablaHistorialInterop(remisiones);
+  } catch (e) {
+    console.warn("Error cargando historial interoperabilidad:", e.message);
+  }
+}
+
+function renderizarBandejaEntrantes(lista) {
+  const cont = document.getElementById("interop-bandeja-entrantes");
+  if (!cont) return;
+
+  if (!lista || lista.length === 0) {
+    cont.innerHTML = `
+      <div class="text-center py-10 px-4 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+        <p class="font-semibold text-slate-500">Sin remisiones entrantes pendientes</p>
+        <p class="mt-1">Cuando el hospital socio envíe un Bundle FHIR a su endpoint, aparecerá aquí para asignar cama UCI y equipo biomédico.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const camasOpciones = Array.from({ length: 12 }, (_, idx) => {
+    const num = String(idx + 1).padStart(2, '0');
+    return `<option value="UCI-BED-${num}">Cama UCI-BED-${num}</option>`;
+  }).join("");
+
+  const equiposOpciones = (Array.isArray(cacheEquipos) && cacheEquipos.length > 0)
+    ? cacheEquipos.slice(0, 15).map(eq => {
+        const label = `${eq.codigo_inventario || eq.id} · ${eq.tipo_equipo || eq.nombre || 'Equipo UCI'}`;
+        return `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`;
+      }).join("")
+    : `
+      <option value="VENT-01 · Ventilador Dräger Evita V800">VENT-01 · Ventilador Dräger Evita V800</option>
+      <option value="MON-01 · Monitor Multiparámetro Philips IntelliVue">MON-01 · Monitor Multiparámetro Philips IntelliVue</option>
+      <option value="BVOL-01 · Bomba de Infusión Volumétrica BBraun">BVOL-01 · Bomba de Infusión Volumétrica BBraun</option>
+      <option value="DESF-01 · Monitor Desfibrilador Bifásico">DESF-01 · Monitor Desfibrilador Bifásico</option>
+    `;
+
+  cont.innerHTML = lista.map(r => {
+    const signos = Array.isArray(r.signos_vitales) ? r.signos_vitales : [];
+    const signosHtml = signos.length > 0
+      ? `<div class="flex flex-wrap gap-1.5 mt-2">${signos.map(s =>
+          `<span class="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-[10px] font-mono">${escapeHtml(s.parametro)}: <b>${escapeHtml(String(s.valor))} ${escapeHtml(s.unidad || '')}</b></span>`
+        ).join("")}</div>`
+      : "";
+
+    return `
+      <div class="p-4 rounded-xl bg-amber-50/40 border border-amber-200 space-y-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="inline-block px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">Remisión Entrante #${r.id}</span>
+            <h4 class="text-xs font-bold text-slate-900 mt-1">${escapeHtml(r.paciente_nombre || r.paciente_id)} <span class="font-mono text-slate-500 font-normal">(${escapeHtml(r.paciente_id)})</span></h4>
+            <p class="text-[11px] text-slate-600">Origen: <b>${escapeHtml(r.institucion_origen)}</b> · Servicio: ${escapeHtml(r.servicio_solicitado || 'Ingreso UCI')}</p>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400">${r.created_at ? new Date(r.created_at).toLocaleTimeString() : ''}</span>
+        </div>
+
+        <div class="text-[11px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200">
+          <b>Motivo clínico:</b> ${escapeHtml(r.motivo_clinico || 'Remisión UCI')}
+          ${signosHtml}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Asignar Cama UCI:</label>
+            <select id="interop-cama-${r.id}" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800">
+              ${camasOpciones}
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Asignar Equipo Biomédico:</label>
+            <select id="interop-equipo-${r.id}" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800">
+              ${equiposOpciones}
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <button onclick="decidirRemisionEntrante(${r.id}, 'ACEPTADA')" type="button" class="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs cursor-pointer">
+            Aceptar e Ingresar a UCI
+          </button>
+          <button onclick="decidirRemisionEntrante(${r.id}, 'RECHAZADA')" type="button" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition shadow-xs cursor-pointer">
+            Rechazar
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderizarTablaHistorialInterop(remisiones) {
+  const tbody = document.getElementById("interop-tabla-historial");
+  if (!tbody) return;
+
+  if (!remisiones || remisiones.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin intercambios registrados aún.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = remisiones.map(r => {
+    const esEntrante = r.direccion === "ENTRANTE";
+    const dirBadge = esEntrante
+      ? `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">ENTRANTE</span>`
+      : `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">SALIENTE</span>`;
+
+    let estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">EN ESPERA</span>`;
+    if (r.estado === "ACEPTADA") {
+      estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">ACEPTADA</span>`;
+    } else if (r.estado === "RECHAZADA") {
+      estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">RECHAZADA</span>`;
+    } else if (r.estado === "ERROR_ENVIO") {
+      estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold">ERROR ENVÍO</span>`;
+    }
+
+    const asignacion = (r.cama_asignada || r.equipo_asignado)
+      ? `<div class="font-semibold text-slate-800">${escapeHtml(r.cama_asignada || '-')}</div><div class="text-[10px] text-slate-500">${escapeHtml(r.equipo_asignado || '')}</div>`
+      : `<span class="text-slate-400 text-[11px]">Sin asignar</span>`;
+
+    const hashCorto = r.auditoria_hash ? `${r.auditoria_hash.substring(0, 12)}...` : "-";
+    const fechaFmt = r.created_at ? new Date(r.created_at).toLocaleString() : "-";
+
+    return `
+      <tr class="hover:bg-slate-50/80 transition">
+        <td class="px-4 py-3 whitespace-nowrap">
+          <div class="font-mono font-bold text-slate-800">#${r.id}</div>
+          <div class="mt-0.5">${dirBadge}</div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="text-[11px] font-semibold text-slate-800">${escapeHtml(esEntrante ? r.institucion_origen : r.institucion_destino)}</div>
+          <div class="text-[10px] text-slate-400 truncate max-w-[200px]">${escapeHtml(r.decision_motivo || '')}</div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="font-bold text-slate-800">${escapeHtml(r.paciente_nombre || r.paciente_id)}</div>
+          <div class="text-[10px] text-slate-500">${escapeHtml(r.servicio_solicitado || '')}</div>
+        </td>
+        <td class="px-4 py-3">${asignacion}</td>
+        <td class="px-4 py-3 whitespace-nowrap">${estadoBadge}</td>
+        <td class="px-4 py-3 whitespace-nowrap">
+          <div class="text-[11px] text-slate-700">${fechaFmt}</div>
+          <div class="text-[10px] font-mono text-slate-400" title="Hash SHA-256 R28">SHA256: ${hashCorto}</div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function copiarCredencialNuestra() {
+  const endpoint = document.getElementById("interop-mi-endpoint")?.innerText || "";
+  const apiKey = document.getElementById("interop-mi-apikey")?.innerText || "";
+  const texto = `Endpoint FHIR (POST): ${endpoint}\nHeader: X-System-Key\nAPI Key: ${apiKey}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(() => {
+      showToast("Credenciales institucionales copiadas al portapapeles.", "success");
+    }).catch(() => {
+      showToast("Copia el endpoint y API Key directamente de la tarjeta.", "info");
+    });
+  } else {
+    showToast("Credenciales listas en pantalla para copiar.", "info");
+  }
+}
+
+async function probarConexionSocio() {
+  const url = (document.getElementById("interop-socio-url")?.value || "").trim();
+  const key = (document.getElementById("interop-socio-key")?.value || "").trim();
+  const statusBox = document.getElementById("interop-ping-status");
+  const dot = document.getElementById("interop-socio-dot");
+  const btn = document.getElementById("btn-interop-ping");
+
+  if (!url) {
+    showToast("Ingrese primero la URL del endpoint del hospital socio.", "warning");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Probando...";
+  }
+
+  try {
+    const resp = await fetch("/interoperabilidad/ping", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ url_destino: url, api_key_socio: key })
+    });
+    const data = await resp.json();
+    if (statusBox) {
+      statusBox.classList.remove("hidden", "bg-emerald-50", "text-emerald-800", "bg-rose-50", "text-rose-800");
+      if (data.conectado) {
+        statusBox.classList.add("bg-emerald-50", "text-emerald-800");
+        statusBox.innerText = data.mensaje;
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        showToast("Conexión verificada con el servidor socio.", "success");
+      } else {
+        statusBox.classList.add("bg-rose-50", "text-rose-800");
+        statusBox.innerText = data.mensaje;
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        showToast("No se pudo contactar al servidor socio.", "error");
+      }
+    }
+  } catch (e) {
+    showToast("Error probando conectividad: " + e.message, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "Probar Conexión";
+    }
+  }
+}
+
+async function emitirRemisionFHIR(e) {
+  e.preventDefault();
+  const urlDestino = (document.getElementById("interop-socio-url")?.value || "").trim();
+  const apiKeySocio = (document.getElementById("interop-socio-key")?.value || "").trim();
+  const nombreSocio = (document.getElementById("interop-socio-nombre")?.value || "").trim() || "Hospital Socio Externo";
+  const pacienteId = document.getElementById("interop-select-paciente")?.value || "";
+  const servicio = (document.getElementById("interop-servicio-solicitado")?.value || "").trim();
+  const motivo = (document.getElementById("interop-motivo-clinico")?.value || "").trim();
+  const incluirTelemetria = !!document.getElementById("interop-incluir-telemetria")?.checked;
+  const consentimiento = !!document.getElementById("interop-consentimiento")?.checked;
+  const btn = document.getElementById("btn-interop-enviar");
+
+  if (!urlDestino || !apiKeySocio) {
+    showToast("Complete primero la URL y la API Key del Hospital Socio en la barra superior.", "warning");
+    return;
+  }
+  if (!consentimiento) {
+    showToast("R32: Debe confirmar el Consentimiento Informado Ley 1581/2012.", "warning");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>Enviando Bundle FHIR R4...</span>`;
+  }
+
+  try {
+    const resp = await fetch("/interoperabilidad/remitir", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        url_destino: urlDestino,
+        api_key_socio: apiKeySocio,
+        institucion_destino_nombre: nombreSocio,
+        paciente_id: String(pacienteId),
+        servicio_solicitado: servicio,
+        motivo_clinico: motivo,
+        consentimiento_confirmado: consentimiento,
+        incluir_telemetria: incluirTelemetria
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.detail || "Error al emitir la remisión FHIR.", "error");
+    } else if (data.ok) {
+      showToast(`Remisión #${data.remision_id} entregada exitosamente al hospital socio.`, "success");
+      const motivoEl = document.getElementById("interop-motivo-clinico");
+      if (motivoEl) motivoEl.value = "";
+    } else {
+      showToast(`Remisión #${data.remision_id} registrada, pero el socio respondió HTTP ${data.http_status_socio}.`, "warning");
+    }
+    await cargarModuloInteroperabilidad();
+  } catch (err) {
+    showToast("Error enviando remisión FHIR: " + err.message, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg><span>Emitir Bundle FHIR al Hospital Socio</span>`;
+    }
+  }
+}
+
+async function decidirRemisionEntrante(remisionId, decision) {
+  const cama = document.getElementById(`interop-cama-${remisionId}`)?.value || "UCI-BED-01";
+  const equipo = document.getElementById(`interop-equipo-${remisionId}`)?.value || "VENT-01";
+  const apiKeyCallback = (document.getElementById("interop-socio-key")?.value || "").trim();
+
+  try {
+    const resp = await fetch("/interoperabilidad/decidir", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        remision_id: remisionId,
+        decision: decision,
+        cama_asignada: decision === "ACEPTADA" ? cama : null,
+        equipo_asignado: decision === "ACEPTADA" ? equipo : null,
+        api_key_callback: apiKeyCallback || null
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.detail || "No se pudo procesar la decisión.", "error");
+      return;
+    }
+    showToast(
+      decision === "ACEPTADA"
+        ? `Remisión #${remisionId} ACEPTADA. Asignada cama ${cama} y equipo ${equipo}.`
+        : `Remisión #${remisionId} RECHAZADA correctamente.`,
+      decision === "ACEPTADA" ? "success" : "info"
+    );
+    await cargarModuloInteroperabilidad();
+  } catch (err) {
+    showToast("Error al registrar decisión: " + err.message, "error");
   }
 }
 
