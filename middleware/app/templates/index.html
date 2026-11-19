@@ -2417,12 +2417,12 @@
           <div class="space-y-2.5 text-xs">
             <div>
               <label for="interop-socio-url" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">URL del Endpoint del Hospital Socio:</label>
-              <input type="url" id="interop-socio-url" value="" placeholder="Pegue aquí la URL del otro grupo (ej. https://.../interoperabilidad/remisiones)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="url" id="interop-socio-url" value="" oninput="resetearEstadoConexionSocio()" placeholder="Pegue aquí la URL del otro grupo (ej. https://.../interoperabilidad/remisiones)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
                 <label for="interop-socio-key" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">API Key del Hospital Socio:</label>
-                <input type="text" id="interop-socio-key" value="" placeholder="Pegue aquí la API Key del socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="interop-socio-key" value="" oninput="resetearEstadoConexionSocio()" placeholder="Pegue aquí la API Key del socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
                 <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre Institución Socio (Opcional):</label>
@@ -2474,7 +2474,7 @@
 
             <div>
               <label for="interop-motivo-clinico" class="block font-bold text-slate-700 mb-1.5">Resumen Clínico y Motivo de Remisión:</label>
-              <textarea id="interop-motivo-clinico" rows="3" required placeholder="Describa la condición clínica actual, soporte biomédico y objetivo de la remisión..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              <textarea id="interop-motivo-clinico" rows="3" placeholder="Describa la condición clínica actual, soporte biomédico y objetivo de la remisión..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
 
             <div class="space-y-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
@@ -2483,7 +2483,7 @@
                 <span class="text-[11px] text-slate-700 font-medium">Adjuntar últimas observaciones clínicas y telemetría de signos vitales (códigos LOINC: FC, PA, SpO2, Temperatura).</span>
               </label>
               <label class="flex items-start gap-2.5 cursor-pointer">
-                <input type="checkbox" id="interop-consentimiento" required class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                <input type="checkbox" id="interop-consentimiento" class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                 <span class="text-[11px] text-slate-800 font-bold">R32 · Confirmo que el paciente cuenta con Consentimiento Informado activo (Ley 1581/2012) para transferencia interinstitucional minimizada.</span>
               </label>
             </div>
@@ -2492,6 +2492,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
               <span>Emitir Bundle FHIR al Hospital Socio</span>
             </button>
+
+            <div id="interop-envio-resultado" class="hidden rounded-xl border p-3.5 text-xs space-y-1.5"></div>
           </form>
         </div>
       </div>
@@ -9034,6 +9036,27 @@ function copiarCredencialNuestra() {
   }
 }
 
+function escapeHtmlInterop(str) {
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function resetearEstadoConexionSocio() {
+  const statusBox = document.getElementById("interop-ping-status");
+  const dot = document.getElementById("interop-socio-dot");
+  if (statusBox) {
+    statusBox.classList.add("hidden");
+    statusBox.innerHTML = "";
+  }
+  if (dot) {
+    dot.className = "w-2.5 h-2.5 rounded-full bg-slate-300";
+  }
+}
+
 async function probarConexionSocio() {
   const url = (document.getElementById("interop-socio-url")?.value || "").trim();
   const key = (document.getElementById("interop-socio-key")?.value || "").trim();
@@ -9048,7 +9071,7 @@ async function probarConexionSocio() {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerText = "Probando...";
+    btn.innerText = "Verificando R31...";
   }
 
   try {
@@ -9059,17 +9082,33 @@ async function probarConexionSocio() {
     });
     const data = await resp.json();
     if (statusBox) {
-      statusBox.classList.remove("hidden", "bg-emerald-50", "text-emerald-800", "bg-rose-50", "text-rose-800");
-      if (data.conectado) {
-        statusBox.classList.add("bg-emerald-50", "text-emerald-800");
-        statusBox.innerText = data.mensaje;
+      statusBox.className = "text-[11px] px-3.5 py-2.5 rounded-xl border space-y-1";
+      if (data.conectado && data.autenticado !== false) {
+        statusBox.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-900");
+        statusBox.innerHTML = `
+          <div class="font-bold flex items-center justify-between">
+            <span>✅ Conexión M2M Autenticada (${data.codigo_requisito || 'R31'})</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-200/80 text-emerald-900 font-mono text-[10px]">HTTP ${data.status_code || 200} OK</span>
+          </div>
+          <div class="text-[11px] text-emerald-800">${escapeHtmlInterop(data.diagnostico_fhir || data.mensaje)}</div>
+        `;
         if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-        showToast("Conexión verificada con el servidor socio.", "success");
+        showToast("Conexión M2M y API Key (R31) verificadas con éxito.", "success");
       } else {
-        statusBox.classList.add("bg-rose-50", "text-rose-800");
-        statusBox.innerText = data.mensaje;
+        const httpCode = data.status_code || 401;
+        const reqTag = data.codigo_requisito || "R31";
+        const ooJson = data.operation_outcome ? JSON.stringify(data.operation_outcome) : "";
+        statusBox.classList.add("bg-rose-50", "border-rose-300", "text-rose-900");
+        statusBox.innerHTML = `
+          <div class="font-bold flex items-center justify-between text-rose-800">
+            <span>❌ Conexión Rechazada · Violación de Seguridad (${escapeHtmlInterop(reqTag)})</span>
+            <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono text-[10px]">HTTP ${httpCode}</span>
+          </div>
+          <div class="text-[11px] font-semibold text-rose-700">${escapeHtmlInterop(data.diagnostico_fhir || data.mensaje)}</div>
+          ${ooJson ? `<div class="mt-1 font-mono text-[10px] bg-white/90 border border-rose-200 rounded p-1.5 text-rose-900 overflow-x-auto">${escapeHtmlInterop(ooJson)}</div>` : ""}
+        `;
         if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-        showToast("No se pudo contactar al servidor socio.", "error");
+        showToast(data.mensaje || `Error ${reqTag} (HTTP ${httpCode}): Credencial rechazada.`, "error");
       }
     }
   } catch (e) {
@@ -9093,19 +9132,18 @@ async function emitirRemisionFHIR(e) {
   const incluirTelemetria = !!document.getElementById("interop-incluir-telemetria")?.checked;
   const consentimiento = !!document.getElementById("interop-consentimiento")?.checked;
   const btn = document.getElementById("btn-interop-enviar");
+  const resBox = document.getElementById("interop-envio-resultado");
+  const statusBox = document.getElementById("interop-ping-status");
+  const dot = document.getElementById("interop-socio-dot");
 
-  if (!urlDestino || !apiKeySocio) {
-    showToast("Complete primero la URL y la API Key del Hospital Socio en la barra superior.", "warning");
-    return;
-  }
-  if (!consentimiento) {
-    showToast("R32: Debe confirmar el Consentimiento Informado Ley 1581/2012.", "warning");
+  if (!urlDestino) {
+    showToast("Ingrese primero la URL del Endpoint del Hospital Socio en la tarjeta superior.", "warning");
     return;
   }
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<span>Enviando Bundle FHIR R4...</span>`;
+    btn.innerHTML = `<span>Enviando y Validando Bundle FHIR R4...</span>`;
   }
 
   try {
@@ -9127,11 +9165,50 @@ async function emitirRemisionFHIR(e) {
     if (!resp.ok) {
       showToast(data.detail || "Error al emitir la remisión FHIR.", "error");
     } else if (data.ok) {
-      showToast(`Remisión #${data.remision_id} entregada exitosamente al hospital socio.`, "success");
+      if (resBox) {
+        resBox.className = "rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs text-emerald-900 space-y-1";
+        resBox.innerHTML = `
+          <div class="font-bold flex items-center justify-between">
+            <span>✅ Remisión FHIR #${data.remision_id} Entregada Exitosamente (R30 · R31 · R32)</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 font-mono text-[10px]">HTTP ${data.http_status_socio} Created</span>
+          </div>
+          <div class="text-[11px] text-emerald-800">${escapeHtmlInterop(data.mensaje)}</div>
+        `;
+      }
+      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+      showToast(`Remisión #${data.remision_id} entregada exitosamente (HTTP ${data.http_status_socio}).`, "success");
       const motivoEl = document.getElementById("interop-motivo-clinico");
       if (motivoEl) motivoEl.value = "";
     } else {
-      showToast(`Remisión #${data.remision_id} registrada, pero el socio respondió HTTP ${data.http_status_socio}.`, "warning");
+      const httpCode = data.http_status_socio || 422;
+      const reqTag = data.codigo_requisito || "R30";
+      const diag = data.diagnostico_fhir || data.mensaje || "Solicitud rechazada por el servidor receptor.";
+      const ooJson = data.respuesta_socio ? JSON.stringify(data.respuesta_socio) : "";
+      if (resBox) {
+        resBox.className = "rounded-xl border border-rose-300 bg-rose-50 p-3.5 text-xs text-rose-900 space-y-1.5";
+        resBox.innerHTML = `
+          <div class="font-bold flex items-center justify-between text-rose-800">
+            <span>❌ Transferencia FHIR Bloqueada · Requisito ${escapeHtmlInterop(reqTag)}</span>
+            <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono text-[10px]">HTTP ${httpCode}</span>
+          </div>
+          <div class="text-[11px] font-semibold text-rose-700">${escapeHtmlInterop(diag)}</div>
+          ${ooJson ? `<div class="font-mono text-[10px] bg-white/90 border border-rose-200 rounded p-2 text-rose-900 overflow-x-auto">${escapeHtmlInterop(ooJson)}</div>` : ""}
+        `;
+      }
+      if (httpCode === 401 || httpCode === 403 || reqTag === "R31") {
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        if (statusBox) {
+          statusBox.className = "text-[11px] px-3.5 py-2.5 rounded-xl border bg-rose-50 border-rose-300 text-rose-900 space-y-1";
+          statusBox.innerHTML = `
+            <div class="font-bold flex items-center justify-between text-rose-800">
+              <span>❌ Error R31 · Credencial X-System-Key Rechazada</span>
+              <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono text-[10px]">HTTP ${httpCode}</span>
+            </div>
+            <div class="text-[11px] font-semibold text-rose-700">${escapeHtmlInterop(diag)}</div>
+          `;
+        }
+      }
+      showToast(`Rechazado (HTTP ${httpCode} · ${reqTag}): ${diag}`, "error");
     }
     await cargarModuloInteroperabilidad();
   } catch (err) {

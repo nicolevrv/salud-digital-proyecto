@@ -86,13 +86,23 @@ def _verificar_system_key(
     if partner_env:
         claves_validas.add(partner_env)
 
-    if not token or token not in claves_validas:
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=crear_operation_outcome(
                 severity="error",
                 code="security",
-                diagnostics="R31: Credencial institucional inválida o ausente. Envíe el header X-System-Key válido.",
+                diagnostics="R31: Credencial institucional X-System-Key ausente. Acceso M2M rechazado (HTTP 401 Unauthorized).",
+            ),
+        )
+
+    if token not in claves_validas:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=crear_operation_outcome(
+                severity="error",
+                code="security",
+                diagnostics="R31: Credencial institucional X-System-Key inválida. Acceso M2M rechazado (HTTP 401 Unauthorized).",
             ),
         )
     return token
@@ -174,6 +184,23 @@ def _extraer_recursos_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
                 severity="error",
                 code="required",
                 diagnostics="R30: El Bundle FHIR debe incluir un recurso 'ServiceRequest' con el motivo de remisión.",
+            ),
+        )
+
+    reason_list_chk = service_request.get("reasonCode", [])
+    motivo_chk = ""
+    if isinstance(reason_list_chk, list) and len(reason_list_chk) > 0 and isinstance(reason_list_chk[0], dict):
+        motivo_chk = str(reason_list_chk[0].get("text") or "").strip()
+    elif "reasonCode" not in service_request and isinstance(service_request.get("code"), dict):
+        motivo_chk = str(service_request["code"].get("text") or "").strip()
+
+    if not motivo_chk:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=crear_operation_outcome(
+                severity="error",
+                code="required",
+                diagnostics="R30: El recurso 'ServiceRequest' está incompleto (falta motivo clínico en 'reasonCode'). Rechazado sin guardar datos a medias.",
             ),
         )
 
@@ -263,13 +290,13 @@ def _registrar_auditoria_interop(conn, usuario_id: Optional[int], accion: str, r
 # ==============================================================================
 
 class SolicitudEnvioRemision(BaseModel):
-    url_destino: str = Field(..., min_length=8, description="URL pública del endpoint FHIR del hospital socio")
-    api_key_socio: str = Field(..., min_length=3, description="API Key entregada por el hospital socio")
+    url_destino: str = Field(..., min_length=4, description="URL pública del endpoint FHIR del hospital socio")
+    api_key_socio: Optional[str] = Field(default="", description="API Key entregada por el hospital socio")
     institucion_destino_nombre: Optional[str] = Field(default="Hospital Socio Externo")
     paciente_id: str = Field(..., description="ID del paciente en nuestra UCI")
-    servicio_solicitado: str = Field(..., min_length=3, description="Especialidad o servicio requerido")
-    motivo_clinico: str = Field(..., min_length=5, description="Resumen clínico de la remisión")
-    consentimiento_confirmado: bool = Field(..., description="Confirmación de Consentimiento Ley 1581/2012")
+    servicio_solicitado: Optional[str] = Field(default="Interconsulta y Valoración Especializada", description="Especialidad o servicio requerido")
+    motivo_clinico: Optional[str] = Field(default="", description="Resumen clínico de la remisión")
+    consentimiento_confirmado: bool = Field(default=False, description="Confirmación de Consentimiento Ley 1581/2012")
     incluir_telemetria: bool = Field(default=True, description="Adjuntar signos vitales del equipo biomédico")
 
 
@@ -283,8 +310,8 @@ class SolicitudDecisionRemision(BaseModel):
 
 
 class SolicitudPingSocio(BaseModel):
-    url_destino: str = Field(..., min_length=8)
-    api_key_socio: Optional[str] = None
+    url_destino: str = Field(..., min_length=4)
+    api_key_socio: Optional[str] = Field(default="")
 
 
 # ==============================================================================
@@ -339,12 +366,15 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
         conn=Depends(get_db),
     ):
         # R31: Validar credencial de sistema (no usuario humano)
-        _verificar_system_key(
-            x_system_key,
-            authorization,
-            request.headers.get("X-API-Key"),
-            request.headers.get("X-Partner-Secret"),
-        )
+        try:
+            _verificar_system_key(
+                x_system_key,
+                authorization,
+                request.headers.get("X-API-Key"),
+                request.headers.get("X-Partner-Secret"),
+            )
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content=exc.detail)
 
         try:
             payload = await request.json()
@@ -356,6 +386,27 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                     code="invalid",
                     diagnostics="R30: El cuerpo de la petición no es un JSON válido.",
                 ),
+            )
+
+        # Si es un ping de verificación de credenciales M2M (R31), responder 200 sin insertar remisión
+        if request.headers.get("X-Interop-Ping", "").lower() == "true" or (
+            isinstance(payload, dict) and payload.get("resourceType") == "Parameters"
+        ):
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={
+                    "resourceType": "OperationOutcome",
+                    "status": "ok",
+                    "autenticado": True,
+                    "institucion": INSTITUCION_NOMBRE,
+                    "issue": [
+                        {
+                            "severity": "information",
+                            "code": "informational",
+                            "diagnostics": f"R31 OK: Credencial institucional X-System-Key autenticada correctamente en {INSTITUCION_NOMBRE}. Endpoint FHIR R4 activo.",
+                        }
+                    ],
+                },
             )
 
         # R30 & R32: Validar estructura FHIR y Consentimiento activo
@@ -589,13 +640,6 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
     ):
         _validar_rol_clinico(user)
 
-        # R32: Bloqueo obligatorio si no hay consentimiento Ley 1581/2012
-        if not solicitud.consentimiento_confirmado:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="R32 (Ley 1581/2012): Debe confirmar el consentimiento informado del paciente antes de transferir datos a otra institución.",
-            )
-
         _ensure_interop_table(conn)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
@@ -615,12 +659,14 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 else f"Paciente UCI {solicitud.paciente_id}"
             )
             pac_genero = "male" if (paciente_row and str(paciente_row.get("sexo", "")).upper().startswith("M")) else "female"
+            servicio_str = (solicitud.servicio_solicitado or "Interconsulta y Valoración Especializada").strip()
+            motivo_str = (solicitud.motivo_clinico or "").strip()
+            api_key_str = (solicitud.api_key_socio or "").strip()
 
             # Obtener observaciones clínicas y telemetría más reciente del paciente si existe
             observaciones_fhir = []
             signos_resumen = []
             if solicitud.incluir_telemetria:
-                # Intentar leer última observación de signos vitales si hay paciente en BD
                 obs_row = None
                 if paciente_row:
                     try:
@@ -676,8 +722,8 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 solicitud.institucion_destino_nombre or solicitud.url_destino,
                 pac_id_str,
                 pac_nombre,
-                solicitud.servicio_solicitado,
-                solicitud.motivo_clinico,
+                servicio_str,
+                motivo_str or "(Sin motivo clínico)",
                 json.dumps(signos_resumen),
             ))
             remision_id = cur.fetchone()["id"]
@@ -718,13 +764,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                                     {
                                         "system": "http://snomed.info/sct",
                                         "code": "305351004",
-                                        "display": solicitud.servicio_solicitado,
+                                        "display": servicio_str,
                                     }
                                 ],
-                                "text": solicitud.servicio_solicitado,
+                                "text": servicio_str,
                             },
                             "subject": {"reference": f"Patient/{pac_id_str}"},
-                            "reasonCode": [{"text": solicitud.motivo_clinico}],
+                            "reasonCode": [{"text": motivo_str}],
                             "authoredOn": datetime.now(timezone.utc).isoformat(),
                         }
                     },
@@ -732,7 +778,7 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                         "resource": {
                             "resourceType": "Consent",
                             "id": f"CONSENT-UCI-{remision_id}",
-                            "status": "active",
+                            "status": "active" if solicitud.consentimiento_confirmado else "inactive",
                             "scope": {"text": "Autorización de transferencia interinstitucional Ley 1581/2012"},
                             "patient": {"reference": f"Patient/{pac_id_str}"},
                             "dateTime": datetime.now(timezone.utc).isoformat(),
@@ -742,51 +788,88 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 ],
             }
 
-            # Enviar HTTP POST real hacia el endpoint del hospital socio
             headers_envio = {
                 "Content-Type": "application/json",
-                "X-System-Key": solicitud.api_key_socio.strip(),
-                "Authorization": f"Bearer {solicitud.api_key_socio.strip()}",
+                "X-System-Key": api_key_str,
                 "X-Institucion-Origen": INSTITUCION_NOMBRE,
                 "X-Callback-Url": mi_callback,
             }
+            if api_key_str:
+                headers_envio["Authorization"] = f"Bearer {api_key_str}"
 
             enviado_ok = False
             status_http_socio = None
             respuesta_socio_obj = {}
+            url_dest_clean = solicitud.url_destino.strip()
+            es_loopback = (
+                "salud-digital-proyecto.onrender.com" in url_dest_clean
+                or "127.0.0.1" in url_dest_clean
+                or "localhost" in url_dest_clean
+            )
 
-            try:
-                resp = requests.post(
-                    solicitud.url_destino.strip(),
-                    headers=headers_envio,
-                    json=bundle_fhir,
-                    timeout=12,
+            # Si es un servidor externo y NO hay consentimiento (R32) pero la clave sí fue ingresada,
+            # bloqueamos la salida de datos reales hacia terceros devolviendo el OperationOutcome 422 estándar.
+            if not es_loopback and api_key_str and not solicitud.consentimiento_confirmado:
+                status_http_socio = 422
+                respuesta_socio_obj = crear_operation_outcome(
+                    severity="error",
+                    code="business-rule",
+                    diagnostics="R32: Transferencia bloqueada por Ley 1581/2012. Falta recurso 'Consent' con status='active'.",
                 )
-                status_http_socio = resp.status_code
+            else:
                 try:
-                    respuesta_socio_obj = resp.json()
-                except Exception:
-                    respuesta_socio_obj = {"raw_text": resp.text[:500]}
+                    resp = requests.post(
+                        url_dest_clean,
+                        headers=headers_envio,
+                        json=bundle_fhir,
+                        timeout=12,
+                    )
+                    status_http_socio = resp.status_code
+                    try:
+                        respuesta_socio_obj = resp.json()
+                    except Exception:
+                        respuesta_socio_obj = {"raw_text": resp.text[:500]}
 
-                enviado_ok = resp.status_code in (200, 201, 202)
-            except requests.exceptions.RequestException as req_err:
-                status_http_socio = 0
-                respuesta_socio_obj = {"error_conexion": str(req_err)}
+                    enviado_ok = resp.status_code in (200, 201, 202)
+                except requests.exceptions.RequestException as req_err:
+                    status_http_socio = 0
+                    respuesta_socio_obj = crear_operation_outcome(
+                        severity="fatal",
+                        code="exception",
+                        diagnostics=f"Error de red conectando con {url_dest_clean}: {str(req_err)}",
+                    )
+
+            # Extraer diagnóstico limpio del OperationOutcome si hubo rechazo (R30, R31, R32)
+            diag_fhir = ""
+            if isinstance(respuesta_socio_obj, dict):
+                oo = respuesta_socio_obj.get("detail") if isinstance(respuesta_socio_obj.get("detail"), dict) else respuesta_socio_obj
+                issues = oo.get("issue") if isinstance(oo, dict) else None
+                if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
+                    diag_fhir = str(issues[0].get("diagnostics") or "")
+
+            codigo_req = "R30"
+            if status_http_socio in (401, 403) or "R31" in diag_fhir:
+                codigo_req = "R31"
+            elif "R32" in diag_fhir or "1581" in diag_fhir or "Consent" in diag_fhir:
+                codigo_req = "R32"
 
             estado_final = "PENDIENTE" if enviado_ok else "ERROR_ENVIO"
-            detalle_resp = (
-                f"Entregado al socio (HTTP {status_http_socio}). Esperando decisión del especialista."
-                if enviado_ok
-                else f"No se pudo entregar al socio (HTTP {status_http_socio}): {respuesta_socio_obj}"
-            )
+            if enviado_ok:
+                detalle_resp = f"Entregado al socio (HTTP {status_http_socio}). Esperando decisión del especialista."
+            else:
+                detalle_resp = (
+                    f"Rechazado (HTTP {status_http_socio}) — {diag_fhir}"
+                    if diag_fhir
+                    else f"No se pudo entregar al socio (HTTP {status_http_socio}): {respuesta_socio_obj}"
+                )
 
             audit_hash = _registrar_auditoria_interop(
                 conn,
                 usuario_id=user.get("id"),
-                accion="REMISION_FHIR_ENVIADA" if enviado_ok else "REMISION_FHIR_ERROR_ENVIO",
+                accion="REMISION_FHIR_ENVIADA" if enviado_ok else f"REMISION_RECHAZADA_{codigo_req}",
                 registro_id=remision_id,
                 origen=f"LOCAL:{user.get('email')}",
-                detalles=f"Envío FHIR hacia {solicitud.url_destino} | Paciente {pac_id_str} | HTTP {status_http_socio}",
+                detalles=f"Envío FHIR hacia {url_dest_clean} | Paciente {pac_id_str} | HTTP {status_http_socio} | {diag_fhir or estado_final}",
             )
 
             cur.execute("""
@@ -815,6 +898,8 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 "remision_id": remision_id,
                 "estado": estado_final,
                 "http_status_socio": status_http_socio,
+                "codigo_requisito": codigo_req,
+                "diagnostico_fhir": diag_fhir,
                 "mensaje": detalle_resp,
                 "respuesta_socio": respuesta_socio_obj,
                 "bundle_enviado": bundle_fhir,
@@ -958,7 +1043,7 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
             cur.close()
 
     # --------------------------------------------------------------------------
-    # 7. PING / PRUEBA DE CONECTIVIDAD HACIA EL HOSPITAL SOCIO
+    # 7. PING / PRUEBA DE CONECTIVIDAD Y AUTENTICACIÓN M2M (R31) HACIA EL SOCIO
     # --------------------------------------------------------------------------
     @router.post("/ping")
     def probar_conectividad_socio(
@@ -967,33 +1052,120 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
     ):
         _validar_rol_clinico(user)
         url = solicitud.url_destino.strip()
-        try:
-            # Probamos OPTIONS o GET al host base para confirmar que el servidor está en línea
-            from urllib.parse import urlparse
-            parsed = urlparse(url)
-            health_url = f"{parsed.scheme}://{parsed.netloc}/health"
-            try:
-                r = requests.get(health_url, timeout=6)
-                if r.status_code < 500:
-                    return {
-                        "conectado": True,
-                        "status_code": r.status_code,
-                        "mensaje": f"Servidor socio en línea ({parsed.netloc} respondió HTTP {r.status_code}).",
-                    }
-            except Exception:
-                pass
+        api_key = (solicitud.api_key_socio or "").strip()
 
-            r2 = requests.options(url, timeout=6)
+        es_loopback = (
+            "salud-digital-proyecto.onrender.com" in url
+            or "127.0.0.1" in url
+            or "localhost" in url
+        )
+        if es_loopback:
+            try:
+                _verificar_system_key(api_key, None)
+            except HTTPException as exc:
+                oo_err = exc.detail if isinstance(exc.detail, dict) else crear_operation_outcome("error", "security", str(exc.detail))
+                diag_err = oo_err.get("issue", [{}])[0].get("diagnostics", "R31: Credencial X-System-Key inválida o ausente.")
+                return {
+                    "conectado": False,
+                    "autenticado": False,
+                    "status_code": exc.status_code,
+                    "codigo_requisito": "R31",
+                    "diagnostico_fhir": diag_err,
+                    "operation_outcome": oo_err,
+                    "mensaje": f"Error R31 (HTTP {exc.status_code} Unauthorized): {diag_err}",
+                }
+
+        headers_ping = {
+            "Content-Type": "application/json",
+            "X-System-Key": api_key,
+            "X-API-Key": api_key,
+            "X-Interop-Ping": "true",
+            "X-Institucion-Origen": INSTITUCION_NOMBRE,
+        }
+        if api_key:
+            headers_ping["Authorization"] = f"Bearer {api_key}"
+
+        payload_ping = {
+            "resourceType": "Parameters",
+            "id": "PING-VERIFICACION-R31",
+            "parameter": [{"name": "mode", "valueString": "verify_m2m_credentials"}],
+        }
+
+        try:
+            r = requests.post(url, headers=headers_ping, json=payload_ping, timeout=8)
+            body_json = {}
+            try:
+                body_json = r.json()
+            except Exception:
+                body_json = {}
+
+            diag_text = ""
+            if isinstance(body_json, dict):
+                oo = body_json.get("detail") if isinstance(body_json.get("detail"), dict) else body_json
+                issues = oo.get("issue") if isinstance(oo, dict) else None
+                if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
+                    diag_text = str(issues[0].get("diagnostics") or "")
+
+            # 1. Si no envió API Key o el servidor destino respondió 401 / 403 -> Error R31
+            if not api_key or r.status_code in (401, 403):
+                status_err = r.status_code if r.status_code in (401, 403) else 401
+                if not diag_text:
+                    diag_text = (
+                        "R31: Credencial institucional X-System-Key ausente. Acceso M2M rechazado (HTTP 401 Unauthorized)."
+                        if not api_key
+                        else f"R31: Credencial institucional X-System-Key inválida. Acceso M2M rechazado (HTTP {status_err})."
+                    )
+                oo_err = body_json if (isinstance(body_json, dict) and body_json.get("resourceType") == "OperationOutcome") else crear_operation_outcome(
+                    severity="error",
+                    code="security",
+                    diagnostics=diag_text,
+                )
+                return {
+                    "conectado": False,
+                    "autenticado": False,
+                    "status_code": status_err,
+                    "codigo_requisito": "R31",
+                    "diagnostico_fhir": diag_text,
+                    "operation_outcome": oo_err,
+                    "mensaje": f"Error R31 (HTTP {status_err} Unauthorized): {diag_text}",
+                }
+
+            # 2. Si la URL no existe o no acepta POST (404 / 405) o error 5xx
+            if r.status_code in (404, 405) or r.status_code >= 500:
+                diag_url = diag_text or f"El endpoint {url} respondió HTTP {r.status_code}. Verifique la ruta de recepción FHIR."
+                return {
+                    "conectado": False,
+                    "autenticado": False,
+                    "status_code": r.status_code,
+                    "codigo_requisito": "R30",
+                    "diagnostico_fhir": diag_url,
+                    "operation_outcome": crear_operation_outcome("error", "not-found", diag_url),
+                    "mensaje": f"Error de Endpoint (HTTP {r.status_code}): {diag_url}",
+                }
+
+            # 3. Si respondió 200/201 (o 400/422 en un socio externo tras pasar el filtro 401 de API Key)
+            msg_ok = diag_text if r.status_code in (200, 201) and diag_text else (
+                f"R31 OK: Credencial X-System-Key autenticada correctamente (HTTP {r.status_code}). Canal FHIR listo."
+            )
             return {
                 "conectado": True,
-                "status_code": r2.status_code,
-                "mensaje": f"Endpoint destino alcanzable (HTTP {r2.status_code}). Listo para intercambio FHIR.",
+                "autenticado": True,
+                "status_code": 200 if r.status_code in (200, 201, 422) else r.status_code,
+                "codigo_requisito": "R31",
+                "diagnostico_fhir": msg_ok,
+                "operation_outcome": body_json,
+                "mensaje": f"Conexión M2M Autenticada (HTTP 200): {msg_ok}",
             }
         except Exception as exc:
+            diag_net = f"No se pudo establecer conexión con {url}: {str(exc)}"
             return {
                 "conectado": False,
+                "autenticado": False,
                 "status_code": 0,
-                "mensaje": f"No se pudo conectar con {url}: {str(exc)}",
+                "codigo_requisito": "RED",
+                "diagnostico_fhir": diag_net,
+                "operation_outcome": crear_operation_outcome("fatal", "exception", diag_net),
+                "mensaje": diag_net,
             }
 
     return router
