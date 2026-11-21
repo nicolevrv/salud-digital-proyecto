@@ -2359,8 +2359,8 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
           </div>
           <div>
-            <h2 class="text-base font-bold text-slate-900">Interoperabilidad Hospitalaria HL7 FHIR R4 · Consulta de Pacientes e Historia Clínica Automática</h2>
-            <p class="text-xs text-slate-500">Consulta bidireccional entre bases de datos hospitalarias, Cifrado Entidad-a-Entidad (AES-256), Aceptación Automática y Creación de Nueva Historia Clínica (R30–R33).</p>
+            <h2 class="text-base font-bold text-slate-900">Interoperabilidad Hospitalaria &amp; Red de Remisiones HL7 FHIR R4</h2>
+            <p class="text-xs text-slate-500">Envío y recepción M2M de pacientes (R30), Autenticación API Key (R31), Consentimiento Ley 1581 (R32), Cifrado AES-256 y Aceptación Automática con Creación de Historia Clínica.</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -2369,64 +2369,53 @@
           </span>
           <button onclick="cargarModuloInteroperabilidad()" type="button" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span>Sincronizar Historias</span>
+            <span>Actualizar Bandeja</span>
           </button>
         </div>
       </div>
 
-      <!-- 1. BARRA SUPERIOR: CONFIGURACIÓN DE CONEXIÓN INSTITUCIONAL Y CIFRADO -->
+      <!-- 1. BARRA SUPERIOR: CONFIGURACIÓN DE CONEXIÓN INSTITUCIONAL -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         <!-- Nuestra Identidad Institucional (Para copiar y entregar al otro grupo) -->
-        <div class="bg-white rounded-2xl border border-indigo-200/90 shadow-xs p-5 space-y-3">
+        <div class="bg-white rounded-2xl border border-indigo-200/90 shadow-xs p-5 space-y-3.5">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Nuestra API FHIR &amp; Base de Datos (Entregar al Socio)</h3>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Nuestra Información Institucional (Entregar al Socio)</h3>
             </div>
             <button onclick="copiarCredencialNuestra()" type="button" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
               Copiar Credenciales
             </button>
           </div>
-          <div class="space-y-2 text-xs">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Intercambio FHIR (POST):</span>
-                <div id="interop-mi-endpoint" class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/remisiones</div>
-              </div>
-              <div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Directorio BD Pacientes (GET):</span>
-                <div id="interop-mi-directorio" class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/pacientes</div>
-              </div>
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Público de Recepción de Remisiones (POST):</span>
+              <div id="interop-mi-endpoint" class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/remisiones</div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Header &amp; Cifrado Entidad-a-Entidad:</span>
-                <div class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-800 select-all">X-System-Key · AES-256-Fernet</div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Header de Autenticación &amp; Cifrado:</span>
+                <div class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 select-all">X-System-Key · AES-256-Fernet</div>
               </div>
               <div>
                 <span class="text-[10px] font-bold text-slate-500 uppercase">Nuestra API Key (R31):</span>
-                <div id="interop-mi-apikey" class="mt-0.5 font-mono text-[11px] bg-indigo-50/70 border border-indigo-200 rounded-lg px-3 py-1.5 text-indigo-900 font-bold select-all">HOSPITAL-UCI-INTEROP-KEY-2026</div>
+                <div id="interop-mi-apikey" class="mt-0.5 font-mono text-[11px] bg-indigo-50/70 border border-indigo-200 rounded-lg px-3 py-2 text-indigo-900 font-bold select-all">HOSPITAL-UCI-INTEROP-KEY-2026</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Conexión con el Hospital Socio (Espacios en blanco para pegar URL y API Key) -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3.5">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-2">
               <span id="interop-socio-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Conexión con la Base de Datos del Hospital Socio</h3>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Conexión con el Hospital Socio (Destino)</h3>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="explorarBaseDatosSocio()" type="button" id="btn-interop-explorar" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-bold transition cursor-pointer">
-                Explorar BD Socio
-              </button>
-              <button onclick="probarConexionSocio()" type="button" id="btn-interop-ping" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
-                Probar Conexión
-              </button>
-            </div>
+            <button onclick="probarConexionSocio()" type="button" id="btn-interop-ping" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
+              Probar Conexión
+            </button>
           </div>
           <div class="space-y-2.5 text-xs">
             <div>
@@ -2440,7 +2429,7 @@
               </div>
               <div>
                 <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre Institución Socio (Opcional):</label>
-                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Clínica Socio Grupo 2" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Pre-Triaje / Clínica Socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
             <div id="interop-ping-status" class="hidden text-[11px] font-semibold px-3 py-1.5 rounded-lg"></div>
@@ -2448,121 +2437,67 @@
         </div>
       </div>
 
-      <!-- 2. PANEL DIVIDIDO: IZQUIERDA CONSULTAR BD DEL SOCIO / DERECHA HISTORIAS CLÍNICAS INTEGRADAS AUTOMÁTICAMENTE -->
+      <!-- 2. PANEL DIVIDIDO: IZQUIERDA RECEPCIÓN AUTOMÁTICA / DERECHA ENVÍO DE PACIENTE UCI -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <!-- LADO IZQUIERDO: CONSULTAR PACIENTE DE LA BD DEL OTRO GRUPO Y EXTRAER HISTORIA CLÍNICA -->
+        <!-- LADO IZQUIERDO: BANDEJA DE ENTRADA (LO QUE NOS MANDA EL OTRO GRUPO - ACEPTACIÓN AUTOMÁTICA SIN BOTONES) -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col">
-          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-2">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h3 class="text-sm font-bold text-slate-900">1. Consultar Paciente en Base de Datos del Socio (HL7 FHIR R4)</h3>
-              <p class="text-[11px] text-slate-500">Busque o seleccione un paciente del otro grupo para solicitar su información clínica, registrarlo automáticamente en nuestra BD y crear su Historia Clínica.</p>
+              <h3 class="text-sm font-bold text-slate-900">Bandeja de Entrada · Remisiones Recibidas e Historias Clínicas</h3>
+              <p class="text-[11px] text-slate-500">Toda remisión válida del hospital socio se acepta automáticamente, registra al paciente en BD con cama/equipo UCI y crea su Nueva Historia Clínica.</p>
             </div>
-            <button onclick="explorarBaseDatosSocio()" type="button" class="shrink-0 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-bold transition cursor-pointer">
-              🔄 Ver BD del Socio
-            </button>
+            <span id="interop-contador-entrantes" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">0 recibidas</span>
           </div>
-
-          <form onsubmit="emitirRemisionFHIR(event)" class="p-5 space-y-3.5 flex-1 text-xs">
-            <!-- Catálogo interactivo de pacientes encontrados en la BD del socio -->
-            <div id="interop-box-catalogo-socio" class="hidden rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-indigo-950">📋 Pacientes Disponibles en la Base de Datos del Socio:</span>
-                <span id="interop-badge-catalogo-socio" class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold">0 pacientes</span>
-              </div>
-              <div id="interop-lista-catalogo-socio" class="max-h-36 overflow-y-auto space-y-1.5 pr-1"></div>
+          <div id="interop-bandeja-entrantes" class="p-5 space-y-3.5 flex-1 max-h-[540px] overflow-y-auto">
+            <div class="text-center py-10 text-xs text-slate-400">
+              No hay remisiones recibidas aún. Cuando el hospital socio envíe un Bundle FHIR, se aceptará automáticamente y se creará aquí su Nueva Historia Clínica.
             </div>
+          </div>
+        </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="interop-select-paciente" class="block font-bold text-slate-700 mb-1">Seleccionar Paciente a Consultar:</label>
-                <select id="interop-select-paciente" onchange="alCambiarPacienteConsultaInterop()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option value="EXT-CC-1006458912">🆕 EXT-1006458912 · Valeria Ríos Castellanos (Socio)</option>
-                </select>
-              </div>
-              <div>
-                <label for="interop-doc-manual" class="block font-bold text-slate-700 mb-1">O Ingresar ID / Documento del Paciente:</label>
-                <input type="text" id="interop-doc-manual" value="" placeholder="Ej. 1006458912 o PAC-1" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="interop-nombre-manual" class="block font-bold text-slate-700 mb-1">Nombre del Paciente (Si es externo nuevo):</label>
-                <input type="text" id="interop-nombre-manual" value="Valeria Ríos Castellanos" placeholder="Nombre completo del paciente" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              </div>
-              <div>
-                <label for="interop-servicio-solicitado" class="block font-bold text-slate-700 mb-1">Servicio Clínico / Destino (SNOMED CT):</label>
-                <input type="text" id="interop-servicio-solicitado" required value="Apertura de Historia Clínica e Ingreso UCI" placeholder="Ej. Ingreso UCI / Monitoreo" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              </div>
+        <!-- LADO DERECHO: EMISIÓN Y ENVÍO (LO QUE NOSOTROS MANDAMOS AL OTRO GRUPO) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900">Emisión y Envío · Remitir Paciente UCI al Hospital Socio</h3>
+            <p class="text-[11px] text-slate-500">Seleccione un paciente de nuestra UCI para empaquetar Patient, ServiceRequest (SNOMED), Observations (LOINC) y Consent (Ley 1581) en un Bundle FHIR R4 cifrado (AES-256).</p>
+          </div>
+          <form onsubmit="emitirRemisionFHIR(event)" class="p-5 space-y-4 flex-1 text-xs">
+            <div>
+              <label for="interop-select-paciente" class="block font-bold text-slate-700 mb-1.5">Paciente UCI a Remitir:</label>
+              <select id="interop-select-paciente" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">Cargando pacientes de nuestra UCI...</option>
+              </select>
             </div>
 
             <div>
-              <label for="interop-motivo-clinico" class="block font-bold text-slate-700 mb-1">Motivo Clínico de la Solicitud e Historia Clínica (R30 · ServiceRequest):</label>
-              <textarea id="interop-motivo-clinico" rows="2" placeholder="Describa el motivo clínico de la consulta/extracción para anexar a la nueva Historia Clínica..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              <label for="interop-servicio-solicitado" class="block font-bold text-slate-700 mb-1.5">Especialidad / Servicio Solicitado (SNOMED CT):</label>
+              <input type="text" id="interop-servicio-solicitado" required value="Interconsulta y Valoración Especializada" placeholder="Ej. Interconsulta Cardiología / Traslado UCI" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
 
-            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <label for="interop-motivo-clinico" class="block font-bold text-slate-700 mb-1.5">Motivo Clínico de la Remisión (R30 · ServiceRequest):</label>
+              <textarea id="interop-motivo-clinico" rows="3" placeholder="Describa el cuadro clínico, hallazgos biomédicos y justificación del traslado o interconsulta..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+
+            <div class="space-y-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
               <label class="flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" id="interop-incluir-telemetria" checked class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                <span class="text-[11px] text-slate-700 font-medium">Extraer y guardar observaciones clínicas y signos vitales LOINC (FC, PA, SpO2, Temperatura) en la nueva Historia Clínica.</span>
+                <span class="text-[11px] text-slate-700 font-medium">Adjuntar últimas observaciones clínicas y telemetría de signos vitales (códigos LOINC: FC, PA, SpO2, Temperatura).</span>
               </label>
               <label class="flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" id="interop-consentimiento" class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                <span class="text-[11px] text-slate-800 font-bold">R32 · Confirmo Consentimiento Informado activo (Ley 1581/2012) para consulta y transferencia cifrada (AES-256) entre entidades.</span>
+                <span class="text-[11px] text-slate-800 font-bold">R32 · Confirmo que el paciente cuenta con Consentimiento Informado activo (Ley 1581/2012) para transferencia interinstitucional minimizada.</span>
               </label>
             </div>
 
             <button type="submit" id="btn-interop-enviar" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              <span>Solicitar Paciente por FHIR, Aceptar Automáticamente y Crear Historia Clínica</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <span>Emitir Bundle FHIR al Hospital Socio</span>
             </button>
 
             <div id="interop-envio-resultado" class="hidden rounded-xl border p-3.5 text-xs space-y-1.5"></div>
           </form>
-        </div>
-
-        <!-- LADO DERECHO: NUESTRA BD DESPLEGABLE + HISTORIAS CLÍNICAS INTEGRADAS AUTOMÁTICAMENTE (SIN BOTONES ACEPTAR/RECHAZAR) -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col">
-          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-bold text-slate-900">2. Historias Clínicas Creadas Automáticamente &amp; Nuestra BD</h3>
-              <p class="text-[11px] text-slate-500">Recepción M2M sin intervención manual: todo paciente válido se acepta de inmediato, se guarda en BD y genera Historia Clínica.</p>
-            </div>
-            <span id="interop-contador-entrantes" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">0 integradas</span>
-          </div>
-
-          <div class="p-5 space-y-4 flex-1 flex flex-col">
-            <!-- DESPLEGABLE COMPACTO: Nuestro listado de pacientes expuesto para que el otro grupo consulte -->
-            <details class="group rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden">
-              <summary class="px-4 py-2.5 cursor-pointer flex items-center justify-between text-xs font-bold text-slate-800 hover:bg-slate-100/80 transition select-none">
-                <div class="flex items-center gap-2">
-                  <span>📂 Nuestra Base de Datos de Pacientes UCI (Expuesta al Socio vía FHIR)</span>
-                  <span id="interop-count-nuestros-pacs" class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold">0 pacientes</span>
-                </div>
-                <span class="text-[10px] text-slate-500 font-semibold group-open:rotate-180 transition-transform">▼ Desplegar</span>
-              </summary>
-              <div class="px-4 pb-3 pt-2 border-t border-slate-200 bg-white space-y-2">
-                <p class="text-[10.5px] text-slate-500">
-                  El otro grupo puede consultar cualquiera de estos pacientes en vivo mediante <code class="bg-slate-100 px-1 py-0.5 rounded font-mono text-indigo-700">GET /interoperabilidad/pacientes/{id}</code> con la API Key. La entrega es 100% automática y cifrada:
-                </p>
-                <div id="interop-lista-nuestros-pacientes" class="max-h-36 overflow-y-auto divide-y divide-slate-100 text-[11px]"></div>
-              </div>
-            </details>
-
-            <!-- TARJETAS DE HISTORIAS CLÍNICAS ACEPTADAS E INTEGRADAS AUTOMÁTICAMENTE -->
-            <div class="flex-1 flex flex-col">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">🏥 Expedientes e Historias Clínicas Creadas en Nuestro Hospital:</span>
-                <span class="text-[10px] font-semibold text-emerald-700">⚡ Aceptación M2M Inmediata</span>
-              </div>
-              <div id="interop-bandeja-entrantes" class="space-y-3 flex-1 max-h-[420px] overflow-y-auto pr-1">
-                <div class="text-center py-10 text-xs text-slate-400">
-                  Aún no se han importado historias clínicas externas. Solicite un paciente del socio a la izquierda o reciba una consulta FHIR para crear automáticamente su Historia Clínica.
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -2570,8 +2505,8 @@
       <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 class="text-sm font-bold text-slate-900">Registro de Historias Clínicas Interoperables y Auditoría Cifrada (R28 · R30–R33)</h3>
-            <p class="text-[11px] text-slate-500">Evidencia en vivo almacenada en ambos hospitales: Folio de Historia Clínica creada, ID Paciente en BD, Cifrado AES-256 y Hash SHA-256.</p>
+            <h3 class="text-sm font-bold text-slate-900">Registro y Auditoría de Intercambio Interinstitucional (R28 · R30–R33)</h3>
+            <p class="text-[11px] text-slate-500">Trazabilidad en vivo de remisiones enviadas y recibidas, Folio de Historia Clínica creada, Cifrado AES-256 y Hash SHA-256.</p>
           </div>
           <span id="interop-total-historial" class="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">0 registros</span>
         </div>
@@ -8917,17 +8852,15 @@ async function cargarModuloInteroperabilidad() {
     if (resCred.ok) {
       const cred = await resCred.json();
       const elEnd = document.getElementById("interop-mi-endpoint");
-      const elDir = document.getElementById("interop-mi-directorio");
       const elKey = document.getElementById("interop-mi-apikey");
       if (elEnd && cred.endpoint_remisiones) elEnd.innerText = cred.endpoint_remisiones;
-      if (elDir && cred.endpoint_directorio_pacientes) elDir.innerText = cred.endpoint_directorio_pacientes;
       if (elKey && cred.api_key) elKey.innerText = cred.api_key;
     }
   } catch (e) {
     console.warn("Aviso credenciales interoperabilidad:", e.message);
   }
 
-  // 2. Cargar nuestra BD de pacientes (para el desplegable compacto y el selector)
+  // 2. Cargar nuestra BD de pacientes de UCI para el selector de remisión saliente
   let listaPacLocal = [];
   try {
     const resPac = await fetch("/pacientes", { headers: getAuthHeaders() });
@@ -8940,66 +8873,35 @@ async function cargarModuloInteroperabilidad() {
     listaPacLocal = Array.isArray(cachePacientes) ? cachePacientes : [];
   }
 
-  renderizarDesplegableNuestrosPacientes(listaPacLocal);
   poblarSelectorPacientesInterop(listaPacLocal);
 
-  // 3. Cargar historial e historias clínicas integradas automáticamente
+  // 3. Cargar historial y remisiones recibidas (aceptadas automáticamente con su Historia Clínica)
   try {
     const resHist = await fetch("/interoperabilidad/historial", { headers: getAuthHeaders() });
     if (!resHist.ok) return;
     const data = await resHist.json();
     const remisiones = data.remisiones || [];
-    const integradas = remisiones.filter(r => r.estado === "ACEPTADA");
+    const recibidas = remisiones.filter(r => r.estado === "ACEPTADA");
 
     const badgeTop = document.getElementById("badge-interop-pendientes");
     const badgeCont = document.getElementById("interop-contador-entrantes");
     const totalEl = document.getElementById("interop-total-historial");
 
     if (badgeTop) {
-      badgeTop.innerText = integradas.length > 0 ? `${integradas.length} HC` : "R30-R33";
+      badgeTop.innerText = recibidas.length > 0 ? `${recibidas.length} HC` : "R30-R33";
     }
     if (badgeCont) {
-      badgeCont.innerText = `${integradas.length} historia(s) integrada(s)`;
+      badgeCont.innerText = `${recibidas.length} recibida(s) / integrada(s)`;
     }
     if (totalEl) {
       totalEl.innerText = `${remisiones.length} registros`;
     }
 
-    renderizarBandejaEntrantes(integradas);
+    renderizarBandejaEntrantes(recibidas);
     renderizarTablaHistorialInterop(remisiones);
   } catch (e) {
     console.warn("Error cargando historial interoperabilidad:", e.message);
   }
-}
-
-function renderizarDesplegableNuestrosPacientes(listaPac) {
-  const countEl = document.getElementById("interop-count-nuestros-pacs");
-  const contEl = document.getElementById("interop-lista-nuestros-pacientes");
-  if (countEl) countEl.innerText = `${listaPac.length} pacientes en BD`;
-  if (!contEl) return;
-
-  if (!listaPac || listaPac.length === 0) {
-    contEl.innerHTML = `<div class="py-3 text-center text-slate-400">Sin pacientes cargados.</div>`;
-    return;
-  }
-
-  contEl.innerHTML = listaPac.map(p => {
-    const doc = p.documento_identidad || `PAC-${p.id}`;
-    const cama = p.cama_uci || "UCI-BED-01";
-    return `
-      <div class="py-2 flex items-center justify-between gap-2">
-        <div>
-          <span class="font-mono font-bold text-indigo-700">PAC-${p.id}</span>
-          <span class="font-semibold text-slate-800 ml-1">${escapeHtmlInterop(p.nombre)}</span>
-          <span class="text-[10px] font-mono text-slate-500 ml-1">(Doc: ${escapeHtmlInterop(doc)})</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px]">${escapeHtmlInterop(cama)}</span>
-          <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">FHIR Activo</span>
-        </div>
-      </div>
-    `;
-  }).join("");
 }
 
 function poblarSelectorPacientesInterop(listaPacLocal) {
@@ -9007,140 +8909,23 @@ function poblarSelectorPacientesInterop(listaPacLocal) {
   if (!selPac) return;
   const valorActual = selPac.value;
 
-  const opcionesExternas = cacheCatalogoSocioInterop.map(ext => {
-    const tag = ext.es_externo_nuevo ? "🆕 BD SOCIO" : "🏥 BD";
-    return `<option value="${escapeHtmlInterop(ext.paciente_id)}" data-doc="${escapeHtmlInterop(ext.documento_identidad)}" data-nombre="${escapeHtmlInterop(ext.nombre)}" data-motivo="${escapeHtmlInterop(ext.diagnostico_resumen || '')}">${tag} · ${escapeHtmlInterop(ext.documento_identidad)} · ${escapeHtmlInterop(ext.nombre)}</option>`;
-  }).join("");
-
-  const opcionesLocales = (listaPacLocal || []).map(p => {
-    const doc = p.documento_identidad || `PAC-${p.id}`;
-    return `<option value="PAC-${p.id}" data-doc="${escapeHtmlInterop(doc)}" data-nombre="${escapeHtmlInterop(p.nombre)}" data-motivo="Continuidad asistencial y monitoreo biomédico UCI">🏥 UCI LOCAL · PAC-${p.id} (${escapeHtmlInterop(doc)}) · ${escapeHtmlInterop(p.nombre)}</option>`;
-  }).join("");
-
-  selPac.innerHTML = opcionesExternas + opcionesLocales;
-  if (valorActual && Array.from(selPac.options).some(o => o.value === valorActual)) {
-    selPac.value = valorActual;
-  }
-}
-
-function alCambiarPacienteConsultaInterop() {
-  const selPac = document.getElementById("interop-select-paciente");
-  if (!selPac || selPac.selectedIndex < 0) return;
-  const opt = selPac.options[selPac.selectedIndex];
-  const docEl = document.getElementById("interop-doc-manual");
-  const nomEl = document.getElementById("interop-nombre-manual");
-  if (docEl && opt.dataset.doc) docEl.value = opt.dataset.doc;
-  if (nomEl && opt.dataset.nombre) nomEl.value = opt.dataset.nombre;
-}
-
-function seleccionarPacienteCatalogoSocio(pacId, docId, nombre, diagnostico) {
-  const selPac = document.getElementById("interop-select-paciente");
-  const docEl = document.getElementById("interop-doc-manual");
-  const nomEl = document.getElementById("interop-nombre-manual");
-  const motEl = document.getElementById("interop-motivo-clinico");
-
-  if (selPac && Array.from(selPac.options).some(o => o.value === pacId)) {
-    selPac.value = pacId;
-  }
-  if (docEl) docEl.value = docId || pacId;
-  if (nomEl) nomEl.value = nombre || "";
-  if (motEl && diagnostico && !motEl.value.trim()) motEl.value = diagnostico;
-  showToast(`Paciente ${nombre} (${docId}) seleccionado de la BD del socio.`, "info");
-}
-
-async function explorarBaseDatosSocio() {
-  const url = (document.getElementById("interop-socio-url")?.value || "").trim();
-  const key = (document.getElementById("interop-socio-key")?.value || "").trim();
-  const statusBox = document.getElementById("interop-ping-status");
-  const dot = document.getElementById("interop-socio-dot");
-  const btn = document.getElementById("btn-interop-explorar");
-  const boxCat = document.getElementById("interop-box-catalogo-socio");
-  const listCat = document.getElementById("interop-lista-catalogo-socio");
-  const badgeCat = document.getElementById("interop-badge-catalogo-socio");
-
-  if (!url) {
-    showToast("Ingrese primero la URL del endpoint del hospital socio.", "warning");
+  if (!listaPacLocal || listaPacLocal.length === 0) {
+    selPac.innerHTML = `
+      <option value="PAC-1">PAC-1 · Paciente UCI Cama 01 (UCI-BED-01)</option>
+      <option value="PAC-2">PAC-2 · Paciente UCI Cama 02 (UCI-BED-02)</option>
+      <option value="PAC-3">PAC-3 · Paciente UCI Cama 03 (UCI-BED-03)</option>
+    `;
     return;
   }
 
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = "Consultando BD...";
-  }
+  selPac.innerHTML = listaPacLocal.map(p => {
+    const doc = p.documento_identidad || `PAC-${p.id}`;
+    const cama = p.cama_uci || "UCI-BED-01";
+    return `<option value="PAC-${p.id}" data-doc="${escapeHtmlInterop(doc)}" data-nombre="${escapeHtmlInterop(p.nombre)}">PAC-${p.id} · ${escapeHtmlInterop(p.nombre)} (Doc: ${escapeHtmlInterop(doc)} · ${escapeHtmlInterop(cama)})</option>`;
+  }).join("");
 
-  try {
-    const resp = await fetch("/interoperabilidad/explorar-socio", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ url_destino: url, api_key_socio: key })
-    });
-    const data = await resp.json();
-
-    if (!data.ok) {
-      const httpCode = data.status_code || 401;
-      const reqTag = data.codigo_requisito || "R31";
-      const ooJson = data.operation_outcome ? JSON.stringify(data.operation_outcome) : "";
-      if (statusBox) {
-        statusBox.className = "text-[11px] px-3.5 py-2.5 rounded-xl border bg-rose-50 border-rose-300 text-rose-900 space-y-1";
-        statusBox.innerHTML = `
-          <div class="font-bold flex items-center justify-between text-rose-800">
-            <span>❌ Acceso a Base de Datos del Socio Rechazado (${escapeHtmlInterop(reqTag)})</span>
-            <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono text-[10px]">HTTP ${httpCode}</span>
-          </div>
-          <div class="text-[11px] font-semibold text-rose-700">${escapeHtmlInterop(data.diagnostico_fhir || "Credencial inválida o ausente.")}</div>
-          ${ooJson ? `<div class="mt-1 font-mono text-[10px] bg-white/90 border border-rose-200 rounded p-1.5 text-rose-900 overflow-x-auto">${escapeHtmlInterop(ooJson)}</div>` : ""}
-        `;
-      }
-      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-      if (boxCat) boxCat.classList.add("hidden");
-      showToast(`Acceso rechazado (HTTP ${httpCode} · ${reqTag}): Verifique la API Key.`, "error");
-      return;
-    }
-
-    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-    if (statusBox) {
-      statusBox.className = "text-[11px] px-3.5 py-2.5 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900 space-y-1";
-      statusBox.innerHTML = `
-        <div class="font-bold flex items-center justify-between">
-          <span>✅ Conectado al Directorio de Pacientes del Socio (R31 · Cifrado AES-256)</span>
-          <span class="px-2 py-0.5 rounded bg-emerald-200/80 text-emerald-900 font-mono text-[10px]">HTTP 200 OK</span>
-        </div>
-        <div class="text-[11px] text-emerald-800">Se encontraron ${data.pacientes?.length || 0} pacientes disponibles para consulta e importación automática de Historia Clínica.</div>
-      `;
-    }
-
-    const pacsSocio = Array.isArray(data.pacientes) ? data.pacientes : [];
-    if (pacsSocio.length > 0) {
-      cacheCatalogoSocioInterop = pacsSocio;
-      poblarSelectorPacientesInterop(cachePacientes || []);
-      if (boxCat && listCat) {
-        boxCat.classList.remove("hidden");
-        if (badgeCat) badgeCat.innerText = `${pacsSocio.length} pacientes en BD socio`;
-        listCat.innerHTML = pacsSocio.map(p => `
-          <div class="p-2 rounded-lg bg-white border border-indigo-100 flex items-center justify-between gap-2">
-            <div>
-              <div class="font-bold text-slate-800 text-[11px]">
-                ${p.es_externo_nuevo ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-bold mr-1">NUEVO PARA NUESTRA BD</span>` : ""}
-                ${escapeHtmlInterop(p.nombre)}
-                <span class="font-mono text-slate-500 font-normal">(Doc: ${escapeHtmlInterop(p.documento_identidad)})</span>
-              </div>
-              <div class="text-[10px] text-slate-500">${escapeHtmlInterop(p.servicio_actual || '')} · ${escapeHtmlInterop(p.diagnostico_resumen || '')}</div>
-            </div>
-            <button type="button" onclick="seleccionarPacienteCatalogoSocio('${escapeHtmlInterop(p.paciente_id)}', '${escapeHtmlInterop(p.documento_identidad)}', '${escapeHtmlInterop(p.nombre)}', '${escapeHtmlInterop(p.diagnostico_resumen || '')}')" class="shrink-0 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold cursor-pointer">
-              Seleccionar
-            </button>
-          </div>
-        `).join("");
-      }
-    }
-    showToast(`Base de datos del socio cargada (${pacsSocio.length} pacientes).`, "success");
-  } catch (e) {
-    showToast("Error consultando BD del socio: " + e.message, "error");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerText = "Explorar BD Socio";
-    }
+  if (valorActual && Array.from(selPac.options).some(o => o.value === valorActual)) {
+    selPac.value = valorActual;
   }
 }
 
@@ -9151,8 +8936,8 @@ function renderizarBandejaEntrantes(lista) {
   if (!lista || lista.length === 0) {
     cont.innerHTML = `
       <div class="text-center py-10 px-4 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
-        <p class="font-semibold text-slate-500">Sin historias clínicas interoperables registradas aún</p>
-        <p class="mt-1">Al solicitar un paciente de la base de datos del otro grupo o recibir una petición FHIR, se aceptará automáticamente, se guardará el paciente en nuestra BD y se creará aquí su Nueva Historia Clínica.</p>
+        <p class="font-semibold text-slate-500">No hay remisiones recibidas en este momento</p>
+        <p class="mt-1">Cuando el hospital socio (Pre-Triaje) envíe un Bundle FHIR válido, se aceptará automáticamente de inmediato, registrará al paciente en nuestra BD UCI y creará aquí su Nueva Historia Clínica.</p>
       </div>
     `;
     return;
@@ -9169,15 +8954,15 @@ function renderizarBandejaEntrantes(lista) {
     const folio = r.folio_historia || `HC-UCI-2026-${String(r.id).padStart(4, "0")}`;
     const docId = r.documento_identidad || r.paciente_id;
     const badgeNuevo = r.es_paciente_nuevo
-      ? `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">🆕 NUEVO PACIENTE CREADO EN BD (${escapeHtmlInterop(r.paciente_id)})</span>`
+      ? `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">🆕 NUEVO PACIENTE EN BD (${escapeHtmlInterop(r.paciente_id)})</span>`
       : `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold">🔗 PACIENTE EN BD (${escapeHtmlInterop(r.paciente_id)})</span>`;
 
     return `
       <div class="p-4 rounded-xl bg-emerald-50/40 border border-emerald-200 space-y-2.5">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold uppercase">🟢 ACEPTADO AUTOMÁTICAMENTE</span>
-            <span class="px-2 py-0.5 rounded-md bg-white border border-emerald-300 text-emerald-900 font-mono text-[10px] font-bold">Folio: ${escapeHtmlInterop(folio)}</span>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold uppercase">🟢 ACEPTADA AUTOMÁTICAMENTE</span>
+            <span class="px-2 py-0.5 rounded-md bg-white border border-emerald-300 text-emerald-900 font-mono text-[10px] font-bold">Nueva Historia: ${escapeHtmlInterop(folio)}</span>
             ${badgeNuevo}
           </div>
           <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-mono text-[9.5px]">🔒 AES-256 Verificado</span>
@@ -9189,18 +8974,18 @@ function renderizarBandejaEntrantes(lista) {
             <span class="font-mono text-slate-500 font-normal">· Identificación: <b>${escapeHtmlInterop(docId)}</b></span>
           </h4>
           <p class="text-[11px] text-slate-600">
-            Entidad: <b>${escapeHtmlInterop(r.direccion === 'ENTRANTE' ? r.institucion_origen : r.institucion_destino)}</b> ·
-            Servicio: ${escapeHtmlInterop(r.servicio_solicitado || 'Historia Clínica UCI')}
+            Origen / Destino: <b>${escapeHtmlInterop(r.direccion === 'ENTRANTE' ? r.institucion_origen : r.institucion_destino)}</b> ·
+            Servicio: ${escapeHtmlInterop(r.servicio_solicitado || 'Ingreso UCI')}
           </p>
         </div>
 
         <div class="text-[11px] text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200">
-          <div><b>Historia Clínica / Motivo:</b> ${escapeHtmlInterop(r.motivo_clinico || 'Integración automática HL7 FHIR R4')}</div>
+          <div><b>Motivo Clínico (ServiceRequest):</b> ${escapeHtmlInterop(r.motivo_clinico || 'Remisión interinstitucional HL7 FHIR R4')}</div>
           ${signosHtml}
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-slate-600 bg-white/80 px-3 py-1.5 rounded-lg border border-emerald-100">
-          <div><b>Cama UCI Auto-Asignada:</b> <span class="font-mono text-slate-800">${escapeHtmlInterop(r.cama_asignada || 'UCI-BED-04')}</span></div>
+          <div><b>Cama UCI Asignada:</b> <span class="font-mono text-slate-800">${escapeHtmlInterop(r.cama_asignada || 'UCI-BED-04')}</span></div>
           <div><b>Equipo Biomédico:</b> <span class="font-semibold text-slate-800">${escapeHtmlInterop(r.equipo_asignado || 'VENT-01 · Ventilador Mecánico')}</span></div>
         </div>
       </div>
@@ -9213,7 +8998,7 @@ function renderizarTablaHistorialInterop(remisiones) {
   if (!tbody) return;
 
   if (!remisiones || remisiones.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin historias clínicas interoperables registradas aún.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin intercambios registrados aún.</td></tr>`;
     return;
   }
 
@@ -9221,12 +9006,12 @@ function renderizarTablaHistorialInterop(remisiones) {
     const esEntrante = r.direccion === "ENTRANTE";
     const folio = r.folio_historia || (r.estado === "ACEPTADA" ? `HC-UCI-2026-${String(r.id).padStart(4, "0")}` : `ERR-${r.id}`);
     const dirBadge = esEntrante
-      ? `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">📥 CONSULTADO / RECIBIDO</span>`
-      : `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">📤 ENTREGADO AL SOCIO</span>`;
+      ? `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">📥 ENTRANTE (Recibida)</span>`
+      : `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">📤 SALIENTE (Enviada)</span>`;
 
-    let estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">🟢 INTEGRADO EN BD (AUTO)</span>`;
+    let estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">🟢 ACEPTADA (AUTO)</span>`;
     if (r.estado === "ERROR_ENVIO" || r.estado === "RECHAZADA") {
-      estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">🔴 RECHAZADO (VALIDACIÓN)</span>`;
+      estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">🔴 RECHAZADA (VALIDACIÓN)</span>`;
     }
 
     const docId = r.documento_identidad || r.paciente_id;
@@ -9269,12 +9054,11 @@ function renderizarTablaHistorialInterop(remisiones) {
 
 function copiarCredencialNuestra() {
   const endpoint = document.getElementById("interop-mi-endpoint")?.innerText || "";
-  const directorio = document.getElementById("interop-mi-directorio")?.innerText || "";
   const apiKey = document.getElementById("interop-mi-apikey")?.innerText || "";
-  const texto = `Endpoint Recepción FHIR (POST): ${endpoint}\nEndpoint Directorio Pacientes (GET): ${directorio}\nHeader: X-System-Key\nAPI Key: ${apiKey}\nCifrado: AES-256-Fernet + HMAC-SHA256`;
+  const texto = `Endpoint Recepción FHIR (POST): ${endpoint}\nHeader: X-System-Key\nAPI Key: ${apiKey}\nCifrado: AES-256-Fernet + HMAC-SHA256`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(texto).then(() => {
-      showToast("Credenciales y endpoints FHIR copiados al portapapeles.", "success");
+      showToast("Credenciales y endpoint FHIR copiados al portapapeles.", "success");
     }).catch(() => {
       showToast("Copia el endpoint y API Key directamente de la tarjeta.", "info");
     });
@@ -9373,10 +9157,10 @@ async function emitirRemisionFHIR(e) {
   const urlDestino = (document.getElementById("interop-socio-url")?.value || "").trim();
   const apiKeySocio = (document.getElementById("interop-socio-key")?.value || "").trim();
   const nombreSocio = (document.getElementById("interop-socio-nombre")?.value || "").trim() || "Hospital Socio Externo";
-  const docManual = (document.getElementById("interop-doc-manual")?.value || "").trim();
-  const selPaciente = document.getElementById("interop-select-paciente")?.value || "";
-  const pacienteId = docManual || selPaciente;
-  const nombreManual = (document.getElementById("interop-nombre-manual")?.value || "").trim();
+  const selEl = document.getElementById("interop-select-paciente");
+  const pacienteId = selEl?.value || "PAC-1";
+  const optSel = (selEl && selEl.selectedIndex >= 0) ? selEl.options[selEl.selectedIndex] : null;
+  const nombrePaciente = optSel?.dataset?.nombre || "";
   const servicio = (document.getElementById("interop-servicio-solicitado")?.value || "").trim();
   const motivo = (document.getElementById("interop-motivo-clinico")?.value || "").trim();
   const incluirTelemetria = !!document.getElementById("interop-incluir-telemetria")?.checked;
@@ -9393,7 +9177,7 @@ async function emitirRemisionFHIR(e) {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<span>Consultando Paciente por FHIR, Descifrando y Creando Historia Clínica...</span>`;
+    btn.innerHTML = `<span>Empaquetando y Enviando Bundle FHIR R4 Cifrado (AES-256)...</span>`;
   }
 
   try {
@@ -9405,7 +9189,7 @@ async function emitirRemisionFHIR(e) {
         api_key_socio: apiKeySocio,
         institucion_destino_nombre: nombreSocio,
         paciente_id: String(pacienteId),
-        paciente_nombre_opcional: nombreManual,
+        paciente_nombre_opcional: nombrePaciente,
         servicio_solicitado: servicio,
         motivo_clinico: motivo,
         consentimiento_confirmado: consentimiento,
@@ -9414,24 +9198,20 @@ async function emitirRemisionFHIR(e) {
     });
     const data = await resp.json();
     if (!resp.ok) {
-      showToast(data.detail || "Error al procesar la consulta FHIR.", "error");
+      showToast(data.detail || "Error al procesar la remisión FHIR.", "error");
     } else if (data.ok) {
-      const tagBd = data.es_paciente_nuevo
-        ? `🆕 Nuevo Paciente Guardado en BD (${data.paciente_codigo_local} · Doc: ${data.documento_identidad})`
-        : `🔗 Paciente Vinculado en BD (${data.paciente_codigo_local} · Doc: ${data.documento_identidad})`;
       if (resBox) {
         resBox.className = "rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-xs text-emerald-900 space-y-1.5";
         resBox.innerHTML = `
           <div class="font-bold flex items-center justify-between">
-            <span>✅ Aceptado Automáticamente · Nueva Historia Clínica ${escapeHtmlInterop(data.folio_historia)}</span>
+            <span>✅ Bundle FHIR Enviado y Aceptado Automáticamente · Folio ${escapeHtmlInterop(data.folio_historia)}</span>
             <span class="px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 font-mono text-[10px]">HTTP ${data.http_status_socio} · AES-256</span>
           </div>
-          <div class="text-[11px] font-semibold text-emerald-800">${escapeHtmlInterop(tagBd)}</div>
           <div class="text-[11px] text-emerald-800">${escapeHtmlInterop(data.mensaje)}</div>
         `;
       }
       if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-      showToast(`Historia Clínica ${data.folio_historia} creada automáticamente en BD.`, "success");
+      showToast(`Remisión FHIR enviada y aceptada automáticamente (${data.folio_historia}).`, "success");
       const motivoEl = document.getElementById("interop-motivo-clinico");
       if (motivoEl) motivoEl.value = "";
       if (typeof cargarPacientes === "function") {
@@ -9446,7 +9226,7 @@ async function emitirRemisionFHIR(e) {
         resBox.className = "rounded-xl border border-rose-300 bg-rose-50 p-3.5 text-xs text-rose-900 space-y-1.5";
         resBox.innerHTML = `
           <div class="font-bold flex items-center justify-between text-rose-800">
-            <span>❌ Transferencia FHIR Bloqueada · Requisito ${escapeHtmlInterop(reqTag)}</span>
+            <span>❌ Remisión FHIR Bloqueada · Requisito ${escapeHtmlInterop(reqTag)}</span>
             <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-mono text-[10px]">HTTP ${httpCode}</span>
           </div>
           <div class="text-[11px] font-semibold text-rose-700">${escapeHtmlInterop(diag)}</div>
@@ -9474,7 +9254,7 @@ async function emitirRemisionFHIR(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg><span>Solicitar Paciente por FHIR, Aceptar Automáticamente y Crear Historia Clínica</span>`;
+      btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg><span>Emitir Bundle FHIR al Hospital Socio</span>`;
     }
   }
 }

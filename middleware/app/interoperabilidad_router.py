@@ -1555,11 +1555,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 ],
             }
 
+            import uuid as _uuid
             headers_envio = {
                 "Content-Type": "application/json",
                 "X-System-Key": api_key_str,
                 "X-API-Key": api_key_str,
-                "X-Institucion-Origen": nombre_socio,
+                "x-nonce": str(_uuid.uuid4()),
+                "X-Institucion-Origen": INSTITUCION_NOMBRE,
             }
             if api_key_str:
                 headers_envio["Authorization"] = f"Bearer {api_key_str}"
@@ -1614,10 +1616,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
 
             diag_fhir = ""
             if isinstance(respuesta_socio_obj, dict):
-                oo = respuesta_socio_obj.get("detail") if isinstance(respuesta_socio_obj.get("detail"), dict) else respuesta_socio_obj
-                issues = oo.get("issue") if isinstance(oo, dict) else None
-                if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
-                    diag_fhir = str(issues[0].get("diagnostics") or "")
+                if isinstance(respuesta_socio_obj.get("detail"), str):
+                    diag_fhir = respuesta_socio_obj["detail"]
+                else:
+                    oo = respuesta_socio_obj.get("detail") if isinstance(respuesta_socio_obj.get("detail"), dict) else respuesta_socio_obj
+                    issues = oo.get("issue") if isinstance(oo, dict) else None
+                    if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
+                        diag_fhir = str(issues[0].get("diagnostics") or "")
 
             codigo_req = "R30"
             if status_http_socio in (401, 403) or "R31" in diag_fhir:
@@ -1930,10 +1935,12 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                     "mensaje": f"Error R31 (HTTP {exc.status_code} Unauthorized): {diag_err}",
                 }
 
+        import uuid as _uuid
         headers_ping = {
             "Content-Type": "application/json",
             "X-System-Key": api_key,
             "X-API-Key": api_key,
+            "x-nonce": str(_uuid.uuid4()),
             "X-Interop-Ping": "true",
             "X-Institucion-Origen": INSTITUCION_NOMBRE,
         }
@@ -1956,10 +1963,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
 
             diag_text = ""
             if isinstance(body_json, dict):
-                oo = body_json.get("detail") if isinstance(body_json.get("detail"), dict) else body_json
-                issues = oo.get("issue") if isinstance(oo, dict) else None
-                if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
-                    diag_text = str(issues[0].get("diagnostics") or "")
+                if isinstance(body_json.get("detail"), str):
+                    diag_text = body_json["detail"]
+                else:
+                    oo = body_json.get("detail") if isinstance(body_json.get("detail"), dict) else body_json
+                    issues = oo.get("issue") if isinstance(oo, dict) else None
+                    if isinstance(issues, list) and len(issues) > 0 and isinstance(issues[0], dict):
+                        diag_text = str(issues[0].get("diagnostics") or "")
 
             if not api_key or r.status_code in (401, 403):
                 status_err = r.status_code if r.status_code in (401, 403) else 401
