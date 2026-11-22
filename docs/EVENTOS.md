@@ -102,3 +102,48 @@ El endpoint `POST /fhir/webhook` (y su alias compatible `POST /fhir/Observation`
 2. Persiste la observación en la base de datos clínica vinculada al encuentro activo del paciente en UCI.
 3. Si el valor supera umbrales críticos, crea una alerta crítica activa (**R20**).
 4. Emite en tiempo real por **SSE** (`OBSERVACION_FHIR_RECIBIDA`) la notificación al médico responsable y registra el evento en `audit_logs` con `origen = "FHIR"`.
+
+---
+
+## 5. Catálogo de Eventos Externos de Interoperabilidad Interinstitucional (HL7 FHIR R4) · R19, R30–R33
+
+Para el intercambio máquina a máquina (M2M) con la institución socia (**Pre-Triaje**), el catálogo reactivo incorpora los **tres eventos externos obligatorios** con cifrado entidad-a-entidad (`AES-256-Fernet + HMAC-SHA256`) y auditoría encadenada (`SHA-256`, **R28**):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Socio as Sistema Socio (Pre-Triaje)
+    participant API as FastAPI UCI (/interoperabilidad)
+    participant DB as PostgreSQL Neon (pacientes + remisiones + audit_logs)
+    participant UI as Dashboard Clínico UCI (Bandeja & Historial)
+
+    Note over Socio,UI: 1. Evento Externo: Remisión Recibida de Otro Sistema (POST /interoperabilidad/remisiones)
+    Socio->>API: POST /interoperabilidad/remisiones (Bundle FHIR + X-System-Key)
+    API->>API: Valida R31 (API Key), R32 (Consent=active) y R30 (Patient + ServiceRequest)
+    API->>DB: Registra paciente nuevo en `pacientes`, asigna cama/equipo UCI y crea Historia Clínica (HC-UCI-2026-XXXX)
+    API->>DB: INSERT audit_logs (accion='HISTORIA_CLINICA_FHIR_INTEGRADA_AUTO', origen='EXTERNO:Socio', hash SHA-256)
+    API-->>Socio: HTTP 201 Created (FHIR Task status='completed', folio_historia_clinica)
+    API-->>UI: Actualización en vivo en Bandeja de Entrada (📥 ENTRANTE / RECIBIDA · 🟢 ACEPTADA AUTOMÁTICAMENTE)
+
+    Note over Socio,UI: 2. Evento Externo: Envío y Respuesta del Socio (POST /interoperabilidad/remitir & /callback)
+    UI->>API: Médico emite Bundle FHIR de paciente UCI (POST /interoperabilidad/remitir)
+    API->>Socio: POST <url_socio> (Bundle FHIR R4 + Cifrado AES-256 + X-System-Key)
+    Socio-->>API: HTTP 200/201 Respuesta del Socio (Bundle / Task)
+    API->>DB: INSERT remisiones_interinstitucionales (direccion='SALIENTE', estado='ACEPTADA') + audit_logs SHA-256
+    API-->>UI: Confirmación en vivo (📤 ENVIADO / RECIBIDO · Folio HC-UCI-2026-XXXX)
+
+    Note over Socio,UI: 3. Evento Externo: Rechazo Automático por Validación (R30 / R31 / R32)
+    Socio->>API: POST /interoperabilidad/remisiones (Sin API Key, sin Consent active o sin motivo en ServiceRequest)
+    API->>DB: INSERT audit_logs (accion='INTEROP_RECHAZADA_R30/R31/R32', hash SHA-256) — Sin guardar datos a medias
+    API-->>Socio: HTTP 401 (R31) o HTTP 422 (R30/R32) con recurso FHIR OperationOutcome
+    API-->>UI: Visualización de alerta roja con OperationOutcome y trazabilidad en tabla de auditoría
+```
+
+### Detalle de los 3 Eventos Externos (R30–R33)
+
+| # | Evento Externo | Endpoint / Disparador | Validaciones y Acción Reactiva Automática | Persistencia y Auditoría (`R28`) |
+| :-: | :--- | :--- | :--- | :--- |
+| **5.1** | **Remisión recibida de otro sistema** (`HISTORIA_CLINICA_FHIR_INTEGRADA_AUTO`) | `POST /interoperabilidad/remisiones` | Valida credencial de sistema `X-System-Key` (**R31**), `Consent.status == 'active'` (**R32**) y estructura del `Bundle` (**R30**). **Acepta automáticamente** al paciente, si no existe en `pacientes` lo crea con cama UCI (`UCI-BED-XX`) y equipo biomédico, inserta sus signos vitales LOINC en `observaciones` y crea su **Nueva Historia Clínica (`HC-UCI-2026-XXXX`)**. | Tabla `remisiones_interinstitucionales` (`direccion = 'ENTRANTE'`, `estado = 'ACEPTADA'`) + `audit_logs` con `origen = 'EXTERNO:<Institución>'` y hash encadenado SHA-256. |
+| **5.2** | **Envío y respuesta del socio** (`REMISION_FHIR_ENVIADA_A_SOCIO` / `CALLBACK_SOCIO`) | `POST /interoperabilidad/remitir` y `POST /interoperabilidad/callback` | Empaqueta al paciente de nuestra UCI en un `Bundle` FHIR R4 (`Patient`, `ServiceRequest` SNOMED, `Consent` Ley 1581 y `Observation` LOINC) con sobre cifrado `AES-256-Fernet`, lo transmite al endpoint público del socio, procesa la respuesta (`Task` / `Bundle`) y actualiza el estado en vivo. | Tabla `remisiones_interinstitucionales` (`direccion = 'SALIENTE'`, `estado = 'ACEPTADA'`) + `audit_logs` con hash encadenado SHA-256. |
+| **5.3** | **Rechazo por validación o seguridad** (`INTEROP_RECHAZADA_R30` / `R31` / `R32`) | `POST /interoperabilidad/remisiones`, `/ping` o `/remitir` | Si falta o es inválida la API Key (**R31** $\rightarrow$ `HTTP 401`), si el paciente no tiene consentimiento activo Ley 1581 (**R32** $\rightarrow$ `HTTP 422`), o si el `Bundle` está incompleto o incluye un `DiagnosticReport` de IA no aprobado (**R30** $\rightarrow$ `HTTP 422`), rechaza la operación devolviendo un recurso estándar **`OperationOutcome`** **sin dejar datos a medias**. | Registro del rechazo en `audit_logs` (`INTEROP_RECHAZADA_R31`, `INTEROP_RECHAZADA_R32`, `INTEROP_RECHAZADA_R30`) con hash SHA-256 inmutable. |
+

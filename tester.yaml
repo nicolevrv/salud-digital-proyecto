@@ -138,3 +138,26 @@ endpoints:
     metodo: GET
     ruta: "/auditoria"
     descripcion: "Pista inmutable de auditoria segun Ley 1581/2012 y Res. 1995/1999"
+
+  auditoria_verificar:
+    metodo: GET
+    ruta: "/auditoria/verificar-cadena"
+    descripcion: "Verificacion criptografica de la cadena de hashes SHA-256 de auditoria (R28, exclusivo admin)"
+
+  rag_preguntar:
+    metodo: POST
+    ruta: "/rag/preguntar"
+    descripcion: "Agente clinico y repositorio RAG con fuentes citadas, RBAC, seudonimizacion y defensa anti-injection (R23-R25)"
+
+  interoperabilidad_recibir:
+    metodo: POST
+    ruta: "/interoperabilidad/remisiones"
+    header_autenticacion: "X-System-Key"
+    api_key_sistema: "HOSPITAL-UCI-INTEROP-KEY-2026"
+    descripcion: "Endpoint M2M para recepcion de Bundle HL7 FHIR R4 con validacion R30, R31 y R32 y creacion automatica de Historia Clinica"
+
+  interoperabilidad_remitir:
+    metodo: POST
+    ruta: "/interoperabilidad/remitir"
+    descripcion: "Emision y envio M2M de Bundle FHIR R4 cifrado (AES-256) hacia el hospital socio (R30-R33)"
+
