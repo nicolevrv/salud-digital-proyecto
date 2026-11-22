@@ -8881,7 +8881,7 @@ async function cargarModuloInteroperabilidad() {
     if (!resHist.ok) return;
     const data = await resHist.json();
     const remisiones = data.remisiones || [];
-    const recibidas = remisiones.filter(r => r.estado === "ACEPTADA");
+    const recibidas = remisiones.filter(r => r.estado === "ACEPTADA" && r.direccion === "ENTRANTE");
 
     const badgeTop = document.getElementById("badge-interop-pendientes");
     const badgeCont = document.getElementById("interop-contador-entrantes");
@@ -9006,8 +9006,8 @@ function renderizarTablaHistorialInterop(remisiones) {
     const esEntrante = r.direccion === "ENTRANTE";
     const folio = r.folio_historia || (r.estado === "ACEPTADA" ? `HC-UCI-2026-${String(r.id).padStart(4, "0")}` : `ERR-${r.id}`);
     const dirBadge = esEntrante
-      ? `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">📥 ENTRANTE (Recibida)</span>`
-      : `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">📤 SALIENTE (Enviada)</span>`;
+      ? `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold">📥 ENTRANTE / RECIBIDA</span>`
+      : `<span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">📤 ENVIADO / RECIBIDO</span>`;
 
     let estadoBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">🟢 ACEPTADA (AUTO)</span>`;
     if (r.estado === "ERROR_ENVIO" || r.estado === "RECHAZADA") {

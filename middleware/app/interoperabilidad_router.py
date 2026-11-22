@@ -1644,13 +1644,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                         paciente_id, documento_identidad, paciente_nombre, servicio_solicitado,
                         motivo_clinico, signos_vitales, estado, decision_motivo, bundle_fhir, respuesta_socio
                     )
-                    VALUES (%s, 'ENTRANTE', %s, %s, %s, %s, %s, %s, %s, %s::jsonb, 'ERROR_ENVIO', %s, %s::jsonb, %s::jsonb)
+                    VALUES (%s, 'SALIENTE', %s, %s, %s, %s, %s, %s, %s, %s::jsonb, 'ERROR_ENVIO', %s, %s::jsonb, %s::jsonb)
                     RETURNING id;
                     """,
                     (
                         f"ERR-{codigo_req}-{int(datetime.now().timestamp())}",
-                        nombre_socio,
                         INSTITUCION_NOMBRE,
+                        nombre_socio,
                         pac_req_id or doc_resuelto,
                         doc_resuelto,
                         nombre_resuelto,
@@ -1716,18 +1716,18 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                         es_paciente_nuevo, servicio_solicitado, motivo_clinico, signos_vitales,
                         cama_asignada, equipo_asignado, payload_cifrado, estado, bundle_fhir, respuesta_socio
                     )
-                    VALUES (%s, 'ENTRANTE', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, 'ACEPTADA', %s::jsonb, %s::jsonb)
+                    VALUES (%s, 'SALIENTE', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, 'ACEPTADA', %s::jsonb, %s::jsonb)
                     RETURNING id;
                     """,
                     (
                         f"SR-SOCIO-{int(datetime.now().timestamp())}",
-                        nombre_socio,
                         INSTITUCION_NOMBRE,
+                        nombre_socio,
                         integracion["codigo_local"],
                         integracion["paciente_db_id"],
                         integracion["documento_identidad"],
                         integracion["paciente_nombre"],
-                        integracion["es_paciente_nuevo"],
+                        False,
                         servicio_str,
                         motivo_str,
                         json.dumps(signos_resumen),
@@ -1742,22 +1742,17 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                 folio_hc = f"HC-UCI-2026-{remision_id:04d}"
                 pac_db_id = integracion["paciente_db_id"]
                 pac_cod_local = integracion["codigo_local"]
-                es_nuevo_bd = integracion["es_paciente_nuevo"]
+                es_nuevo_bd = False
                 cama_asig = integracion["cama_asignada"]
                 eq_asig = integracion["equipo_asignado"]
-                accion_bd_txt = (
-                    f"Nuevo paciente guardado en BD ({pac_cod_local} · Doc: {doc_resuelto})"
-                    if es_nuevo_bd
-                    else f"Paciente vinculado en BD ({pac_cod_local} · Doc: {doc_resuelto})"
-                )
                 msg_exito = (
-                    f"Aceptado automáticamente sin intervención manual. {accion_bd_txt}. "
-                    f"Nueva Historia Clínica {folio_hc} creada con cifrado AES-256."
+                    f"Enviado y recibido exitosamente por {nombre_socio} ({pac_cod_local} · Doc: {doc_resuelto}). "
+                    f"Folio {folio_hc} emitido con cifrado AES-256."
                 )
                 audit_hash = _registrar_auditoria_interop(
                     conn,
                     usuario_id=user.get("id"),
-                    accion="HISTORIA_CLINICA_SOCIO_IMPORTADA_AUTO",
+                    accion="REMISION_FHIR_ENVIADA_A_SOCIO",
                     registro_id=remision_id,
                     origen=f"LOCAL:{user.get('email')}",
                     detalles=msg_exito,
@@ -1856,6 +1851,7 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             # Auto-migrar cualquier registro previo que hubiera quedado en PENDIENTE a ACEPTADA con su folio de Historia Clínica
+            # y asegurar que las remisiones emitidas por nosotros (SR-SOCIO-% / ERR-%) figuren como SALIENTE
             cur.execute(
                 """
                 UPDATE remisiones_interinstitucionales
@@ -1865,7 +1861,20 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                     equipo_asignado = COALESCE(equipo_asignado, 'VENT-01 · Ventilador Mecánico Dräger Evita V800'),
                     decision_motivo = COALESCE(decision_motivo, 'Aceptado e integrado automáticamente en Historia Clínica Electrónica.')
                 WHERE estado = 'PENDIENTE';
-                """
+
+                UPDATE remisiones_interinstitucionales
+                SET direccion = 'SALIENTE',
+                    institucion_destino = CASE
+                        WHEN institucion_origen != %s THEN institucion_origen
+                        ELSE institucion_destino
+                    END,
+                    institucion_origen = %s,
+                    es_paciente_nuevo = FALSE,
+                    decision_motivo = 'Remisión enviada al hospital socio y recibida exitosamente (' || COALESCE(paciente_id, '') || ').'
+                WHERE direccion = 'ENTRANTE'
+                  AND (referencia_externa LIKE 'SR-SOCIO-%%' OR referencia_externa LIKE 'ERR-%%');
+                """,
+                (INSTITUCION_NOMBRE, INSTITUCION_NOMBRE),
             )
             conn.commit()
 
