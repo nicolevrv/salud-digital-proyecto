@@ -1690,9 +1690,8 @@ def get_interoperabilidad_router(get_db, verify_user_credentials, prefix: str = 
             if raw_key_clean:
                 headers_envio["Authorization"] = f"Bearer {raw_key_clean}"
 
-            # Doble Seguridad (R31): Si el socio usa Token OAuth2 (se ingresó Client ID o formato client_id:client_secret),
-            # negociamos automáticamente el access_token en <base>/oauth/token y lo adjuntamos en Authorization: Bearer
-            if raw_key_clean and (client_id_socio_str or ":" in api_key_str or "/oauth/token" in url_dest_clean):
+            # Doble Seguridad Automática (R31): Por dentro genera/negocia el Token OAuth2 sin que el usuario tenga que llenar campos extra
+            if raw_key_clean:
                 if es_loopback:
                     try:
                         _verificar_system_key(raw_key_clean, None)
@@ -2152,22 +2151,22 @@ def get_interoperabilidad_router(get_db, verify_user_credentials, prefix: str = 
         if es_loopback:
             try:
                 _verificar_system_key(raw_key_clean, None)
-                if client_id_socio or ":" in api_key:
-                    cid = api_key.split(":", 1)[0].strip() if ":" in api_key else client_id_socio
-                    tok_test = generar_token_oauth_m2m(cid)
-                    diag_tok = (
-                        f"R31 OK (Doble Seguridad): Token OAuth2 Bearer emitido (client_id='{cid}', exp=600s) "
-                        f"y API Key X-System-Key autenticada en {INSTITUCION_NOMBRE}."
-                    )
-                    return {
-                        "conectado": True,
-                        "autenticado": True,
-                        "status_code": 200,
-                        "codigo_requisito": "R31",
-                        "diagnostico_fhir": diag_tok,
-                        "operation_outcome": crear_operation_outcome("information", "informational", diag_tok),
-                        "mensaje": f"Conexión M2M Autenticada (HTTP 200): {diag_tok}",
-                    }
+                cid = api_key.split(":", 1)[0].strip() if ":" in api_key else (client_id_socio or INTEROP_CLIENT_ID)
+                tok_test = generar_token_oauth_m2m(cid)
+                verificar_token_oauth_m2m(tok_test)
+                diag_tok = (
+                    f"R31 OK (Doble Seguridad Automática): API Key X-System-Key verificada y Token OAuth2 Bearer "
+                    f"efímero (exp=600s) negociado internamente en {INSTITUCION_NOMBRE}."
+                )
+                return {
+                    "conectado": True,
+                    "autenticado": True,
+                    "status_code": 200,
+                    "codigo_requisito": "R31",
+                    "diagnostico_fhir": diag_tok,
+                    "operation_outcome": crear_operation_outcome("information", "informational", diag_tok),
+                    "mensaje": f"Conexión M2M Autenticada (HTTP 200): {diag_tok}",
+                }
             except HTTPException as exc:
                 oo_err = exc.detail if isinstance(exc.detail, dict) else crear_operation_outcome("error", "security", str(exc.detail))
                 diag_err = oo_err.get("issue", [{}])[0].get("diagnostics", "R31: Credencial X-System-Key o Token OAuth2 inválido o ausente.")
@@ -2181,15 +2180,13 @@ def get_interoperabilidad_router(get_db, verify_user_credentials, prefix: str = 
                     "mensaje": f"Error R31 (HTTP {exc.status_code} Unauthorized): {diag_err}",
                 }
 
-        # Si el socio usa OAuth2 (se ingresó Client ID o formato client_id:client_secret o URL /oauth/token),
-        # intentamos negociar primero el Token OAuth2 en <base>/oauth/token
+        # Por dentro intenta negociar automáticamente el Token OAuth2 en <base>/oauth/token del socio;
+        # si el socio no tiene /oauth/token, continúa automáticamente con la API Key directa en X-System-Key y Bearer
         bearer_token = raw_key_clean
-        oauth_info_msg = ""
-        if raw_key_clean and (client_id_socio or ":" in api_key or "/oauth/token" in url):
+        if raw_key_clean:
             oauth_res = _negociar_token_oauth_socio(url, api_key, client_id_socio)
             if oauth_res["ok"] and oauth_res.get("access_token"):
                 bearer_token = oauth_res["access_token"]
-                oauth_info_msg = f" [Token OAuth2 obtenido para client_id='{oauth_res.get('client_id')}']"
                 if "/oauth/token" in url:
                     return {
                         "conectado": True,
@@ -2200,17 +2197,6 @@ def get_interoperabilidad_router(get_db, verify_user_credentials, prefix: str = 
                         "operation_outcome": crear_operation_outcome("information", "informational", oauth_res["diagnostico"]),
                         "mensaje": f"Conexión M2M OAuth2 Autenticada (HTTP 200): {oauth_res['diagnostico']}",
                     }
-            elif oauth_res["status_code"] in (401, 403):
-                oo_err = crear_operation_outcome("error", "security", oauth_res["diagnostico"])
-                return {
-                    "conectado": False,
-                    "autenticado": False,
-                    "status_code": oauth_res["status_code"],
-                    "codigo_requisito": "R31",
-                    "diagnostico_fhir": oauth_res["diagnostico"],
-                    "operation_outcome": oo_err,
-                    "mensaje": f"Error R31 (HTTP {oauth_res['status_code']} Unauthorized): {oauth_res['diagnostico']}",
-                }
 
         import uuid as _uuid
         headers_ping = {
