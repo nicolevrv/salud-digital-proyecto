@@ -4188,17 +4188,20 @@ except Exception as e:
 # Registrar Router Interoperabilidad Hospitalaria HL7 FHIR R4 (R30-R33)
 try:
     from app.interoperabilidad_router import get_interoperabilidad_router
-    app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials))
-    print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad (R30-R33)')
+    app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/interoperabilidad"))
+    app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/api"))
+    print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad y /api (R30-R33)')
 except Exception as e:
     try:
         from interoperabilidad_router import get_interoperabilidad_router
-        app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials))
-        print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad (R30-R33)')
+        app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/interoperabilidad"))
+        app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/api"))
+        print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad y /api (R30-R33)')
     except Exception as e2:
         try:
             from middleware.app.interoperabilidad_router import get_interoperabilidad_router
-            app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials))
-            print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad (R30-R33)')
+            app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/interoperabilidad"))
+            app.include_router(get_interoperabilidad_router(get_db, verify_user_credentials, prefix="/api"))
+            print('Router Interoperabilidad FHIR registrado exitosamente en /interoperabilidad y /api (R30-R33)')
         except Exception as e3:
             print('Aviso: No se pudo registrar interoperabilidad_router:', e3)

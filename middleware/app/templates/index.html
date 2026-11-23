@@ -2378,40 +2378,50 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         <!-- Nuestra Identidad Institucional (Para copiar y entregar al otro grupo) -->
-        <div class="bg-white rounded-2xl border border-indigo-200/90 shadow-xs p-5 space-y-3.5">
+        <div class="bg-white rounded-2xl border border-indigo-200/90 shadow-xs p-5 space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Nuestra Información Institucional (Entregar al Socio)</h3>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Nuestra Información Institucional · Doble Seguridad (R31)</h3>
             </div>
             <button onclick="copiarCredencialNuestra()" type="button" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
               Copiar Credenciales
             </button>
           </div>
-          <div class="space-y-2.5 text-xs">
-            <div>
-              <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Público de Recepción de Remisiones (POST):</span>
-              <div id="interop-mi-endpoint" class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/remisiones</div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="space-y-2 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Header de Autenticación &amp; Cifrado:</span>
-                <div class="mt-0.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 select-all">X-System-Key · AES-256-Fernet</div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Recepción Remisiones (POST):</span>
+                <div id="interop-mi-endpoint" class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/remisiones</div>
               </div>
               <div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Nuestra API Key (R31):</span>
-                <div id="interop-mi-apikey" class="mt-0.5 font-mono text-[11px] bg-indigo-50/70 border border-indigo-200 rounded-lg px-3 py-2 text-indigo-900 font-bold select-all">HOSPITAL-UCI-INTEROP-KEY-2026</div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Endpoint Token OAuth2 (POST · Opcional):</span>
+                <div id="interop-mi-oauth" class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 break-all select-all">https://salud-digital-proyecto.onrender.com/interoperabilidad/oauth/token</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Header / Modo Auth:</span>
+                <div class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 select-all">X-System-Key o Bearer</div>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Client ID OAuth2:</span>
+                <div id="interop-mi-clientid" class="mt-0.5 font-mono text-[10.5px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 font-semibold select-all">hospital-uci-client</div>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">API Key / Client Secret (R31):</span>
+                <div id="interop-mi-apikey" class="mt-0.5 font-mono text-[10.5px] bg-indigo-50/70 border border-indigo-200 rounded-lg px-2.5 py-1.5 text-indigo-900 font-bold select-all">HOSPITAL-UCI-INTEROP-KEY-2026</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Conexión con el Hospital Socio (Espacios en blanco para pegar URL y API Key) -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3.5">
+        <!-- Conexión con el Hospital Socio (Soporta API Key Directa y Doble Seguridad con Token OAuth2) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-2">
               <span id="interop-socio-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Conexión con el Hospital Socio (Destino)</h3>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Conexión con el Hospital Socio (API Key o Token OAuth2)</h3>
             </div>
             <button onclick="probarConexionSocio()" type="button" id="btn-interop-ping" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold transition shadow-xs cursor-pointer">
               Probar Conexión
@@ -2422,14 +2432,18 @@
               <label for="interop-socio-url" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">URL del Endpoint del Hospital Socio:</label>
               <input type="url" id="interop-socio-url" value="" oninput="resetearEstadoConexionSocio()" placeholder="Pegue aquí la URL del otro grupo (ej. https://.../interoperabilidad/remisiones)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div>
-                <label for="interop-socio-key" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">API Key del Hospital Socio:</label>
-                <input type="text" id="interop-socio-key" value="" oninput="resetearEstadoConexionSocio()" placeholder="Pegue aquí la API Key del socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label for="interop-socio-key" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">API Key / Client Secret:</label>
+                <input type="text" id="interop-socio-key" value="" oninput="resetearEstadoConexionSocio()" placeholder="API Key o Client Secret" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre Institución Socio (Opcional):</label>
-                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Pre-Triaje / Clínica Socio" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label for="interop-socio-clientid" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Client ID (Si usa Token):</label>
+                <input type="text" id="interop-socio-clientid" value="" oninput="resetearEstadoConexionSocio()" placeholder="Opcional (ej. socio-...)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Institución Socio:</label>
+                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Pre-Triaje / Grupo 2" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
             <div id="interop-ping-status" class="hidden text-[11px] font-semibold px-3 py-1.5 rounded-lg"></div>
@@ -9054,11 +9068,13 @@ function renderizarTablaHistorialInterop(remisiones) {
 
 function copiarCredencialNuestra() {
   const endpoint = document.getElementById("interop-mi-endpoint")?.innerText || "";
+  const oauthUrl = document.getElementById("interop-mi-oauth")?.innerText || "";
+  const clientId = document.getElementById("interop-mi-clientid")?.innerText || "hospital-uci-client";
   const apiKey = document.getElementById("interop-mi-apikey")?.innerText || "";
-  const texto = `Endpoint Recepción FHIR (POST): ${endpoint}\nHeader: X-System-Key\nAPI Key: ${apiKey}\nCifrado: AES-256-Fernet + HMAC-SHA256`;
+  const texto = `Endpoint Recepción FHIR (POST): ${endpoint}\nEndpoint Token OAuth2 (POST): ${oauthUrl}\nOpción 1 (API Key Directa): Header X-System-Key: ${apiKey}\nOpción 2 (OAuth2 Token): client_id=${clientId} | client_secret=${apiKey}\nCifrado: AES-256-Fernet + HMAC-SHA256`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(texto).then(() => {
-      showToast("Credenciales y endpoint FHIR copiados al portapapeles.", "success");
+      showToast("Credenciales (API Key + OAuth2 Token) copiadas al portapapeles.", "success");
     }).catch(() => {
       showToast("Copia el endpoint y API Key directamente de la tarjeta.", "info");
     });
@@ -9091,6 +9107,7 @@ function resetearEstadoConexionSocio() {
 async function probarConexionSocio() {
   const url = (document.getElementById("interop-socio-url")?.value || "").trim();
   const key = (document.getElementById("interop-socio-key")?.value || "").trim();
+  const clientId = (document.getElementById("interop-socio-clientid")?.value || "").trim();
   const statusBox = document.getElementById("interop-ping-status");
   const dot = document.getElementById("interop-socio-dot");
   const btn = document.getElementById("btn-interop-ping");
@@ -9109,7 +9126,7 @@ async function probarConexionSocio() {
     const resp = await fetch("/interoperabilidad/ping", {
       method: "POST",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ url_destino: url, api_key_socio: key })
+      body: JSON.stringify({ url_destino: url, api_key_socio: key, client_id_socio: clientId })
     });
     const data = await resp.json();
     if (statusBox) {
@@ -9156,6 +9173,7 @@ async function emitirRemisionFHIR(e) {
   e.preventDefault();
   const urlDestino = (document.getElementById("interop-socio-url")?.value || "").trim();
   const apiKeySocio = (document.getElementById("interop-socio-key")?.value || "").trim();
+  const clientIdSocio = (document.getElementById("interop-socio-clientid")?.value || "").trim();
   const nombreSocio = (document.getElementById("interop-socio-nombre")?.value || "").trim() || "Hospital Socio Externo";
   const selEl = document.getElementById("interop-select-paciente");
   const pacienteId = selEl?.value || "PAC-1";
@@ -9187,6 +9205,7 @@ async function emitirRemisionFHIR(e) {
       body: JSON.stringify({
         url_destino: urlDestino,
         api_key_socio: apiKeySocio,
+        client_id_socio: clientIdSocio,
         institucion_destino_nombre: nombreSocio,
         paciente_id: String(pacienteId),
         paciente_nombre_opcional: nombrePaciente,

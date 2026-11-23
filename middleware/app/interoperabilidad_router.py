@@ -18,8 +18,11 @@ import hashlib
 import hmac
 import json
 import os
+import time
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import requests
 from cryptography.fernet import Fernet
@@ -28,8 +31,10 @@ from fastapi.responses import JSONResponse
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel, Field
 
-# Clave de sistema institucional M2M (R31)
+# Clave de sistema institucional M2M y Client ID OAuth2 (R31 - Doble Seguridad: API Key + Token OAuth2)
+INTEROP_CLIENT_ID = os.getenv("INTEROP_CLIENT_ID", "hospital-uci-client")
 INTEROP_SYSTEM_KEY = os.getenv("INTEROP_SYSTEM_KEY", "HOSPITAL-UCI-INTEROP-KEY-2026")
+PARTNER_DEFAULT_CLIENT_ID = os.getenv("PARTNER_CLIENT_ID", "socio-predictivoseb")
 INSTITUCION_NOMBRE = os.getenv("INSTITUCION_NOMBRE", "Hospital Universitario UCI - Salud Digital")
 PUBLIC_BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://salud-digital-proyecto.onrender.com").rstrip("/")
 
@@ -110,6 +115,31 @@ def crear_operation_outcome(severity: str, code: str, diagnostics: str) -> Dict[
     }
 
 
+def generar_token_oauth_m2m(client_id: str) -> str:
+    """Genera un access_token OAuth2 efímero (10 minutos) firmado y cifrado con AES-256-Fernet (R31)."""
+    payload = {
+        "client_id": client_id or INTEROP_CLIENT_ID,
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 600,
+        "scope": "bundle:write task:write",
+    }
+    raw = json.dumps(payload, sort_keys=True).encode("utf-8")
+    return "uci_oauth_" + _FERNET_CIPHER.encrypt(raw).decode("utf-8")
+
+
+def verificar_token_oauth_m2m(token: str) -> bool:
+    """Verifica si un token Bearer `uci_oauth_...` emitido por /oauth/token es auténtico y no ha expirado."""
+    if not token or not token.startswith("uci_oauth_"):
+        return False
+    try:
+        raw_cipher = token[len("uci_oauth_"):].encode("utf-8")
+        decrypted = _FERNET_CIPHER.decrypt(raw_cipher, ttl=600)
+        data = json.loads(decrypted.decode("utf-8"))
+        return isinstance(data, dict) and int(data.get("exp", 0)) >= int(time.time())
+    except Exception:
+        return False
+
+
 def _verificar_system_key(
     x_system_key: Optional[str],
     authorization: Optional[str],
@@ -117,42 +147,129 @@ def _verificar_system_key(
     x_partner_secret: Optional[str] = None,
 ) -> str:
     """
-    R31: Valida la credencial máquina-a-máquina (X-System-Key, X-API-Key, X-Partner-Secret o Bearer).
-    Rechaza con HTTP 401 + OperationOutcome si está ausente o es inválida.
+    R31 (Doble Seguridad): Valida la credencial máquina-a-máquina aceptando TANTO:
+    1) API Key institucional directa (X-System-Key, X-API-Key, X-Partner-Secret o Bearer), COMO
+    2) Access Token OAuth2 efímero (`Bearer uci_oauth_...`) obtenido en `POST /interoperabilidad/oauth/token` o `/api/oauth/token`.
+    Rechaza con HTTP 401 + OperationOutcome si está ausente, expiró o es inválida.
     """
-    token = (x_system_key or x_api_key or x_partner_secret or "").strip()
-    if not token and authorization:
+    candidates: List[str] = []
+    if authorization:
         auth_parts = authorization.strip().split(" ", 1)
         if len(auth_parts) == 2 and auth_parts[0].lower() in ("bearer", "apikey", "system"):
-            token = auth_parts[1].strip()
+            candidates.append(auth_parts[1].strip())
         else:
-            token = authorization.strip()
+            candidates.append(authorization.strip())
+    for hdr in (x_system_key, x_api_key, x_partner_secret):
+        if hdr and hdr.strip() and hdr.strip() not in candidates:
+            candidates.append(hdr.strip())
 
     claves_validas = {INTEROP_SYSTEM_KEY}
     partner_env = os.getenv("PARTNER_SYSTEM_SECRET", "").strip()
     if partner_env:
         claves_validas.add(partner_env)
 
-    if not token:
+    if not candidates:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=crear_operation_outcome(
                 severity="error",
                 code="security",
-                diagnostics="R31: Credencial institucional X-System-Key ausente. Acceso M2M rechazado (HTTP 401 Unauthorized).",
+                diagnostics="R31: Credencial institucional (X-System-Key o Bearer Token OAuth2) ausente. Acceso M2M rechazado (HTTP 401 Unauthorized).",
             ),
         )
 
-    if token not in claves_validas:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=crear_operation_outcome(
-                severity="error",
-                code="security",
-                diagnostics="R31: Credencial institucional X-System-Key inválida. Acceso M2M rechazado (HTTP 401 Unauthorized).",
-            ),
-        )
-    return token
+    for tok in candidates:
+        if tok in claves_validas or verificar_token_oauth_m2m(tok):
+            return tok
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=crear_operation_outcome(
+            severity="error",
+            code="security",
+            diagnostics="R31: Credencial institucional (X-System-Key o Bearer Token OAuth2) inválida o expirada. Acceso M2M rechazado (HTTP 401 Unauthorized).",
+        ),
+    )
+
+
+def _derivar_urls_oauth_socio(url_destino: str) -> List[str]:
+    """Deriva posibles endpoints <base>/oauth/token a partir de la URL del socio."""
+    u = url_destino.strip().rstrip("/")
+    urls: List[str] = []
+    if "/oauth/token" in u:
+        urls.append(u.split("/oauth/token")[0] + "/oauth/token")
+    if "/fhir/remisiones-r30" in u:
+        base_api = u.split("/fhir/remisiones-r30")[0].rstrip("/")
+        urls.append(f"{base_api}/oauth/token")
+    if "/interoperabilidad/" in u:
+        base_int = u.split("/interoperabilidad/")[0].rstrip("/")
+        urls.append(f"{base_int}/interoperabilidad/oauth/token")
+        urls.append(f"{base_int}/api/oauth/token")
+    parsed = urlparse(u)
+    if parsed.scheme and parsed.netloc:
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        for p in ("/api/oauth/token", "/interoperabilidad/oauth/token", "/oauth/token"):
+            cand = f"{origin}{p}"
+            if cand not in urls:
+                urls.append(cand)
+    return urls
+
+
+def _negociar_token_oauth_socio(
+    url_destino: str,
+    api_key_str: str,
+    client_id_socio: str = "",
+) -> Dict[str, Any]:
+    """
+    Intenta obtener un access_token OAuth2 (client_credentials) en <base>/oauth/token del socio.
+    Permite conectarse con cualquier grupo que exija doble seguridad con Token OAuth2.
+    """
+    raw_key = (api_key_str or "").strip()
+    if not raw_key:
+        return {"ok": False, "status_code": 401, "access_token": "", "diagnostico": "R31: Credencial ausente."}
+
+    if ":" in raw_key:
+        parts = raw_key.split(":", 1)
+        cid = parts[0].strip() or client_id_socio.strip() or PARTNER_DEFAULT_CLIENT_ID
+        csecret = parts[1].strip()
+    else:
+        cid = (client_id_socio or "").strip() or PARTNER_DEFAULT_CLIENT_ID
+        csecret = raw_key
+
+    for token_url in _derivar_urls_oauth_socio(url_destino):
+        try:
+            resp = requests.post(
+                token_url,
+                headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"},
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": cid,
+                    "client_secret": csecret,
+                },
+                timeout=6,
+            )
+            if resp.status_code == 200:
+                body = resp.json()
+                if isinstance(body, dict) and body.get("access_token"):
+                    return {
+                        "ok": True,
+                        "status_code": 200,
+                        "access_token": str(body["access_token"]),
+                        "token_url": token_url,
+                        "client_id": cid,
+                        "diagnostico": f"R31 OK: Token OAuth2 Bearer negociado en {token_url} (client_id='{cid}').",
+                    }
+            elif resp.status_code in (401, 403):
+                return {
+                    "ok": False,
+                    "status_code": resp.status_code,
+                    "access_token": "",
+                    "diagnostico": f"R31: El servidor OAuth2 ({token_url}) rechazó client_id='{cid}' / client_secret (HTTP {resp.status_code}).",
+                }
+        except Exception:
+            continue
+
+    return {"ok": False, "status_code": 0, "access_token": "", "diagnostico": ""}
 
 
 def _extraer_recursos_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
@@ -628,6 +745,7 @@ def _construir_bundle_paciente_local(
 class SolicitudPingSocio(BaseModel):
     url_destino: str = Field(..., min_length=4)
     api_key_socio: Optional[str] = Field(default="")
+    client_id_socio: Optional[str] = Field(default="")
 
 
 class SolicitudExplorarSocio(BaseModel):
@@ -644,7 +762,8 @@ class SolicitudConsultaM2M(BaseModel):
 
 class SolicitudEnvioRemision(BaseModel):
     url_destino: str = Field(..., min_length=4, description="URL pública del endpoint FHIR del hospital socio")
-    api_key_socio: Optional[str] = Field(default="", description="API Key entregada por el hospital socio")
+    api_key_socio: Optional[str] = Field(default="", description="API Key o Client Secret entregado por el hospital socio")
+    client_id_socio: Optional[str] = Field(default="", description="Client ID OAuth2 del socio (opcional si usa doble seguridad con Token)")
     institucion_destino_nombre: Optional[str] = Field(default="Hospital Socio Externo")
     paciente_id: str = Field(default="", description="ID o documento del paciente solicitado en la BD del socio")
     paciente_nombre_opcional: Optional[str] = Field(default="", description="Nombre del paciente si se conoce")
@@ -668,8 +787,8 @@ class SolicitudDecisionRemision(BaseModel):
 # FACTORY DEL ROUTER
 # ==============================================================================
 
-def get_interoperabilidad_router(get_db, verify_user_credentials):
-    router = APIRouter(prefix="/interoperabilidad", tags=["Interoperabilidad FHIR (R30-R33)"])
+def get_interoperabilidad_router(get_db, verify_user_credentials, prefix: str = "/interoperabilidad"):
+    router = APIRouter(prefix=prefix, tags=["Interoperabilidad FHIR (R30-R33)"])
 
     def _validar_rol_clinico(user: Dict[str, Any]):
         rol = str(user.get("rol_nombre") or user.get("rol") or "").strip()
@@ -693,9 +812,12 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
             "endpoint_directorio_pacientes": f"{host_publico}/interoperabilidad/pacientes",
             "endpoint_consulta_paciente": f"{host_publico}/interoperabilidad/pacientes/{{paciente_id}}",
             "endpoint_remisiones": f"{host_publico}/interoperabilidad/remisiones",
+            "endpoint_oauth_token": f"{host_publico}/interoperabilidad/oauth/token",
             "endpoint_callback": f"{host_publico}/interoperabilidad/callback",
-            "header_autenticacion": "X-System-Key",
+            "header_autenticacion": "X-System-Key / Authorization: Bearer",
             "api_key": INTEROP_SYSTEM_KEY,
+            "oauth_client_id": INTEROP_CLIENT_ID,
+            "oauth_client_secret": INTEROP_SYSTEM_KEY,
             "cifrado": "AES-256-Fernet + HMAC-SHA256 sobre TLS 1.3",
             "formato": "application/json (HL7 FHIR R4 Bundle)",
         }
@@ -1556,15 +1678,32 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
             }
 
             import uuid as _uuid
+            client_id_socio_str = (solicitud.client_id_socio or "").strip()
+            raw_key_clean = api_key_str.split(":", 1)[1].strip() if ":" in api_key_str else api_key_str
             headers_envio = {
                 "Content-Type": "application/json",
-                "X-System-Key": api_key_str,
-                "X-API-Key": api_key_str,
+                "X-System-Key": raw_key_clean,
+                "X-API-Key": raw_key_clean,
                 "x-nonce": str(_uuid.uuid4()),
                 "X-Institucion-Origen": INSTITUCION_NOMBRE,
             }
-            if api_key_str:
-                headers_envio["Authorization"] = f"Bearer {api_key_str}"
+            if raw_key_clean:
+                headers_envio["Authorization"] = f"Bearer {raw_key_clean}"
+
+            # Doble Seguridad (R31): Si el socio usa Token OAuth2 (se ingresó Client ID o formato client_id:client_secret),
+            # negociamos automáticamente el access_token en <base>/oauth/token y lo adjuntamos en Authorization: Bearer
+            if raw_key_clean and (client_id_socio_str or ":" in api_key_str or "/oauth/token" in url_dest_clean):
+                if es_loopback:
+                    try:
+                        _verificar_system_key(raw_key_clean, None)
+                        tok_local = generar_token_oauth_m2m(client_id_socio_str or INTEROP_CLIENT_ID)
+                        headers_envio["Authorization"] = f"Bearer {tok_local}"
+                    except HTTPException:
+                        pass
+                else:
+                    oauth_res = _negociar_token_oauth_socio(url_dest_clean, api_key_str, client_id_socio_str)
+                    if oauth_res["ok"] and oauth_res.get("access_token"):
+                        headers_envio["Authorization"] = f"Bearer {oauth_res['access_token']}"
 
             enviado_ok = False
             status_http_socio = None
@@ -1786,9 +1925,78 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
             cur.close()
 
     # --------------------------------------------------------------------------
-    # 7. CALLBACK Y COMPATIBILIDAD CON /decidir
+    # 7. ENDPOINT OAUTH2 TOKEN (R31 DOBLE SEGURIDAD), CALLBACK Y /decidir
     # --------------------------------------------------------------------------
+    @router.post("/oauth/token")
+    async def emitir_token_oauth_m2m(request: Request):
+        """
+        R31 · Doble Seguridad OAuth2 (`client_credentials`):
+        Permite a cualquier grupo socio solicitar un Token Bearer temporal (10 min) enviando:
+        `grant_type=client_credentials&client_id=hospital-uci-client&client_secret=HOSPITAL-UCI-INTEROP-KEY-2026`
+        (tanto en `application/x-www-form-urlencoded` como en JSON).
+        """
+        client_id = ""
+        client_secret = ""
+        try:
+            form_data = await request.form()
+            client_id = str(form_data.get("client_id") or "").strip()
+            client_secret = str(form_data.get("client_secret") or "").strip()
+        except Exception:
+            pass
+        if not client_secret:
+            try:
+                body_j = await request.json()
+                if isinstance(body_j, dict):
+                    client_id = str(body_j.get("client_id") or client_id).strip()
+                    client_secret = str(body_j.get("client_secret") or "").strip()
+            except Exception:
+                pass
+
+        claves_validas = {INTEROP_SYSTEM_KEY}
+        partner_env = os.getenv("PARTNER_SYSTEM_SECRET", "").strip()
+        if partner_env:
+            claves_validas.add(partner_env)
+
+        if not client_secret or client_secret not in claves_validas:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content=crear_operation_outcome(
+                    severity="error",
+                    code="security",
+                    diagnostics="R31: Credencial client_secret ausente o inválida en /oauth/token (HTTP 401 Unauthorized).",
+                ),
+            )
+
+        token_efimero = generar_token_oauth_m2m(client_id or INTEROP_CLIENT_ID)
+        return {
+            "access_token": token_efimero,
+            "token_type": "Bearer",
+            "expires_in": 600,
+            "scope": "bundle:write task:write",
+            "client_id": client_id or INTEROP_CLIENT_ID,
+        }
+
+    @router.post("/fhir/remisiones-r30/recibir", status_code=status.HTTP_201_CREATED)
+    async def alias_recibir_remision_r30(
+        request: Request,
+        x_system_key: Optional[str] = Header(default=None, alias="X-System-Key"),
+        authorization: Optional[str] = Header(default=None, alias="Authorization"),
+        x_institucion_origen: Optional[str] = Header(default="Hospital Socio Externo", alias="X-Institucion-Origen"),
+        x_callback_url: Optional[str] = Header(default=None, alias="X-Callback-Url"),
+        conn=Depends(get_db),
+    ):
+        return await recibir_remision_fhir(
+            request=request,
+            x_system_key=x_system_key,
+            authorization=authorization,
+            x_institucion_origen=x_institucion_origen,
+            x_callback_url=x_callback_url,
+            conn=conn,
+        )
+
     @router.post("/callback")
+    @router.post("/respuesta")
+    @router.post("/fhir/remisiones-r30/respuesta")
     async def recibir_callback_socio(
         request: Request,
         x_system_key: Optional[str] = Header(default=None, alias="X-System-Key"),
@@ -1796,9 +2004,20 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
         conn=Depends(get_db),
     ):
         try:
-            _verificar_system_key(x_system_key, authorization)
+            _verificar_system_key(
+                x_system_key,
+                authorization,
+                request.headers.get("X-API-Key"),
+                request.headers.get("X-Partner-Secret"),
+            )
         except HTTPException as exc:
             return JSONResponse(status_code=exc.status_code, content=exc.detail)
+        try:
+            body_cb = await request.json()
+            if isinstance(body_cb, dict) and body_cb.get("resourceType") == "Task":
+                return body_cb
+        except Exception:
+            pass
         return {"status": "ok", "estado_actualizado": "ACEPTADA"}
 
     @router.post("/decidir")
@@ -1922,6 +2141,8 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
         _validar_rol_clinico(user)
         url = solicitud.url_destino.strip()
         api_key = (solicitud.api_key_socio or "").strip()
+        client_id_socio = (solicitud.client_id_socio or "").strip()
+        raw_key_clean = api_key.split(":", 1)[1].strip() if ":" in api_key else api_key
 
         es_loopback = (
             "salud-digital-proyecto.onrender.com" in url
@@ -1930,10 +2151,26 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
         )
         if es_loopback:
             try:
-                _verificar_system_key(api_key, None)
+                _verificar_system_key(raw_key_clean, None)
+                if client_id_socio or ":" in api_key:
+                    cid = api_key.split(":", 1)[0].strip() if ":" in api_key else client_id_socio
+                    tok_test = generar_token_oauth_m2m(cid)
+                    diag_tok = (
+                        f"R31 OK (Doble Seguridad): Token OAuth2 Bearer emitido (client_id='{cid}', exp=600s) "
+                        f"y API Key X-System-Key autenticada en {INSTITUCION_NOMBRE}."
+                    )
+                    return {
+                        "conectado": True,
+                        "autenticado": True,
+                        "status_code": 200,
+                        "codigo_requisito": "R31",
+                        "diagnostico_fhir": diag_tok,
+                        "operation_outcome": crear_operation_outcome("information", "informational", diag_tok),
+                        "mensaje": f"Conexión M2M Autenticada (HTTP 200): {diag_tok}",
+                    }
             except HTTPException as exc:
                 oo_err = exc.detail if isinstance(exc.detail, dict) else crear_operation_outcome("error", "security", str(exc.detail))
-                diag_err = oo_err.get("issue", [{}])[0].get("diagnostics", "R31: Credencial X-System-Key inválida o ausente.")
+                diag_err = oo_err.get("issue", [{}])[0].get("diagnostics", "R31: Credencial X-System-Key o Token OAuth2 inválido o ausente.")
                 return {
                     "conectado": False,
                     "autenticado": False,
@@ -1944,17 +2181,48 @@ def get_interoperabilidad_router(get_db, verify_user_credentials):
                     "mensaje": f"Error R31 (HTTP {exc.status_code} Unauthorized): {diag_err}",
                 }
 
+        # Si el socio usa OAuth2 (se ingresó Client ID o formato client_id:client_secret o URL /oauth/token),
+        # intentamos negociar primero el Token OAuth2 en <base>/oauth/token
+        bearer_token = raw_key_clean
+        oauth_info_msg = ""
+        if raw_key_clean and (client_id_socio or ":" in api_key or "/oauth/token" in url):
+            oauth_res = _negociar_token_oauth_socio(url, api_key, client_id_socio)
+            if oauth_res["ok"] and oauth_res.get("access_token"):
+                bearer_token = oauth_res["access_token"]
+                oauth_info_msg = f" [Token OAuth2 obtenido para client_id='{oauth_res.get('client_id')}']"
+                if "/oauth/token" in url:
+                    return {
+                        "conectado": True,
+                        "autenticado": True,
+                        "status_code": 200,
+                        "codigo_requisito": "R31",
+                        "diagnostico_fhir": oauth_res["diagnostico"],
+                        "operation_outcome": crear_operation_outcome("information", "informational", oauth_res["diagnostico"]),
+                        "mensaje": f"Conexión M2M OAuth2 Autenticada (HTTP 200): {oauth_res['diagnostico']}",
+                    }
+            elif oauth_res["status_code"] in (401, 403):
+                oo_err = crear_operation_outcome("error", "security", oauth_res["diagnostico"])
+                return {
+                    "conectado": False,
+                    "autenticado": False,
+                    "status_code": oauth_res["status_code"],
+                    "codigo_requisito": "R31",
+                    "diagnostico_fhir": oauth_res["diagnostico"],
+                    "operation_outcome": oo_err,
+                    "mensaje": f"Error R31 (HTTP {oauth_res['status_code']} Unauthorized): {oauth_res['diagnostico']}",
+                }
+
         import uuid as _uuid
         headers_ping = {
             "Content-Type": "application/json",
-            "X-System-Key": api_key,
-            "X-API-Key": api_key,
+            "X-System-Key": raw_key_clean,
+            "X-API-Key": raw_key_clean,
             "x-nonce": str(_uuid.uuid4()),
             "X-Interop-Ping": "true",
             "X-Institucion-Origen": INSTITUCION_NOMBRE,
         }
-        if api_key:
-            headers_ping["Authorization"] = f"Bearer {api_key}"
+        if bearer_token:
+            headers_ping["Authorization"] = f"Bearer {bearer_token}"
 
         payload_ping = {
             "resourceType": "Parameters",
