@@ -2443,7 +2443,7 @@
               </div>
               <div>
                 <label for="interop-socio-nombre" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Institución Socio:</label>
-                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Pre-Triaje / Grupo 2" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="interop-socio-nombre" value="" placeholder="Ej. Hospital Socio Externo" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
             <div id="interop-ping-status" class="hidden text-[11px] font-semibold px-3 py-1.5 rounded-lg"></div>
@@ -8951,7 +8951,7 @@ function renderizarBandejaEntrantes(lista) {
     cont.innerHTML = `
       <div class="text-center py-10 px-4 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
         <p class="font-semibold text-slate-500">No hay remisiones recibidas en este momento</p>
-        <p class="mt-1">Cuando el hospital socio (Pre-Triaje) envíe un Bundle FHIR válido, se aceptará automáticamente de inmediato, registrará al paciente en nuestra BD UCI y creará aquí su Nueva Historia Clínica.</p>
+        <p class="mt-1">Cuando el hospital socio envíe un Bundle FHIR válido, se aceptará automáticamente de inmediato, registrará al paciente en nuestra BD UCI y creará aquí su Nueva Historia Clínica.</p>
       </div>
     `;
     return;
